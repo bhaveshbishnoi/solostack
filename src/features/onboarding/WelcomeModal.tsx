@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useWorkbookStore } from '../../stores/workbookStore';
+import { useSettingsStore } from '../../stores/settingsStore';
 import { useUIStore } from '../../stores/uiStore';
 import { AppConfig } from '../../types';
 import {
@@ -161,6 +162,15 @@ export const WelcomeModal: React.FC = () => {
 
       // Persist demo changes to Excel
       await useWorkbookStore.getState().saveWorkbook();
+      useWorkbookStore.getState().setActiveSheet('dashboard');
+
+      // Populate business profile in settings
+      useSettingsStore.getState().updateBusinessProfile({
+        address: '104 Galaxy Commercial Mall, Linking Road, Mumbai 400050',
+        phone: '+91 98200 98200',
+        email: 'billing@apexretail.in',
+        gstin: '27AABCA1234F1Z5',
+      });
 
       addNotification('success', 'Demo Business Loaded', 'Apex Retail demo workbook ready with sample data');
       closeModal();

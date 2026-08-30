@@ -19,7 +19,7 @@ import {
 
 export const DashboardView: React.FC = () => {
   const { sheets, appConfig, setActiveSheet } = useWorkbookStore();
-  const { openModal } = useUIStore();
+  const { openModal, setTargetRecord } = useUIStore();
 
   const currencySymbol = appConfig?.currencySymbol || '₹';
   const currency = appConfig?.currency || 'INR';
@@ -203,7 +203,7 @@ export const DashboardView: React.FC = () => {
           </button>
 
           <button
-            onClick={() => openModal('new_sale')}
+            onClick={() => setActiveSheet('new_sale')}
             className="flex items-center gap-2 px-4 py-2 text-xs bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-md transition font-semibold"
           >
             <ShoppingCart className="h-4 w-4" />
@@ -319,7 +319,10 @@ export const DashboardView: React.FC = () => {
 
         {/* Quick Add Product */}
         <div
-          onClick={() => openModal('add_product')}
+          onClick={() => {
+            setTargetRecord({ sheetName: '_Products', mode: 'add' });
+            setActiveSheet('record_form');
+          }}
           className="bg-card/50 border border-dashed border-border rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:border-primary/70 hover:bg-primary/5 transition group"
         >
           <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center mb-1 group-hover:scale-110 transition text-muted-foreground group-hover:text-primary">

@@ -24,7 +24,7 @@ import {
 
 export const Sidebar: React.FC = () => {
   const { sheets, activeSheetName, setActiveSheet } = useWorkbookStore();
-  const { isSidebarCollapsed, toggleSidebar, openModal } = useUIStore();
+  const { isSidebarCollapsed, toggleSidebar } = useUIStore();
 
   // Count low stock items for badge
   const inventorySheet = sheets['_Inventory'];
@@ -147,12 +147,12 @@ export const Sidebar: React.FC = () => {
           )}
           <div className="space-y-0.5">
             <button
-              onClick={() => openModal('new_sale')}
-              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
+              onClick={() => setActiveSheet('new_sale')}
+              className={navItemClass('new_sale')}
               title="New Sale (POS)"
             >
-              <ShoppingCart className="h-4 w-4 shrink-0" />
-              {!isSidebarCollapsed && <span>New Sale (POS)</span>}
+              <ShoppingCart className="h-4 w-4 shrink-0 text-emerald-500" />
+              {!isSidebarCollapsed && <span className="font-semibold">New Sale (POS)</span>}
             </button>
 
             <button
@@ -231,7 +231,7 @@ export const Sidebar: React.FC = () => {
               </span>
             )}
             <button
-              onClick={() => openModal('create_table')}
+              onClick={() => setActiveSheet('create_table')}
               className="p-1 text-muted-foreground hover:text-primary rounded transition"
               title="Create Custom Table"
             >

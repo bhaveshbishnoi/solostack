@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 
 export const CommandPalette: React.FC = () => {
-  const { commandPaletteOpen, setCommandPaletteOpen, openModal, addNotification } = useUIStore();
+  const { commandPaletteOpen, setCommandPaletteOpen, openModal, addNotification, setTargetRecord } = useUIStore();
   const { setActiveSheet, saveWorkbook, createBackup, sheets } = useWorkbookStore();
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -61,25 +61,34 @@ export const CommandPalette: React.FC = () => {
           id: 'action_new_sale',
           label: 'New Sale (POS)',
           icon: ShoppingCart,
-          action: () => openModal('new_sale'),
+          action: () => setActiveSheet('new_sale'),
         },
         {
           id: 'action_add_product',
           label: 'Add New Product',
           icon: PlusCircle,
-          action: () => openModal('add_product'),
+          action: () => {
+            setTargetRecord({ sheetName: '_Products', mode: 'add' });
+            setActiveSheet('record_form');
+          },
         },
         {
           id: 'action_add_customer',
           label: 'Add New Customer',
           icon: PlusCircle,
-          action: () => openModal('add_customer'),
+          action: () => {
+            setTargetRecord({ sheetName: '_Customers', mode: 'add' });
+            setActiveSheet('record_form');
+          },
         },
         {
           id: 'action_add_expense',
           label: 'Record Expense',
           icon: Wallet,
-          action: () => openModal('add_expense'),
+          action: () => {
+            setTargetRecord({ sheetName: '_Expenses', mode: 'add' });
+            setActiveSheet('record_form');
+          },
         },
         {
           id: 'action_stock_movement',
@@ -91,7 +100,7 @@ export const CommandPalette: React.FC = () => {
           id: 'action_create_table',
           label: 'Create Custom Table',
           icon: TableIcon,
-          action: () => openModal('create_table'),
+          action: () => setActiveSheet('create_table'),
         },
         {
           id: 'action_save',

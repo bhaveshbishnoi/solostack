@@ -16,6 +16,8 @@ import {
   Eye,
   Columns,
   Edit2,
+  Edit3,
+  FileText,
   MoreVertical,
   X,
   Check,
@@ -35,11 +37,12 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
     deleteColumn,
     renameColumn,
     getNextAutoIncrement,
-    appConfig
+    appConfig,
+    setActiveSheet,
   } = useWorkbookStore();
 
   const { tableDensity } = useSettingsStore();
-  const { addNotification } = useUIStore();
+  const { addNotification, setTargetRecord } = useUIStore();
 
   const currentSheet = sheets[sheetName];
   const [searchQuery, setSearchQuery] = useState('');
@@ -380,14 +383,26 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
             <span>Export</span>
           </button>
 
-          {/* Primary Add Row Button */}
+          {/* Primary Add Row Page Button */}
           <button
-            onClick={handleAddRowInline}
+            onClick={() => {
+              setTargetRecord({ sheetName, mode: 'add' });
+              setActiveSheet('record_form');
+            }}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg shadow-sm transition"
-            title="Add row with auto-increment ID"
+            title="Open dedicated full page to create new record"
           >
             <Plus className="h-3.5 w-3.5" />
-            <span>+ Add Row</span>
+            <span>+ Add Record (Page)</span>
+          </button>
+
+          {/* Quick Inline Add Row Button */}
+          <button
+            onClick={handleAddRowInline}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs bg-muted/60 hover:bg-muted text-foreground border border-border rounded-lg transition font-medium"
+            title="Insert row directly inline with auto-increment ID"
+          >
+            <span>+ Quick Row</span>
           </button>
         </div>
       </div>
@@ -584,6 +599,26 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
 
                 {/* Row Action Buttons */}
                 <td className={`px-4 ${pyClass} text-right space-x-1`}>
+                  <button
+                    onClick={() => {
+                      setTargetRecord({ sheetName, rowId: row[primaryIdKey], row, mode: 'view' });
+                      setActiveSheet('record_detail');
+                    }}
+                    className="p-1 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition rounded"
+                    title="View Full Record Details (Page)"
+                  >
+                    <FileText className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setTargetRecord({ sheetName, rowId: row[primaryIdKey], row, mode: 'edit' });
+                      setActiveSheet('record_form');
+                    }}
+                    className="p-1 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition rounded"
+                    title="Edit Record (Page)"
+                  >
+                    <Edit3 className="h-3.5 w-3.5" />
+                  </button>
                   <button
                     onClick={() => handleDuplicateRow(row)}
                     className="p-1 text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition rounded"

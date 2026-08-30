@@ -52,6 +52,10 @@ export const SettingsView: React.FC = () => {
   };
 
   const handleCreateBackup = async () => {
+    if (!metadata) {
+      addNotification('warning', 'No Active Workbook', 'Please create or load a workbook first');
+      return;
+    }
     try {
       const b = await createBackup();
       addNotification('success', 'Backup Created', b.filename);
@@ -61,6 +65,10 @@ export const SettingsView: React.FC = () => {
   };
 
   const handleRestore = async (backupPath: string) => {
+    if (!metadata) {
+      addNotification('warning', 'No Active Workbook', 'Please create or load a workbook first');
+      return;
+    }
     if (window.confirm('Restore this backup copy? Current unsaved workbook state will be replaced.')) {
       try {
         await restoreBackup(backupPath);

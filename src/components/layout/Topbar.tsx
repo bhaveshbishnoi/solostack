@@ -23,7 +23,8 @@ export const Topbar: React.FC = () => {
     lastSaved,
     saveWorkbook,
     createBackup,
-    appConfig
+    appConfig,
+    setActiveSheet,
   } = useWorkbookStore();
 
   const { theme, setTheme } = useSettingsStore();
@@ -109,7 +110,7 @@ export const Topbar: React.FC = () => {
         {metadata && (
           <>
             <button
-              onClick={() => openModal('new_sale')}
+              onClick={() => setActiveSheet('new_sale')}
               className="flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg shadow-sm transition font-medium"
             >
               <PlusCircle className="h-3.5 w-3.5" />

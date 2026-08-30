@@ -12,6 +12,10 @@ import { TableWorkspace } from '../features/tables/TableWorkspace';
 import { AnalyticsView } from '../features/analytics/AnalyticsView';
 import { ReportsView } from '../features/reports/ReportsView';
 import { SettingsView } from '../features/settings/SettingsView';
+import { NewSalePage } from '../features/sales/NewSalePage';
+import { RecordFormPage } from '../features/records/RecordFormPage';
+import { RecordDetailPage } from '../features/records/RecordDetailPage';
+import { CreateTablePage } from '../features/custom-tables/CreateTablePage';
 import { NewSaleModal } from '../features/sales/NewSaleModal';
 import { InvoiceModal } from '../features/sales/InvoiceModal';
 import { AddProductModal } from '../features/products/AddProductModal';
@@ -86,6 +90,11 @@ export const App: React.FC = () => {
 
   // Render main view based on activeSheetName
   const renderMainContent = () => {
+    // Settings is always accessible
+    if (activeSheetName === 'settings') {
+      return <SettingsView />;
+    }
+
     if (!metadata) {
       return (
         <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4">
@@ -111,6 +120,14 @@ export const App: React.FC = () => {
     switch (activeSheetName) {
       case 'dashboard':
         return <DashboardView />;
+      case 'new_sale':
+        return <NewSalePage />;
+      case 'record_form':
+        return <RecordFormPage />;
+      case 'record_detail':
+        return <RecordDetailPage />;
+      case 'create_table':
+        return <CreateTablePage />;
       case 'analytics':
         return <AnalyticsView />;
       case 'reports':
