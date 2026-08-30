@@ -126,7 +126,8 @@ export const DashboardView: React.FC = () => {
           smooth: true,
           showSymbol: true,
           symbolSize: 8,
-          lineStyle: { width: 3, color: '#3b82f6' },
+          lineStyle: { width: 3.5, color: '#0d9488' },
+          itemStyle: { color: '#0d9488' },
           areaStyle: {
             color: {
               type: 'linear',
@@ -135,8 +136,8 @@ export const DashboardView: React.FC = () => {
               x2: 0,
               y2: 1,
               colorStops: [
-                { offset: 0, color: 'rgba(59, 130, 246, 0.4)' },
-                { offset: 1, color: 'rgba(59, 130, 246, 0.0)' },
+                { offset: 0, color: 'rgba(13, 148, 136, 0.45)' },
+                { offset: 1, color: 'rgba(13, 148, 136, 0.0)' },
               ],
             },
           },
@@ -161,6 +162,7 @@ export const DashboardView: React.FC = () => {
     return {
       tooltip: { trigger: 'item' },
       legend: { bottom: '0%', textStyle: { color: '#94a3b8', fontSize: 11 } },
+      color: ['#0d9488', '#14b8a6', '#2dd4bf', '#0f766e', '#5eead4', '#115e59'],
       series: [
         {
           name: 'Products by Category',
@@ -178,13 +180,13 @@ export const DashboardView: React.FC = () => {
   return (
     <div className="flex-1 overflow-y-auto p-6 space-y-6">
       {/* Top Banner: Quick Summary & Quick POS button */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-primary/10 via-indigo-500/10 to-purple-500/10 border border-primary/20 rounded-2xl p-5 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-primary/15 via-primary/5 to-transparent border border-primary/25 rounded-2xl p-5 shadow-sm">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-foreground">
               {appConfig?.businessName || 'Business Dashboard'}
             </h1>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-500 font-semibold">
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-primary/20 text-primary font-bold">
               Live Workbook
             </span>
           </div>
@@ -193,18 +195,18 @@ export const DashboardView: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => openModal('chart_builder')}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs bg-muted hover:bg-muted/80 text-foreground rounded-xl transition font-medium border border-border"
+            className="flex items-center gap-2 px-3 py-2 text-xs bg-muted/60 hover:bg-muted text-foreground border border-border rounded-xl transition font-medium"
           >
-            <Sparkles className="h-4 w-4 text-indigo-400" />
+            <Sparkles className="h-4 w-4 text-primary" />
             <span>Chart Builder</span>
           </button>
 
           <button
             onClick={() => setActiveSheet('new_sale')}
-            className="flex items-center gap-2 px-4 py-2 text-xs bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-md transition font-semibold"
+            className="flex items-center gap-2 px-4 py-2 text-xs bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-md teal-glow transition font-bold"
           >
             <ShoppingCart className="h-4 w-4" />
             <span>Start New Sale (POS)</span>
@@ -215,103 +217,104 @@ export const DashboardView: React.FC = () => {
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {/* Total Sales */}
-        <div className="bg-card border border-border rounded-xl p-4 shadow-sm hover:border-primary/40 transition">
+        <div className="bg-gradient-to-br from-primary/10 via-card to-card border border-primary/30 rounded-2xl p-4 shadow-sm hover:teal-glow-sm hover:border-primary/50 transition">
           <div className="flex items-center justify-between text-muted-foreground mb-2">
-            <span className="text-xs font-medium">Total Revenue</span>
-            <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-500">
+            <span className="text-xs font-semibold">Total Revenue</span>
+            <div className="p-2 rounded-xl bg-primary/15 text-primary">
               <TrendingUp className="h-4 w-4" />
             </div>
           </div>
-          <div className="text-xl font-bold text-foreground">
+          <div className="text-2xl font-extrabold text-foreground font-mono">
             {formatCurrency(totalRevenue, currency, currencySymbol)}
           </div>
           <div className="text-[11px] text-muted-foreground mt-1 flex items-center gap-1">
-            <span>{salesRows.length} completed orders</span>
+            <span className="font-semibold text-primary">{salesRows.length}</span>
+            <span>completed orders</span>
           </div>
         </div>
 
         {/* Today's Sales */}
-        <div className="bg-card border border-border rounded-xl p-4 shadow-sm hover:border-primary/40 transition">
+        <div className="bg-gradient-to-br from-emerald-500/10 via-card to-card border border-emerald-500/20 rounded-2xl p-4 shadow-sm hover:border-emerald-500/40 transition">
           <div className="flex items-center justify-between text-muted-foreground mb-2">
-            <span className="text-xs font-medium">Today's Sales</span>
-            <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-500">
+            <span className="text-xs font-semibold">Today's Sales</span>
+            <div className="p-2 rounded-xl bg-emerald-500/15 text-emerald-500">
               <DollarSign className="h-4 w-4" />
             </div>
           </div>
-          <div className="text-xl font-bold text-foreground">
+          <div className="text-2xl font-extrabold text-foreground font-mono">
             {formatCurrency(todayRevenue, currency, currencySymbol)}
           </div>
-          <div className="text-[11px] text-emerald-500 mt-1 flex items-center gap-1 font-medium">
+          <div className="text-[11px] text-emerald-500 mt-1 flex items-center gap-1 font-semibold">
             <ArrowUpRight className="h-3 w-3" />
             <span>Today's counter</span>
           </div>
         </div>
 
         {/* Products & Inventory */}
-        <div className="bg-card border border-border rounded-xl p-4 shadow-sm hover:border-primary/40 transition">
+        <div className="bg-card border border-border rounded-2xl p-4 shadow-sm hover:border-primary/40 transition">
           <div className="flex items-center justify-between text-muted-foreground mb-2">
-            <span className="text-xs font-medium">Products in Catalog</span>
-            <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-500">
+            <span className="text-xs font-semibold">Products in Catalog</span>
+            <div className="p-2 rounded-xl bg-teal-500/15 text-teal-600 dark:text-teal-400">
               <Package className="h-4 w-4" />
             </div>
           </div>
-          <div className="text-xl font-bold text-foreground">{productRows.length}</div>
+          <div className="text-2xl font-extrabold text-foreground font-mono">{productRows.length}</div>
           <div className="text-[11px] text-muted-foreground mt-1">
-            {inventoryRows.reduce((a, b) => a + Number(b.quantity || 0), 0)} total units in stock
+            <span className="font-semibold text-foreground">{inventoryRows.reduce((a, b) => a + Number(b.quantity || 0), 0)}</span> total units in stock
           </div>
         </div>
 
         {/* Low Stock Alert */}
-        <div className="bg-card border border-border rounded-xl p-4 shadow-sm hover:border-amber-500/40 transition">
+        <div className="bg-gradient-to-br from-amber-500/10 via-card to-card border border-amber-500/30 rounded-2xl p-4 shadow-sm hover:border-amber-500/50 transition">
           <div className="flex items-center justify-between text-muted-foreground mb-2">
-            <span className="text-xs font-medium">Low Stock Alerts</span>
-            <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-500">
+            <span className="text-xs font-semibold">Low Stock Alerts</span>
+            <div className="p-2 rounded-xl bg-amber-500/15 text-amber-500">
               <AlertTriangle className="h-4 w-4" />
             </div>
           </div>
-          <div className="text-xl font-bold text-amber-500">{lowStockItems.length}</div>
-          <div className="text-[11px] text-amber-500/80 mt-1">
+          <div className="text-2xl font-extrabold text-amber-500 font-mono">{lowStockItems.length}</div>
+          <div className="text-[11px] text-amber-500/80 mt-1 font-medium">
             {lowStockItems.length === 0 ? 'All stocks optimal' : 'Requires reordering'}
           </div>
         </div>
 
         {/* Total Customers */}
-        <div className="bg-card border border-border rounded-xl p-4 shadow-sm hover:border-primary/40 transition">
+        <div className="bg-card border border-border rounded-2xl p-4 shadow-sm hover:border-primary/40 transition">
           <div className="flex items-center justify-between text-muted-foreground mb-2">
-            <span className="text-xs font-medium">Customers</span>
-            <div className="p-1.5 rounded-lg bg-purple-500/10 text-purple-500">
+            <span className="text-xs font-semibold">Customers</span>
+            <div className="p-2 rounded-xl bg-purple-500/15 text-purple-500">
               <Users className="h-4 w-4" />
             </div>
           </div>
-          <div className="text-xl font-bold text-foreground">{customerRows.length}</div>
+          <div className="text-2xl font-extrabold text-foreground font-mono">{customerRows.length}</div>
           <div className="text-[11px] text-muted-foreground mt-1">Registered clients</div>
         </div>
 
         {/* Total Expenses */}
-        <div className="bg-card border border-border rounded-xl p-4 shadow-sm hover:border-primary/40 transition">
+        <div className="bg-card border border-border rounded-2xl p-4 shadow-sm hover:border-primary/40 transition">
           <div className="flex items-center justify-between text-muted-foreground mb-2">
-            <span className="text-xs font-medium">Total Expenses</span>
-            <div className="p-1.5 rounded-lg bg-rose-500/10 text-rose-500">
+            <span className="text-xs font-semibold">Total Expenses</span>
+            <div className="p-2 rounded-xl bg-rose-500/15 text-rose-500">
               <Wallet className="h-4 w-4" />
             </div>
           </div>
-          <div className="text-xl font-bold text-foreground">
+          <div className="text-2xl font-extrabold text-foreground font-mono">
             {formatCurrency(totalExpenses, currency, currencySymbol)}
           </div>
           <div className="text-[11px] text-muted-foreground mt-1">
-            {expenseRows.length} recorded entries
+            <span className="font-semibold text-foreground">{expenseRows.length}</span> recorded entries
           </div>
         </div>
 
         {/* Net Profit Estimate */}
-        <div className="bg-card border border-border rounded-xl p-4 shadow-sm hover:border-primary/40 transition">
+        <div className="bg-gradient-to-br from-teal-500/15 via-card to-card border border-teal-500/30 rounded-2xl p-4 shadow-sm hover:teal-glow-sm transition">
           <div className="flex items-center justify-between text-muted-foreground mb-2">
-            <span className="text-xs font-medium">Net Profit (Est.)</span>
-            <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-500">
+            <span className="text-xs font-semibold">Net Profit (Est.)</span>
+            <div className="p-2 rounded-xl bg-teal-500/15 text-teal-600 dark:text-teal-400">
               <TrendingUp className="h-4 w-4" />
             </div>
           </div>
-          <div className="text-xl font-bold text-emerald-500">
+          <div className="text-2xl font-extrabold text-teal-600 dark:text-teal-400 font-mono">
             {formatCurrency(Math.max(0, totalRevenue - totalExpenses), currency, currencySymbol)}
           </div>
           <div className="text-[11px] text-muted-foreground mt-1">Revenue minus expenses</div>
@@ -323,12 +326,12 @@ export const DashboardView: React.FC = () => {
             setTargetRecord({ sheetName: '_Products', mode: 'add' });
             setActiveSheet('record_form');
           }}
-          className="bg-card/50 border border-dashed border-border rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:border-primary/70 hover:bg-primary/5 transition group"
+          className="bg-card/60 border-2 border-dashed border-primary/30 rounded-2xl p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:border-primary hover:bg-primary/5 hover:teal-glow-sm transition group"
         >
-          <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center mb-1 group-hover:scale-110 transition text-muted-foreground group-hover:text-primary">
-            <PlusCircle className="h-4 w-4" />
+          <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center mb-1 group-hover:scale-110 transition text-primary">
+            <PlusCircle className="h-5 w-5" />
           </div>
-          <span className="text-xs font-semibold text-foreground">Add New Product</span>
+          <span className="text-xs font-bold text-foreground group-hover:text-primary transition">Add New Product</span>
           <span className="text-[10px] text-muted-foreground">Expand your catalog</span>
         </div>
       </div>

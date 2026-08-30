@@ -325,10 +325,10 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
           {/* Add Column Button */}
           <button
             onClick={() => setIsAddColumnOpen(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs bg-muted/60 hover:bg-muted text-foreground border border-border rounded-lg transition font-medium"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 rounded-xl transition font-semibold"
             title="Create new column/field in this sheet"
           >
-            <Columns className="h-3.5 w-3.5 text-indigo-400" />
+            <Columns className="h-3.5 w-3.5" />
             <span>+ New Column</span>
           </button>
 
@@ -336,7 +336,7 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
           <div className="relative">
             <button
               onClick={() => setShowColumnPicker(!showColumnPicker)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs bg-muted/60 hover:bg-muted text-foreground border border-border rounded-lg transition"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-muted/60 hover:bg-muted text-foreground border border-border rounded-xl transition"
               title="Configure visible columns"
             >
               <Eye className="h-3.5 w-3.5 text-muted-foreground" />
@@ -363,7 +363,7 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
                               setHiddenColumns(hiddenColumns.filter((k) => k !== c.key));
                             }
                           }}
-                          className="rounded border-border"
+                          className="rounded border-border text-primary focus:ring-primary"
                         />
                         <span className="truncate">{c.name}</span>
                       </label>
@@ -376,7 +376,7 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
 
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs bg-muted/60 hover:bg-muted text-foreground border border-border rounded-lg transition"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-muted/60 hover:bg-muted text-foreground border border-border rounded-xl transition"
             title="Export view to CSV"
           >
             <Download className="h-3.5 w-3.5 text-muted-foreground" />
@@ -389,7 +389,7 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
               setTargetRecord({ sheetName, mode: 'add' });
               setActiveSheet('record_form');
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg shadow-sm transition"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-sm teal-glow-sm transition"
             title="Open dedicated full page to create new record"
           >
             <Plus className="h-3.5 w-3.5" />
@@ -399,7 +399,7 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
           {/* Quick Inline Add Row Button */}
           <button
             onClick={handleAddRowInline}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs bg-muted/60 hover:bg-muted text-foreground border border-border rounded-lg transition font-medium"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-muted/60 hover:bg-muted text-foreground border border-border rounded-xl transition font-medium"
             title="Insert row directly inline with auto-increment ID"
           >
             <span>+ Quick Row</span>

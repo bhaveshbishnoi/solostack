@@ -4,96 +4,112 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
+    --background: 180 20% 98.5%;
+    --foreground: 195 45% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 195 45% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 195 45% 10%;
 
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
+    /* Pure vibrant Teal 600 */
+    --primary: 173 80% 36%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222 47% 11.2%;
+    --secondary: 180 25% 94%;
+    --secondary-foreground: 195 45% 15%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 180 15% 94%;
+    --muted-foreground: 180 10% 42%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222 47% 11.2%;
+    --accent: 173 75% 94%;
+    --accent-foreground: 173 85% 22%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221 83% 53%;
+    --border: 180 15% 89%;
+    --input: 180 15% 89%;
+    --ring: 173 80% 36%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
   }
 
   .dark {
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
+    --background: 195 45% 3.8%;
+    --foreground: 180 20% 95%;
 
-    --card: 224 71% 6%;
-    --card-foreground: 213 31% 91%;
+    --card: 195 32% 6.2%;
+    --card-foreground: 180 20% 95%;
 
-    --popover: 224 71% 6%;
-    --popover-foreground: 213 31% 91%;
+    --popover: 195 32% 7.5%;
+    --popover-foreground: 180 20% 95%;
 
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    /* Radiant Electric Teal 400 */
+    --primary: 173 80% 46%;
+    --primary-foreground: 195 50% 5%;
 
-    --secondary: 222.2 47.4% 11.2%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 195 24% 12%;
+    --secondary-foreground: 180 20% 95%;
 
-    --muted: 223 47% 11%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 195 24% 11%;
+    --muted-foreground: 180 12% 62%;
 
-    --accent: 216 34% 17%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 173 45% 13%;
+    --accent-foreground: 173 80% 75%;
 
-    --destructive: 0 62.8% 50.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 68% 55%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 216 34% 17%;
-    --input: 216 34% 17%;
-    --ring: 224 76% 48%;
+    --border: 195 20% 14.5%;
+    --input: 195 20% 14.5%;
+    --ring: 173 80% 46%;
   }
 }
 
-/* Custom modern scrollbars */
+/* Modern clean scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: rgba(156, 163, 175, 0.4);
+  background: hsl(var(--muted-foreground) / 0.25);
   border-radius: 9999px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(156, 163, 175, 0.7);
+  background: hsl(var(--primary) / 0.5);
 }
 
-/* Print styles for invoices and reports */
-@media print {
-  body * {
-    visibility: hidden;
-  }
-  #printable-area, #printable-area * {
-    visibility: visible;
-  }
-  #printable-area {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-  }
+/* Subtle Teal Glow Utility */
+.teal-glow {
+  box-shadow: 0 0 25px -4px hsl(173 80% 46% / 0.28);
+}
+
+.teal-glow-sm {
+  box-shadow: 0 0 14px -2px hsl(173 80% 46% / 0.22);
+}
+
+/* Glass card styling */
+.glass-panel {
+  background: hsl(var(--card) / 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* Interactive transitions */
+button, a, input, select {
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+button:active {
+  transform: scale(0.98);
 }

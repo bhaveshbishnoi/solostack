@@ -186,7 +186,7 @@ export const RecordFormPage: React.FC = () => {
           )}
           <button
             onClick={() => handleSave(false)}
-            className="flex items-center gap-1.5 px-4 py-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl shadow-sm transition"
+            className="flex items-center gap-1.5 px-4 py-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-sm teal-glow-sm transition"
           >
             <Save className="h-3.5 w-3.5" />
             <span>Save Record</span>
@@ -238,7 +238,7 @@ export const RecordFormPage: React.FC = () => {
                         className="w-full px-3 py-2 bg-muted/40 border border-border rounded-xl text-foreground font-mono focus:outline-none focus:border-primary"
                       />
                       {mode === 'add' && (
-                        <span className="absolute right-3 top-2.5 text-[10px] text-emerald-500 font-bold">
+                        <span className="absolute right-3 top-2.5 text-[10px] text-primary font-bold">
                           Auto-Increment
                         </span>
                       )}
@@ -249,9 +249,9 @@ export const RecordFormPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleChange(col.key, !val)}
-                        className={`px-3 py-1.5 rounded-lg border font-semibold text-xs transition ${
+                        className={`px-3 py-1.5 rounded-xl border font-bold text-xs transition ${
                           val
-                            ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500'
+                            ? 'bg-primary/15 border-primary text-primary teal-glow-sm'
                             : 'border-border text-muted-foreground bg-muted/20'
                         }`}
                       >
@@ -328,7 +328,7 @@ export const RecordFormPage: React.FC = () => {
             </button>
             <button
               onClick={() => handleSave(false)}
-              className="flex items-center gap-2 px-6 py-2.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-md transition"
+              className="flex items-center gap-2 px-6 py-2.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-md teal-glow transition"
             >
               <CheckCircle2 className="h-4 w-4" />
               <span>{mode === 'edit' ? 'Save Changes' : 'Create Record'}</span>

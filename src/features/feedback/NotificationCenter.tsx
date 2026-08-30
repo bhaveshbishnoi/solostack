@@ -60,25 +60,25 @@ export const NotificationCenter: React.FC = () => {
       <div className="fixed bottom-4 right-4 z-40 space-y-2 max-w-sm w-full pointer-events-none select-none">
         {notifications.map((notif) => {
           const icons = {
-            success: <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />,
+            success: <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />,
             warning: <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />,
             error: <AlertCircle className="h-4 w-4 text-destructive shrink-0" />,
-            info: <Info className="h-4 w-4 text-blue-500 shrink-0" />,
+            info: <Info className="h-4 w-4 text-primary shrink-0" />,
           };
 
           return (
             <div
               key={notif.id}
-              className="pointer-events-auto bg-card border border-border rounded-xl p-3 shadow-lg flex items-start gap-3 animate-in slide-in-from-bottom-2"
+              className="pointer-events-auto bg-card/95 backdrop-blur-md border border-primary/25 rounded-2xl p-3.5 shadow-xl teal-glow-sm flex items-start gap-3 animate-in slide-in-from-bottom-2"
             >
               {icons[notif.type]}
               <div className="flex-1">
-                <div className="text-xs font-semibold text-foreground">{notif.title}</div>
+                <div className="text-xs font-bold text-foreground">{notif.title}</div>
                 <div className="text-[11px] text-muted-foreground mt-0.5">{notif.message}</div>
               </div>
               <button
                 onClick={() => removeNotification(notif.id)}
-                className="text-muted-foreground hover:text-foreground p-1 rounded transition"
+                className="text-muted-foreground hover:text-foreground p-1 rounded-lg transition"
               >
                 <X className="h-3 w-3" />
               </button>

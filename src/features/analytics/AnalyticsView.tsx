@@ -43,6 +43,7 @@ export const AnalyticsView: React.FC = () => {
     return {
       tooltip: { trigger: 'item' },
       legend: { bottom: '0%', textStyle: { color: '#94a3b8' } },
+      color: ['#0d9488', '#14b8a6', '#2dd4bf', '#0f766e', '#5eead4', '#115e59'],
       series: [
         {
           type: 'pie',
@@ -98,7 +99,7 @@ export const AnalyticsView: React.FC = () => {
         {
           type: 'bar',
           data: topProducts.map((p) => p.revenue),
-          itemStyle: { color: '#3b82f6', borderRadius: [4, 4, 0, 0] },
+          itemStyle: { color: '#0d9488', borderRadius: [6, 6, 0, 0] },
         },
       ],
     };
@@ -114,35 +115,35 @@ export const AnalyticsView: React.FC = () => {
         </div>
 
         {/* Tab Selector */}
-        <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border">
+        <div className="flex items-center gap-1 bg-muted/60 p-1.5 rounded-2xl border border-border">
           <button
             onClick={() => setActiveTab('sales')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition ${
-              activeTab === 'sales' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+            className={`px-3.5 py-1.5 text-xs font-bold rounded-xl transition ${
+              activeTab === 'sales' ? 'bg-primary text-primary-foreground shadow-sm teal-glow-sm' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             Sales
           </button>
           <button
             onClick={() => setActiveTab('inventory')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition ${
-              activeTab === 'inventory' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+            className={`px-3.5 py-1.5 text-xs font-bold rounded-xl transition ${
+              activeTab === 'inventory' ? 'bg-primary text-primary-foreground shadow-sm teal-glow-sm' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             Inventory
           </button>
           <button
             onClick={() => setActiveTab('products')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition ${
-              activeTab === 'products' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+            className={`px-3.5 py-1.5 text-xs font-bold rounded-xl transition ${
+              activeTab === 'products' ? 'bg-primary text-primary-foreground shadow-sm teal-glow-sm' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             Products
           </button>
           <button
             onClick={() => setActiveTab('customers')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition ${
-              activeTab === 'customers' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+            className={`px-3.5 py-1.5 text-xs font-bold rounded-xl transition ${
+              activeTab === 'customers' ? 'bg-primary text-primary-foreground shadow-sm teal-glow-sm' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             Customers

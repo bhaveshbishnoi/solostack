@@ -78,7 +78,7 @@ export const RecordDetailPage: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={handleEdit}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-primary text-primary-foreground font-semibold rounded-xl shadow-sm hover:bg-primary/90 transition"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-sm teal-glow-sm transition"
           >
             <Edit2 className="h-3.5 w-3.5" />
             <span>Edit Record</span>

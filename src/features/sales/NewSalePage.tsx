@@ -263,7 +263,7 @@ export const NewSalePage: React.FC = () => {
         <div className="max-w-3xl mx-auto w-full space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+              <div className="h-11 w-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center teal-glow-sm">
                 <CheckCircle2 className="h-6 w-6" />
               </div>
               <div>
@@ -310,7 +310,7 @@ export const NewSalePage: React.FC = () => {
               <div className="text-right text-xs">
                 <div className="font-bold text-foreground font-mono text-sm">#{completedOrder.saleId}</div>
                 <div className="text-muted-foreground mt-1">Date: {formatDate(completedOrder.saleRecord.sale_date)}</div>
-                <div className="text-emerald-500 font-semibold mt-1">PAID ({completedOrder.saleRecord.payment_method})</div>
+                <div className="text-primary font-bold mt-1">PAID ({completedOrder.saleRecord.payment_method})</div>
               </div>
             </div>
 
@@ -677,7 +677,7 @@ export const NewSalePage: React.FC = () => {
             <button
               onClick={handleCompleteSale}
               disabled={submitting || cart.length === 0}
-              className="flex-1 flex items-center justify-center gap-2 py-3 px-6 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-2 py-3.5 px-6 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-md teal-glow transition disabled:opacity-50"
             >
               <CheckCircle2 className="h-4 w-4" />
               <span>Complete Sale ({formatCurrency(calculations.grandTotal, currency, currencySymbol)})</span>

@@ -202,7 +202,7 @@ export const WelcomeModal: React.FC = () => {
       <div className="bg-card border border-border rounded-2xl shadow-2xl max-w-xl w-full overflow-hidden p-8 space-y-6">
         {mode === 'welcome' && (
           <div className="space-y-6 text-center">
-            <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-xl shadow-indigo-500/20">
+            <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-tr from-teal-500 via-teal-600 to-emerald-600 flex items-center justify-center text-white shadow-xl teal-glow">
               <FileSpreadsheet className="h-8 w-8" />
             </div>
 
@@ -252,12 +252,12 @@ export const WelcomeModal: React.FC = () => {
               <button
                 onClick={handleCreateDemo}
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-500/10 to-purple-500/10 hover:from-indigo-500/20 hover:to-purple-500/20 border border-indigo-500/20 text-indigo-400 text-xs font-semibold transition"
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-primary/10 to-teal-500/10 hover:from-primary/20 hover:to-teal-500/20 border border-primary/30 text-primary text-xs font-bold transition teal-glow-sm"
               >
                 {loading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <Sparkles className="h-4 w-4 text-indigo-400" />
+                  <Sparkles className="h-4 w-4 text-primary" />
                 )}
                 <span>Launch Quick Demo (Pre-loaded with sample store data)</span>
               </button>

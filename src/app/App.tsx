@@ -98,18 +98,18 @@ export const App: React.FC = () => {
     if (!metadata) {
       return (
         <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4">
-          <div className="h-16 w-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-            <span className="font-bold text-2xl">Ex</span>
+          <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white flex items-center justify-center teal-glow shadow-xl font-black text-2xl tracking-tight">
+            Ex
           </div>
           <div className="space-y-1">
-            <h2 className="text-lg font-bold text-foreground">Welcome to Exdrow</h2>
+            <h2 className="text-xl font-bold text-foreground">Welcome to Exdrow</h2>
             <p className="text-xs text-muted-foreground max-w-sm">
               Please create a new business workbook or open an existing .xlsx file to begin.
             </p>
           </div>
           <button
             onClick={() => openModal('welcome')}
-            className="px-4 py-2 text-xs bg-primary text-primary-foreground font-semibold rounded-xl shadow-sm hover:bg-primary/90 transition"
+            className="px-5 py-2.5 text-xs bg-primary text-primary-foreground font-bold rounded-xl shadow-md teal-glow hover:bg-primary/90 transition"
           >
             Open / Create Workbook
           </button>

@@ -46,9 +46,9 @@ export const Sidebar: React.FC = () => {
 
   const navItemClass = (sheetKey: string) => {
     const isActive = activeSheetName === sheetKey;
-    return `w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition select-none ${
+    return `w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition select-none ${
       isActive
-        ? 'bg-primary text-primary-foreground shadow-sm'
+        ? 'bg-primary text-primary-foreground shadow-sm teal-glow-sm'
         : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
     }`;
   };

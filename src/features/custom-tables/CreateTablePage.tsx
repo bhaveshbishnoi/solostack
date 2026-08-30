@@ -94,7 +94,7 @@ export const CreateTablePage: React.FC = () => {
             <ArrowLeft className="h-4 w-4" />
           </button>
           <div className="flex items-center gap-2">
-            <TableIcon className="h-5 w-5 text-indigo-500" />
+            <TableIcon className="h-5 w-5 text-primary" />
             <h1 className="text-base font-bold text-foreground">Create Custom Business Table</h1>
           </div>
         </div>
@@ -102,13 +102,13 @@ export const CreateTablePage: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setActiveSheet('dashboard')}
-            className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground rounded-lg transition"
+            className="px-3.5 py-1.5 text-xs text-muted-foreground hover:text-foreground rounded-xl transition"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
-            className="flex items-center gap-1.5 px-4 py-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl shadow-sm transition"
+            className="flex items-center gap-1.5 px-4 py-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-sm teal-glow-sm transition"
           >
             <CheckCircle2 className="h-4 w-4" />
             <span>Create Table & Sheet</span>
@@ -241,7 +241,7 @@ export const CreateTablePage: React.FC = () => {
               </button>
               <button
                 type="submit"
-                className="flex items-center gap-2 px-6 py-2.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-md transition"
+                className="flex items-center gap-2 px-6 py-2.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-md teal-glow transition"
               >
                 <CheckCircle2 className="h-4 w-4" />
                 <span>Create Table & Open</span>

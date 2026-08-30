@@ -53,7 +53,7 @@ export const Topbar: React.FC = () => {
       {/* Left: Brand & Active Workbook Status */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-sm font-bold text-sm">
+          <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center text-white shadow-sm teal-glow-sm font-black text-sm tracking-tight">
             Ex
           </div>
           <div className="flex flex-col">
@@ -111,7 +111,7 @@ export const Topbar: React.FC = () => {
           <>
             <button
               onClick={() => setActiveSheet('new_sale')}
-              className="flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg shadow-sm transition font-medium"
+              className="flex items-center gap-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground px-3.5 py-1.5 rounded-xl shadow-sm teal-glow-sm transition font-semibold"
             >
               <PlusCircle className="h-3.5 w-3.5" />
               <span>New Sale</span>
