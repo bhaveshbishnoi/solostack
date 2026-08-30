@@ -93,7 +93,7 @@ export const schoolTemplate: BusinessTemplate = {
       name: '_Inventory',
       columns: [
         { key: 'inventory_id', name: 'Asset ID', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Facility / Fee Head', dataType: 'text', required: true },
+        { key: 'product_id', name: 'Facility / Fee Head', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Enrolled Capacity', dataType: 'number' },
         { key: 'minimum_stock', name: 'Threshold', dataType: 'number' },
         { key: 'updated_at', name: 'Updated At', dataType: 'date' },
@@ -172,7 +172,7 @@ export const schoolTemplate: BusinessTemplate = {
       name: '_Sales',
       columns: [
         { key: 'sale_id', name: 'Receipt No', dataType: 'text', required: true },
-        { key: 'customer_id', name: 'Student Name', dataType: 'text', required: true },
+        { key: 'customer_id', name: 'Student Name', dataType: 'text', required: true, referenceTable: '_Customers', referenceKey: 'customer_id' },
         { key: 'sale_date', name: 'Receipt Date', dataType: 'date', required: true },
         { key: 'subtotal', name: 'Tuition Fee', dataType: 'currency' },
         { key: 'discount', name: 'Sibling Concession', dataType: 'currency' },
@@ -201,8 +201,8 @@ export const schoolTemplate: BusinessTemplate = {
       name: '_SaleItems',
       columns: [
         { key: 'sale_item_id', name: 'Item ID', dataType: 'text', required: true },
-        { key: 'sale_id', name: 'Receipt No', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Fee Head', dataType: 'text', required: true },
+        { key: 'sale_id', name: 'Receipt No', dataType: 'text', required: true, referenceTable: '_Sales', referenceKey: 'sale_id' },
+        { key: 'product_id', name: 'Fee Head', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Qty', dataType: 'number' },
         { key: 'unit_price', name: 'Fee Amount', dataType: 'currency' },
         { key: 'discount', name: 'Discount', dataType: 'currency' },

@@ -46,6 +46,7 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
     getNextAutoIncrement,
     appConfig,
     setActiveSheet,
+    saveWorkbook,
   } = useWorkbookStore();
 
   const { tableDensity, setTableDensity, sheetHiddenColumns, setSheetHiddenColumns } = useSettingsStore();
@@ -249,6 +250,7 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
 
     const idVal = row[primaryIdKey];
     updateRow(sheetName, primaryIdKey, idVal, { [colKey]: parsedVal });
+    saveWorkbook().catch(() => {});
 
     if (nextCell) {
       setEditingCell(nextCell);
@@ -282,6 +284,7 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
     });
 
     addRow(sheetName, newRow);
+    saveWorkbook().catch(() => {});
     addNotification('success', 'Row Added', `Auto-incremented ID: ${nextId}`);
 
     const targetCol = visibleColumns.length > 1 ? visibleColumns[1].key : visibleColumns[0].key;
@@ -299,6 +302,7 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
     }
 
     addRow(sheetName, dup);
+    saveWorkbook().catch(() => {});
     addNotification('success', 'Row Duplicated', `Created record with auto-increment ID ${nextId}`);
   };
 
@@ -306,6 +310,7 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
     const idVal = row[primaryIdKey];
     if (window.confirm(`Are you sure you want to delete row "${idVal}"?`)) {
       deleteRow(sheetName, primaryIdKey, idVal);
+      saveWorkbook().catch(() => {});
       addNotification('info', 'Row Deleted', `Removed ${idVal} from ${sheetName}`);
     }
   };

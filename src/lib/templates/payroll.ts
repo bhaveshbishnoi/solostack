@@ -93,7 +93,7 @@ export const payrollTemplate: BusinessTemplate = {
       name: '_Inventory',
       columns: [
         { key: 'inventory_id', name: 'Dept Pool ID', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Head Component', dataType: 'text', required: true },
+        { key: 'product_id', name: 'Head Component', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Department Headcount', dataType: 'number' },
         { key: 'minimum_stock', name: 'Minimum Staff', dataType: 'number' },
         { key: 'updated_at', name: 'Audit Date', dataType: 'date' },
@@ -162,7 +162,7 @@ export const payrollTemplate: BusinessTemplate = {
       name: '_Sales',
       columns: [
         { key: 'sale_id', name: 'Payslip ID', dataType: 'text', required: true },
-        { key: 'customer_id', name: 'Employee Name', dataType: 'text', required: true },
+        { key: 'customer_id', name: 'Employee Name', dataType: 'text', required: true, referenceTable: '_Customers', referenceKey: 'customer_id' },
         { key: 'sale_date', name: 'Pay Month Date', dataType: 'date', required: true },
         { key: 'subtotal', name: 'Gross Earnings', dataType: 'currency' },
         { key: 'discount', name: 'Statutory Deductions', dataType: 'currency' },
@@ -191,8 +191,8 @@ export const payrollTemplate: BusinessTemplate = {
       name: '_SaleItems',
       columns: [
         { key: 'sale_item_id', name: 'Item ID', dataType: 'text', required: true },
-        { key: 'sale_id', name: 'Payslip ID', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Component', dataType: 'text', required: true },
+        { key: 'sale_id', name: 'Payslip ID', dataType: 'text', required: true, referenceTable: '_Sales', referenceKey: 'sale_id' },
+        { key: 'product_id', name: 'Component', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Units', dataType: 'number' },
         { key: 'unit_price', name: 'Amount', dataType: 'currency' },
         { key: 'discount', name: 'Deductions', dataType: 'currency' },

@@ -100,7 +100,7 @@ export const hotelTemplate: BusinessTemplate = {
       name: '_Inventory',
       columns: [
         { key: 'inventory_id', name: 'Room No', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Room Category', dataType: 'text', required: true },
+        { key: 'product_id', name: 'Room Category', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Total Rooms', dataType: 'number' },
         { key: 'minimum_stock', name: 'Reserve Threshold', dataType: 'number' },
         { key: 'updated_at', name: 'Housekeeping Check', dataType: 'date' },
@@ -203,7 +203,7 @@ export const hotelTemplate: BusinessTemplate = {
       name: '_Sales',
       columns: [
         { key: 'sale_id', name: 'Folio ID', dataType: 'text', required: true },
-        { key: 'customer_id', name: 'Guest Name', dataType: 'text', required: true },
+        { key: 'customer_id', name: 'Guest Name', dataType: 'text', required: true, referenceTable: '_Customers', referenceKey: 'customer_id' },
         { key: 'sale_date', name: 'Check-in Date', dataType: 'date', required: true },
         { key: 'subtotal', name: 'Room Tariff', dataType: 'currency' },
         { key: 'discount', name: 'Discount', dataType: 'currency' },
@@ -232,8 +232,8 @@ export const hotelTemplate: BusinessTemplate = {
       name: '_SaleItems',
       columns: [
         { key: 'sale_item_id', name: 'Item ID', dataType: 'text', required: true },
-        { key: 'sale_id', name: 'Folio ID', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Room Category', dataType: 'text', required: true },
+        { key: 'sale_id', name: 'Folio ID', dataType: 'text', required: true, referenceTable: '_Sales', referenceKey: 'sale_id' },
+        { key: 'product_id', name: 'Room Category', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Nights Stayed', dataType: 'number' },
         { key: 'unit_price', name: 'Tariff / Night', dataType: 'currency' },
         { key: 'discount', name: 'Discount', dataType: 'currency' },

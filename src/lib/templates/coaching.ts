@@ -79,7 +79,7 @@ export const coachingTemplate: BusinessTemplate = {
       name: '_Inventory',
       columns: [
         { key: 'inventory_id', name: 'Kit ID', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Course Association', dataType: 'text', required: true },
+        { key: 'product_id', name: 'Course Association', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Study Material Kits in Stock', dataType: 'number' },
         { key: 'minimum_stock', name: 'Reorder Level', dataType: 'number' },
         { key: 'updated_at', name: 'Last Count', dataType: 'date' },
@@ -155,7 +155,7 @@ export const coachingTemplate: BusinessTemplate = {
       name: '_Sales',
       columns: [
         { key: 'sale_id', name: 'Receipt No', dataType: 'text', required: true },
-        { key: 'customer_id', name: 'Candidate Name', dataType: 'text', required: true },
+        { key: 'customer_id', name: 'Candidate Name', dataType: 'text', required: true, referenceTable: '_Customers', referenceKey: 'customer_id' },
         { key: 'sale_date', name: 'Payment Date', dataType: 'date', required: true },
         { key: 'subtotal', name: 'Installment Base', dataType: 'currency' },
         { key: 'discount', name: 'Scholarship Waiver', dataType: 'currency' },
@@ -184,8 +184,8 @@ export const coachingTemplate: BusinessTemplate = {
       name: '_SaleItems',
       columns: [
         { key: 'sale_item_id', name: 'Item ID', dataType: 'text', required: true },
-        { key: 'sale_id', name: 'Receipt No', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Course Code', dataType: 'text', required: true },
+        { key: 'sale_id', name: 'Receipt No', dataType: 'text', required: true, referenceTable: '_Sales', referenceKey: 'sale_id' },
+        { key: 'product_id', name: 'Course Code', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Installment No', dataType: 'number' },
         { key: 'unit_price', name: 'Installment Amount', dataType: 'currency' },
         { key: 'discount', name: 'Waiver', dataType: 'currency' },

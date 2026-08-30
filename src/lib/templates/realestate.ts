@@ -86,7 +86,7 @@ export const realestateTemplate: BusinessTemplate = {
       name: '_Inventory',
       columns: [
         { key: 'inventory_id', name: 'Flat / Unit No', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Unit Type ID', dataType: 'text', required: true },
+        { key: 'product_id', name: 'Unit Type ID', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Total Units in Inventory', dataType: 'number' },
         { key: 'minimum_stock', name: 'Vacant Units Threshold', dataType: 'number' },
         { key: 'updated_at', name: 'Last Inspection Date', dataType: 'date' },
@@ -162,7 +162,7 @@ export const realestateTemplate: BusinessTemplate = {
       name: '_Sales',
       columns: [
         { key: 'sale_id', name: 'Rent Receipt #', dataType: 'text', required: true },
-        { key: 'customer_id', name: 'Tenant Name', dataType: 'text', required: true },
+        { key: 'customer_id', name: 'Tenant Name', dataType: 'text', required: true, referenceTable: '_Customers', referenceKey: 'customer_id' },
         { key: 'sale_date', name: 'Rent Month Date', dataType: 'date', required: true },
         { key: 'subtotal', name: 'Monthly Rent', dataType: 'currency' },
         { key: 'discount', name: 'Advance Rebate', dataType: 'currency' },
@@ -191,8 +191,8 @@ export const realestateTemplate: BusinessTemplate = {
       name: '_SaleItems',
       columns: [
         { key: 'sale_item_id', name: 'Item ID', dataType: 'text', required: true },
-        { key: 'sale_id', name: 'Rent Receipt #', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Unit Type', dataType: 'text', required: true },
+        { key: 'sale_id', name: 'Rent Receipt #', dataType: 'text', required: true, referenceTable: '_Sales', referenceKey: 'sale_id' },
+        { key: 'product_id', name: 'Unit Type', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Months', dataType: 'number' },
         { key: 'unit_price', name: 'Rent Amount', dataType: 'currency' },
         { key: 'discount', name: 'Rebate', dataType: 'currency' },

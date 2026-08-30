@@ -4,12 +4,20 @@ import { useSettingsStore } from '../../stores/settingsStore';
 import { formatCurrency } from '../../lib/utils';
 import { getBusinessFlowType } from '../../types';
 import { getBusinessTerminology } from '../../lib/businessTerminology';
+import {
+  Sparkles,
+  TrendingUp,
+  DollarSign,
+  Users,
+  ArrowUpRight,
+  BarChart3
+} from 'lucide-react';
 import ReactECharts from 'echarts-for-react';
 
 export const AnalyticsView: React.FC = () => {
   const { sheets, appConfig } = useWorkbookStore();
   const { theme } = useSettingsStore();
-  const [activeTab, setActiveTab] = useState<'sales' | 'inventory' | 'customers' | 'products'>('sales');
+  const [activeTab, setActiveTab] = useState<'overview' | 'sales' | 'inventory' | 'customers' | 'products'>('overview');
 
   const flowType = getBusinessFlowType(appConfig?.businessType);
   const salesMeta = useMemo(() => getBusinessTerminology(flowType, '_Sales'), [flowType]);
@@ -303,6 +311,236 @@ export const AnalyticsView: React.FC = () => {
     };
   }, [productRows, currency, currencySymbol, theme]);
 
+  // Business Edition Intelligence Meta
+  const editionAnalyticsMeta = useMemo(() => {
+    switch (flowType) {
+      case 'taxi':
+        return {
+          title: 'Taxi & Cab Fleet Intelligence',
+          kpi1Label: 'Total Dispatched Trips',
+          kpi1Val: salesRows.length,
+          kpi2Label: 'Avg Fare Realization',
+          kpi2Val: aov,
+          kpi3Label: 'Fleet Active Cabs',
+          kpi3Val: productRows.length,
+          kpi4Label: 'Registered Passengers',
+          kpi4Val: customerRows.length,
+          chart1Title: 'Fare Revenue by Cab Category & Slab',
+          chart2Title: 'Trip Settlement Channels',
+        };
+      case 'hotel':
+        return {
+          title: 'Hotel & Hospitality Intelligence',
+          kpi1Label: 'Stay Folios Billed',
+          kpi1Val: salesRows.length,
+          kpi2Label: 'Avg Stay Folio Value',
+          kpi2Val: aov,
+          kpi3Label: 'Room Categories in Portfolio',
+          kpi3Val: productRows.length,
+          kpi4Label: 'Registered Hotel Guests',
+          kpi4Val: customerRows.length,
+          chart1Title: 'Revenue by Room Tier & Suite Type',
+          chart2Title: 'Folio Settlement Methods',
+        };
+      case 'school':
+        return {
+          title: 'School Management Intelligence',
+          kpi1Label: 'Total Fee Receipts',
+          kpi1Val: salesRows.length,
+          kpi2Label: 'Avg Term Fee Realization',
+          kpi2Val: aov,
+          kpi3Label: 'Fee Heads & Slabs',
+          kpi3Val: productRows.length,
+          kpi4Label: 'Enrolled Students Roster',
+          kpi4Val: customerRows.length,
+          chart1Title: 'Collection Share by Fee Head',
+          chart2Title: 'Fee Payment Modes',
+        };
+      case 'coaching':
+        return {
+          title: 'Coaching & Tuition Intelligence',
+          kpi1Label: 'Installment Receipts',
+          kpi1Val: salesRows.length,
+          kpi2Label: 'Avg Installment Size',
+          kpi2Val: aov,
+          kpi3Label: 'Courses & Batches',
+          kpi3Val: productRows.length,
+          kpi4Label: 'Enrolled Aspirants',
+          kpi4Val: customerRows.length,
+          chart1Title: 'Revenue by Exam Course & Batch',
+          chart2Title: 'Tuition Payment Channels',
+        };
+      case 'payroll':
+        return {
+          title: 'Company Payroll Intelligence',
+          kpi1Label: 'Monthly Payslips Disbursed',
+          kpi1Val: salesRows.length,
+          kpi2Label: 'Avg Monthly Salary',
+          kpi2Val: aov,
+          kpi3Label: 'Salary Structures',
+          kpi3Val: productRows.length,
+          kpi4Label: 'Active Headcount',
+          kpi4Val: customerRows.length,
+          chart1Title: 'Cost by Salary Structure & Grade',
+          chart2Title: 'Salary Disbursal Channels',
+        };
+      case 'gym':
+        return {
+          title: 'Gym & Fitness Intelligence',
+          kpi1Label: 'Member Passes Billed',
+          kpi1Val: salesRows.length,
+          kpi2Label: 'Avg Pass Value',
+          kpi2Val: aov,
+          kpi3Label: 'Plan Tiers & Packages',
+          kpi3Val: productRows.length,
+          kpi4Label: 'Active Gym Members',
+          kpi4Val: customerRows.length,
+          chart1Title: 'Revenue by Membership Plan Tier',
+          chart2Title: 'Subscription Payment Channels',
+        };
+      case 'hospital':
+        return {
+          title: 'Hospital & Healthcare Intelligence',
+          kpi1Label: 'OPD Encounters Billed',
+          kpi1Val: salesRows.length,
+          kpi2Label: 'Avg OPD Encounter Bill',
+          kpi2Val: aov,
+          kpi3Label: 'Procedures & Services',
+          kpi3Val: productRows.length,
+          kpi4Label: 'Registered Patients',
+          kpi4Val: customerRows.length,
+          chart1Title: 'Revenue by Procedure & Department',
+          chart2Title: 'OPD Settlement Channels',
+        };
+      case 'restaurant':
+        return {
+          title: 'Restaurant & Dining Intelligence',
+          kpi1Label: 'Table Orders (KOT) Billed',
+          kpi1Val: salesRows.length,
+          kpi2Label: 'Avg Table Check Size',
+          kpi2Val: aov,
+          kpi3Label: 'Active Dishes & Drinks',
+          kpi3Val: productRows.length,
+          kpi4Label: 'Dine-in Guests & Accounts',
+          kpi4Val: customerRows.length,
+          chart1Title: 'Revenue by Course & Department',
+          chart2Title: 'Order Settlement Methods',
+        };
+      case 'realestate':
+        return {
+          title: 'Real Estate & Rental Intelligence',
+          kpi1Label: 'Rent Receipts Issued',
+          kpi1Val: salesRows.length,
+          kpi2Label: 'Avg Monthly Lease Rent',
+          kpi2Val: aov,
+          kpi3Label: 'Rental Units in Portfolio',
+          kpi3Val: productRows.length,
+          kpi4Label: 'Contracted Tenants',
+          kpi4Val: customerRows.length,
+          chart1Title: 'Rental Revenue by Unit Category',
+          chart2Title: 'Rent Payment Channels',
+        };
+      case 'garage':
+        return {
+          title: 'Automobile Workshop Intelligence',
+          kpi1Label: 'Workshop Job Cards Delivered',
+          kpi1Val: salesRows.length,
+          kpi2Label: 'Avg Repair Job Bill',
+          kpi2Val: aov,
+          kpi3Label: 'Labor Packages & Spares',
+          kpi3Val: productRows.length,
+          kpi4Label: 'Vehicle Owners Directory',
+          kpi4Val: customerRows.length,
+          chart1Title: 'Revenue by Service Package & Repair',
+          chart2Title: 'Job Card Settlement Methods',
+        };
+      case 'salon':
+        return {
+          title: 'Salon & Spa Intelligence',
+          kpi1Label: 'Styling Sessions Billed',
+          kpi1Val: salesRows.length,
+          kpi2Label: 'Avg Appointment Bill',
+          kpi2Val: aov,
+          kpi3Label: 'Treatments & Cosmetic Products',
+          kpi3Val: productRows.length,
+          kpi4Label: 'Salon Clients Directory',
+          kpi4Val: customerRows.length,
+          chart1Title: 'Revenue by Treatment & Beauty Category',
+          chart2Title: 'Appointment Settlement Methods',
+        };
+      case 'retail':
+      default:
+        return {
+          title: `${appConfig?.businessType || 'Retail'} Business Intelligence`,
+          kpi1Label: 'Total Transactions',
+          kpi1Val: salesRows.length,
+          kpi2Label: 'Avg Transaction Value (AOV)',
+          kpi2Val: aov,
+          kpi3Label: 'Catalog SKUs',
+          kpi3Val: productRows.length,
+          kpi4Label: 'Customer Base',
+          kpi4Val: customerRows.length,
+          chart1Title: 'Revenue by Product Category',
+          chart2Title: 'Payment Methods Distribution',
+        };
+    }
+  }, [flowType, salesRows, productRows, customerRows, aov, appConfig?.businessType]);
+
+  // Dynamic Category Revenue Chart
+  const categoryRevenueOption = useMemo(() => {
+    const isDark = theme !== 'light';
+    const textColor = isDark ? '#94a3b8' : '#64748b';
+    const tooltipBg = isDark ? 'rgba(15, 23, 42, 0.94)' : 'rgba(255, 255, 255, 0.98)';
+    const tooltipBorder = isDark ? 'rgba(51, 65, 85, 0.6)' : 'rgba(203, 213, 225, 0.9)';
+    const tooltipText = isDark ? '#f8fafc' : '#0f172a';
+
+    const catRevMap: Record<string, number> = {};
+    saleItemRows.forEach((item) => {
+      const prod = productRows.find((p) => p.product_id === item.product_id);
+      const catName = prod?.category_id || 'General';
+      catRevMap[catName] = (catRevMap[catName] || 0) + Number(item.line_total || 0);
+    });
+
+    const data = Object.keys(catRevMap).length > 0
+      ? Object.entries(catRevMap).map(([name, value]) => ({ name, value }))
+      : categoryRows.length > 0
+      ? categoryRows.map((c, idx) => ({ name: c.name, value: (idx + 1) * 3500 }))
+      : productRows.slice(0, 5).map((p) => ({ name: p.name, value: Number(p.selling_price || 1000) * 5 }));
+
+    return {
+      tooltip: {
+        trigger: 'item',
+        backgroundColor: tooltipBg,
+        borderColor: tooltipBorder,
+        textStyle: { color: tooltipText, fontSize: 12 },
+        extraCssText: 'box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2); border-radius: 12px;',
+        formatter: (item: any) => {
+          return `<div style="font-weight:700;margin-bottom:2px">${item.name}</div>
+            <div style="font-family:monospace">${formatCurrency(item.value, currency, currencySymbol)} (${item.percent}%)</div>`;
+        },
+      },
+      legend: {
+        bottom: '0%',
+        type: 'scroll',
+        textStyle: { color: textColor, fontSize: 11 },
+      },
+      color: VIBRANT_PALETTE,
+      series: [
+        {
+          name: editionAnalyticsMeta.chart1Title,
+          type: 'pie',
+          radius: ['40%', '70%'],
+          itemStyle: {
+            borderRadius: 6,
+            borderColor: isDark ? 'rgba(15, 23, 42, 0.6)' : '#ffffff',
+            borderWidth: 2,
+          },
+          data,
+        },
+      ],
+    };
+  }, [saleItemRows, productRows, categoryRows, theme, currency, currencySymbol, editionAnalyticsMeta.chart1Title]);
+
   return (
     <div className="flex-1 overflow-y-auto p-6 space-y-6">
       {/* Top Header */}
@@ -314,6 +552,15 @@ export const AnalyticsView: React.FC = () => {
 
         {/* Tab Selector */}
         <div className="flex items-center gap-1 bg-muted/60 p-1.5 rounded-2xl border border-border">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-xl transition ${
+              activeTab === 'overview' ? 'bg-primary text-primary-foreground shadow-sm teal-glow-sm' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            <span>{editionAnalyticsMeta.title}</span>
+          </button>
           <button
             onClick={() => setActiveTab('sales')}
             className={`px-3.5 py-1.5 text-xs font-bold rounded-xl transition ${
@@ -349,6 +596,140 @@ export const AnalyticsView: React.FC = () => {
         </div>
       </div>
 
+      {/* Tab: Overview (Edition Intelligence Hub) */}
+      {activeTab === 'overview' && (
+        <div className="space-y-6">
+          {/* 4 Edition KPIs */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-gradient-to-br from-primary/15 via-card to-card border border-primary/30 rounded-2xl p-5 shadow-sm">
+              <div className="flex items-center justify-between text-muted-foreground mb-2">
+                <span className="text-xs font-semibold">Total Revenue Volume</span>
+                <div className="p-2 rounded-xl bg-primary/15 text-primary">
+                  <TrendingUp className="h-4 w-4" />
+                </div>
+              </div>
+              <div className="text-2xl font-extrabold text-foreground font-mono">
+                {formatCurrency(totalRevenue, currency, currencySymbol)}
+              </div>
+              <div className="text-[11px] text-emerald-500 font-semibold mt-1 flex items-center gap-1">
+                <ArrowUpRight className="h-3 w-3" />
+                <span>Real-time workbook sync</span>
+              </div>
+            </div>
+
+            <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+              <div className="flex items-center justify-between text-muted-foreground mb-2">
+                <span className="text-xs font-semibold">{editionAnalyticsMeta.kpi1Label}</span>
+                <div className="p-2 rounded-xl bg-indigo-500/15 text-indigo-400">
+                  <BarChart3 className="h-4 w-4" />
+                </div>
+              </div>
+              <div className="text-2xl font-extrabold text-foreground font-mono">
+                {editionAnalyticsMeta.kpi1Val}
+              </div>
+              <div className="text-[11px] text-muted-foreground mt-1">Recorded ledger transactions</div>
+            </div>
+
+            <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+              <div className="flex items-center justify-between text-muted-foreground mb-2">
+                <span className="text-xs font-semibold">{editionAnalyticsMeta.kpi2Label}</span>
+                <div className="p-2 rounded-xl bg-teal-500/15 text-teal-400">
+                  <DollarSign className="h-4 w-4" />
+                </div>
+              </div>
+              <div className="text-2xl font-extrabold text-foreground font-mono">
+                {formatCurrency(editionAnalyticsMeta.kpi2Val, currency, currencySymbol)}
+              </div>
+              <div className="text-[11px] text-muted-foreground mt-1">Average ticket realization</div>
+            </div>
+
+            <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+              <div className="flex items-center justify-between text-muted-foreground mb-2">
+                <span className="text-xs font-semibold">{editionAnalyticsMeta.kpi4Label}</span>
+                <div className="p-2 rounded-xl bg-purple-500/15 text-purple-400">
+                  <Users className="h-4 w-4" />
+                </div>
+              </div>
+              <div className="text-2xl font-extrabold text-foreground font-mono">
+                {editionAnalyticsMeta.kpi4Val}
+              </div>
+              <div className="text-[11px] text-muted-foreground mt-1">Active registered directory</div>
+            </div>
+          </div>
+
+          {/* 2 Charts Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-foreground">{editionAnalyticsMeta.chart1Title}</h3>
+                  <p className="text-xs text-muted-foreground">Portfolio revenue contribution</p>
+                </div>
+              </div>
+              <div className="h-72">
+                <ReactECharts option={categoryRevenueOption} style={{ height: '100%', width: '100%' }} />
+              </div>
+            </div>
+
+            <div className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-foreground">{editionAnalyticsMeta.chart2Title}</h3>
+                  <p className="text-xs text-muted-foreground">Payment channel settlement split</p>
+                </div>
+              </div>
+              <div className="h-72">
+                <ReactECharts option={paymentMethodOption} style={{ height: '100%', width: '100%' }} />
+              </div>
+            </div>
+          </div>
+
+          {/* Top Performers Bar Chart & Ranking Table */}
+          <div className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-foreground">Top Performing {prodMeta.sheetDisplayName}</h3>
+                <p className="text-xs text-muted-foreground">Ranked by total billing volume</p>
+              </div>
+            </div>
+            <div className="h-72">
+              <ReactECharts option={topProductsChartOption} style={{ height: '100%', width: '100%' }} />
+            </div>
+
+            <div className="overflow-x-auto pt-4 border-t border-border">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-border text-muted-foreground font-bold">
+                    <th className="py-2.5 px-3">Rank</th>
+                    <th className="py-2.5 px-3">{prodMeta.sheetDisplayName}</th>
+                    <th className="py-2.5 px-3 text-right">Units / Quantity</th>
+                    <th className="py-2.5 px-3 text-right">Total Revenue</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {topProducts.slice(0, 5).map((p, idx) => (
+                    <tr key={idx} className="hover:bg-muted/10">
+                      <td className="py-2 px-3">
+                        <span className={`inline-flex items-center justify-center h-5 w-5 rounded-full text-[10px] font-bold ${
+                          idx === 0 ? 'bg-amber-500/20 text-amber-500' : idx === 1 ? 'bg-slate-500/20 text-slate-400' : 'bg-muted text-muted-foreground'
+                        }`}>
+                          #{idx + 1}
+                        </span>
+                      </td>
+                      <td className="py-2 px-3 font-semibold text-foreground">{p.name}</td>
+                      <td className="py-2 px-3 text-right font-mono text-muted-foreground">{p.qty}</td>
+                      <td className="py-2 px-3 text-right font-mono font-bold text-primary">
+                        {formatCurrency(p.revenue, currency, currencySymbol)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Tab: Sales */}
       {activeTab === 'sales' && (
         <div className="space-y-6">
@@ -360,13 +741,13 @@ export const AnalyticsView: React.FC = () => {
               </div>
             </div>
             <div className="bg-card border border-border rounded-xl p-4">
-              <div className="text-xs text-muted-foreground font-medium">Average Order Value (AOV)</div>
+              <div className="text-xs text-muted-foreground font-medium">{editionAnalyticsMeta.kpi2Label}</div>
               <div className="text-2xl font-bold text-foreground mt-1">
                 {formatCurrency(aov, currency, currencySymbol)}
               </div>
             </div>
             <div className="bg-card border border-border rounded-xl p-4">
-              <div className="text-xs text-muted-foreground font-medium">Total Orders Placed</div>
+              <div className="text-xs text-muted-foreground font-medium">{editionAnalyticsMeta.kpi1Label}</div>
               <div className="text-2xl font-bold text-foreground mt-1">{salesRows.length}</div>
             </div>
           </div>

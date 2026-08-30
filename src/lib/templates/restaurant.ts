@@ -100,7 +100,7 @@ export const restaurantTemplate: BusinessTemplate = {
       name: '_Inventory',
       columns: [
         { key: 'inventory_id', name: 'Batch Stock ID', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Dish ID', dataType: 'text', required: true },
+        { key: 'product_id', name: 'Dish ID', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Portions Prepared Today', dataType: 'number' },
         { key: 'minimum_stock', name: 'Prep Threshold', dataType: 'number' },
         { key: 'updated_at', name: 'Kitchen Stock Time', dataType: 'date' },
@@ -185,8 +185,8 @@ export const restaurantTemplate: BusinessTemplate = {
     {
       name: '_Sales',
       columns: [
-        { key: 'sale_id', name: 'KOT Bill #', dataType: 'text', required: true },
-        { key: 'customer_id', name: 'Guest / Table', dataType: 'text', required: true },
+        { key: 'sale_id', name: 'Order / KOT ID', dataType: 'text', required: true },
+        { key: 'customer_id', name: 'Guest / Table Name', dataType: 'text', required: true, referenceTable: '_Customers', referenceKey: 'customer_id' },
         { key: 'sale_date', name: 'Order Date & Time', dataType: 'date', required: true },
         { key: 'subtotal', name: 'Food Subtotal', dataType: 'currency' },
         { key: 'discount', name: 'Happy Hour Concession', dataType: 'currency' },
@@ -215,8 +215,8 @@ export const restaurantTemplate: BusinessTemplate = {
       name: '_SaleItems',
       columns: [
         { key: 'sale_item_id', name: 'Item ID', dataType: 'text', required: true },
-        { key: 'sale_id', name: 'KOT Bill #', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Dish ID', dataType: 'text', required: true },
+        { key: 'sale_id', name: 'KOT Bill #', dataType: 'text', required: true, referenceTable: '_Sales', referenceKey: 'sale_id' },
+        { key: 'product_id', name: 'Dish ID', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Portions Ordered', dataType: 'number' },
         { key: 'unit_price', name: 'Price', dataType: 'currency' },
         { key: 'discount', name: 'Discount', dataType: 'currency' },

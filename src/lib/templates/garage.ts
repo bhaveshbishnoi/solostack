@@ -100,7 +100,7 @@ export const garageTemplate: BusinessTemplate = {
       name: '_Inventory',
       columns: [
         { key: 'inventory_id', name: 'Bin Shelf ID', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Part ID', dataType: 'text', required: true },
+        { key: 'product_id', name: 'Part ID', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Quantity in Store Room', dataType: 'number' },
         { key: 'minimum_stock', name: 'Minimum Stock', dataType: 'number' },
         { key: 'updated_at', name: 'Stock Checked', dataType: 'date' },
@@ -176,7 +176,7 @@ export const garageTemplate: BusinessTemplate = {
       name: '_Sales',
       columns: [
         { key: 'sale_id', name: 'Invoice #', dataType: 'text', required: true },
-        { key: 'customer_id', name: 'Vehicle Owner', dataType: 'text', required: true },
+        { key: 'customer_id', name: 'Vehicle Owner', dataType: 'text', required: true, referenceTable: '_Customers', referenceKey: 'customer_id' },
         { key: 'sale_date', name: 'Invoice Date', dataType: 'date', required: true },
         { key: 'subtotal', name: 'Parts & Labor Subtotal', dataType: 'currency' },
         { key: 'discount', name: 'Service Discount', dataType: 'currency' },
@@ -205,8 +205,8 @@ export const garageTemplate: BusinessTemplate = {
       name: '_SaleItems',
       columns: [
         { key: 'sale_item_id', name: 'Item ID', dataType: 'text', required: true },
-        { key: 'sale_id', name: 'Invoice #', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Service / Part', dataType: 'text', required: true },
+        { key: 'sale_id', name: 'Invoice #', dataType: 'text', required: true, referenceTable: '_Sales', referenceKey: 'sale_id' },
+        { key: 'product_id', name: 'Service / Part', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Qty', dataType: 'number' },
         { key: 'unit_price', name: 'Rate', dataType: 'currency' },
         { key: 'discount', name: 'Discount', dataType: 'currency' },

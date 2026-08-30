@@ -86,7 +86,7 @@ export const salonTemplate: BusinessTemplate = {
       name: '_Inventory',
       columns: [
         { key: 'inventory_id', name: 'Shelf Bin ID', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Product ID', dataType: 'text', required: true },
+        { key: 'product_id', name: 'Product ID', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Kits / Units in Stock', dataType: 'number' },
         { key: 'minimum_stock', name: 'Reorder Level', dataType: 'number' },
         { key: 'updated_at', name: 'Last Audited', dataType: 'date' },
@@ -162,7 +162,7 @@ export const salonTemplate: BusinessTemplate = {
       name: '_Sales',
       columns: [
         { key: 'sale_id', name: 'Appointment Bill #', dataType: 'text', required: true },
-        { key: 'customer_id', name: 'Client Name', dataType: 'text', required: true },
+        { key: 'customer_id', name: 'Client Name', dataType: 'text', required: true, referenceTable: '_Customers', referenceKey: 'customer_id' },
         { key: 'sale_date', name: 'Appointment Date', dataType: 'date', required: true },
         { key: 'subtotal', name: 'Services Subtotal', dataType: 'currency' },
         { key: 'discount', name: 'Membership Discount', dataType: 'currency' },
@@ -191,8 +191,8 @@ export const salonTemplate: BusinessTemplate = {
       name: '_SaleItems',
       columns: [
         { key: 'sale_item_id', name: 'Item ID', dataType: 'text', required: true },
-        { key: 'sale_id', name: 'Appointment Bill #', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Service Code', dataType: 'text', required: true },
+        { key: 'sale_id', name: 'Appointment Bill #', dataType: 'text', required: true, referenceTable: '_Sales', referenceKey: 'sale_id' },
+        { key: 'product_id', name: 'Service Code', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Sessions', dataType: 'number' },
         { key: 'unit_price', name: 'Service Price', dataType: 'currency' },
         { key: 'discount', name: 'Discount', dataType: 'currency' },

@@ -79,7 +79,7 @@ export const gymTemplate: BusinessTemplate = {
       name: '_Inventory',
       columns: [
         { key: 'inventory_id', name: 'Locker ID', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Tier Association', dataType: 'text', required: true },
+        { key: 'product_id', name: 'Tier Association', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Lockers Available', dataType: 'number' },
         { key: 'minimum_stock', name: 'Standby Reserve', dataType: 'number' },
         { key: 'updated_at', name: 'Last Checked', dataType: 'date' },
@@ -148,7 +148,7 @@ export const gymTemplate: BusinessTemplate = {
       name: '_Sales',
       columns: [
         { key: 'sale_id', name: 'Invoice ID', dataType: 'text', required: true },
-        { key: 'customer_id', name: 'Member Name', dataType: 'text', required: true },
+        { key: 'customer_id', name: 'Member Name', dataType: 'text', required: true, referenceTable: '_Customers', referenceKey: 'customer_id' },
         { key: 'sale_date', name: 'Activation Date', dataType: 'date', required: true },
         { key: 'subtotal', name: 'Plan Base Price', dataType: 'currency' },
         { key: 'discount', name: 'Promo Discount', dataType: 'currency' },
@@ -177,8 +177,8 @@ export const gymTemplate: BusinessTemplate = {
       name: '_SaleItems',
       columns: [
         { key: 'sale_item_id', name: 'Item ID', dataType: 'text', required: true },
-        { key: 'sale_id', name: 'Invoice ID', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Plan Code', dataType: 'text', required: true },
+        { key: 'sale_id', name: 'Invoice ID', dataType: 'text', required: true, referenceTable: '_Sales', referenceKey: 'sale_id' },
+        { key: 'product_id', name: 'Plan Code', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Duration Months', dataType: 'number' },
         { key: 'unit_price', name: 'Fee', dataType: 'currency' },
         { key: 'discount', name: 'Discount', dataType: 'currency' },

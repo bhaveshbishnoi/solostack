@@ -93,7 +93,7 @@ export const hospitalTemplate: BusinessTemplate = {
       name: '_Inventory',
       columns: [
         { key: 'inventory_id', name: 'Bed / Reagent ID', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Service Code', dataType: 'text', required: true },
+        { key: 'product_id', name: 'Service Code', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Available Slots / Reagents', dataType: 'number' },
         { key: 'minimum_stock', name: 'Safety Reserve', dataType: 'number' },
         { key: 'updated_at', name: 'Stock Check', dataType: 'date' },
@@ -162,7 +162,7 @@ export const hospitalTemplate: BusinessTemplate = {
       name: '_Sales',
       columns: [
         { key: 'sale_id', name: 'Encounter Bill #', dataType: 'text', required: true },
-        { key: 'customer_id', name: 'Patient Name', dataType: 'text', required: true },
+        { key: 'customer_id', name: 'Patient Name', dataType: 'text', required: true, referenceTable: '_Customers', referenceKey: 'customer_id' },
         { key: 'sale_date', name: 'Encounter Date', dataType: 'date', required: true },
         { key: 'subtotal', name: 'Consultation & Tests', dataType: 'currency' },
         { key: 'discount', name: 'Concession', dataType: 'currency' },
@@ -191,8 +191,8 @@ export const hospitalTemplate: BusinessTemplate = {
       name: '_SaleItems',
       columns: [
         { key: 'sale_item_id', name: 'Item ID', dataType: 'text', required: true },
-        { key: 'sale_id', name: 'Encounter Bill #', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Service Code', dataType: 'text', required: true },
+        { key: 'sale_id', name: 'Encounter Bill #', dataType: 'text', required: true, referenceTable: '_Sales', referenceKey: 'sale_id' },
+        { key: 'product_id', name: 'Service Code', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Qty', dataType: 'number' },
         { key: 'unit_price', name: 'Charge', dataType: 'currency' },
         { key: 'discount', name: 'Discount', dataType: 'currency' },

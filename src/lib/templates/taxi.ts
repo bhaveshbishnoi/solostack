@@ -114,7 +114,7 @@ export const taxiTemplate: BusinessTemplate = {
       name: '_Inventory',
       columns: [
         { key: 'inventory_id', name: 'Vehicle Reg ID', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Cab Model', dataType: 'text', required: true },
+        { key: 'product_id', name: 'Cab Model', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Active Cabs on Duty', dataType: 'number' },
         { key: 'minimum_stock', name: 'Standby Target', dataType: 'number' },
         { key: 'updated_at', name: 'Last Status Check', dataType: 'date' },
@@ -237,7 +237,7 @@ export const taxiTemplate: BusinessTemplate = {
       name: '_Sales',
       columns: [
         { key: 'sale_id', name: 'Trip ID', dataType: 'text', required: true },
-        { key: 'customer_id', name: 'Passenger Name', dataType: 'text', required: true },
+        { key: 'customer_id', name: 'Passenger Name', dataType: 'text', required: true, referenceTable: '_Customers', referenceKey: 'customer_id' },
         { key: 'sale_date', name: 'Trip Date', dataType: 'date', required: true },
         { key: 'subtotal', name: 'Base Fare', dataType: 'currency' },
         { key: 'discount', name: 'Promo Discount', dataType: 'currency' },
@@ -278,8 +278,8 @@ export const taxiTemplate: BusinessTemplate = {
       name: '_SaleItems',
       columns: [
         { key: 'sale_item_id', name: 'Item ID', dataType: 'text', required: true },
-        { key: 'sale_id', name: 'Trip ID', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Cab Slab', dataType: 'text', required: true },
+        { key: 'sale_id', name: 'Trip ID', dataType: 'text', required: true, referenceTable: '_Sales', referenceKey: 'sale_id' },
+        { key: 'product_id', name: 'Cab Slab', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Distance (km)', dataType: 'number' },
         { key: 'unit_price', name: 'Rate per km', dataType: 'currency' },
         { key: 'discount', name: 'Discount', dataType: 'currency' },

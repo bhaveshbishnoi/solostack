@@ -3,6 +3,7 @@ import { useWorkbookStore } from '../../stores/workbookStore';
 import { useUIStore } from '../../stores/uiStore';
 import { TableRow, getBusinessFlowType } from '../../types';
 import { getBusinessTerminology } from '../../lib/businessTerminology';
+import { formatCurrency } from '../../lib/utils';
 import {
   ArrowLeft,
   Save,
@@ -30,6 +31,7 @@ export const RecordFormPage: React.FC = () => {
   const [showTechnicalId, setShowTechnicalId] = useState(false);
 
   const currencySymbol = appConfig?.currencySymbol || '₹';
+  const currency = appConfig?.currency || 'INR';
 
   // Detect primary ID column
   const primaryIdKey = useMemo(() => {
@@ -93,8 +95,23 @@ export const RecordFormPage: React.FC = () => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
+  const handleBack = () => {
+    setActiveSheet(sheetName);
+    setTargetRecord(null);
+  };
+
   const handleSave = async (andAddAnother = false) => {
     try {
+      // Validate required fields
+      const missingRequired = currentSheet.columns
+        .filter((c) => c.required && c.key !== primaryIdKey && (!formData[c.key] || String(formData[c.key]).trim() === ''))
+        .map((c) => businessMeta.columnDisplayNames[c.key] || c.name || c.key);
+
+      if (missingRequired.length > 0) {
+        addNotification('warning', 'Missing Required Fields', `Please provide values for: ${missingRequired.join(', ')}`);
+        return;
+      }
+
       const nowIso = new Date().toISOString();
       const payload: TableRow = { ...formData };
 
@@ -151,10 +168,24 @@ export const RecordFormPage: React.FC = () => {
     }
   };
 
-  const handleBack = () => {
-    setActiveSheet(sheetName);
-    setTargetRecord(null);
-  };
+  // Keyboard shortcuts: Cmd+Enter to save, Esc to cancel
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        e.preventDefault();
+        if (e.shiftKey && mode === 'add') {
+          handleSave(true);
+        } else {
+          handleSave(false);
+        }
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        handleBack();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [formData, mode, currentSheet]);
 
   const sheetTitle = sheetName.replace('_', '');
 
@@ -178,6 +209,8 @@ export const RecordFormPage: React.FC = () => {
               <span>Section: {businessMeta.sheetDisplayName}</span>
               <span>•</span>
               <span className="font-mono">{sheetName}</span>
+              <span>•</span>
+              <span className="text-primary font-medium">⌘+Enter to save</span>
             </div>
           </div>
         </div>
@@ -270,18 +303,53 @@ export const RecordFormPage: React.FC = () => {
                       </div>
                     ) : col.dataType === 'currency' || col.key.includes('price') || col.key.includes('amount') || col.key.includes('total') ? (
                       /* Currency input */
-                      <div className="relative">
-                        <span className="absolute left-3 top-2 text-xs text-muted-foreground font-bold">
-                          {currencySymbol}
-                        </span>
+                      <div>
+                        <div className="relative">
+                          <span className="absolute left-3 top-2 text-xs text-muted-foreground font-bold">
+                            {currencySymbol}
+                          </span>
+                          <input
+                            type="number"
+                            step="any"
+                            value={val}
+                            onChange={(e) => handleChange(col.key, Number(e.target.value))}
+                            className="w-full pl-8 pr-3 py-2 bg-muted/30 border border-border rounded-xl text-foreground font-mono focus:outline-none focus:border-primary font-bold"
+                            placeholder="0.00"
+                          />
+                        </div>
+                        {col.key === 'selling_price' && Number(val) > 0 && Number(formData['purchase_price']) > 0 && (
+                          <div className="text-[10px] text-emerald-500 font-semibold mt-1 flex items-center justify-between">
+                            <span>Margin: {formatCurrency(Number(val) - Number(formData['purchase_price']), currency, currencySymbol)}</span>
+                            <span>{(((Number(val) - Number(formData['purchase_price'])) / Number(val)) * 100).toFixed(1)}% profit</span>
+                          </div>
+                        )}
+                      </div>
+                    ) : col.key === 'status' ? (
+                      /* Status input with quick-pick chips */
+                      <div className="space-y-1.5">
                         <input
-                          type="number"
-                          step="any"
+                          type="text"
                           value={val}
-                          onChange={(e) => handleChange(col.key, Number(e.target.value))}
-                          className="w-full pl-8 pr-3 py-2 bg-muted/30 border border-border rounded-xl text-foreground font-mono focus:outline-none focus:border-primary font-bold"
-                          placeholder="0.00"
+                          onChange={(e) => handleChange(col.key, e.target.value)}
+                          placeholder="e.g. active, pending..."
+                          className="w-full px-3 py-2 bg-muted/30 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary font-medium"
                         />
+                        <div className="flex flex-wrap gap-1">
+                          {['active', 'inactive', 'available', 'occupied', 'pending', 'completed'].map((statusOpt) => (
+                            <button
+                              key={statusOpt}
+                              type="button"
+                              onClick={() => handleChange(col.key, statusOpt)}
+                              className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border transition ${
+                                String(val).toLowerCase() === statusOpt
+                                  ? 'bg-primary/20 border-primary text-primary'
+                                  : 'bg-muted/40 border-border text-muted-foreground hover:text-foreground'
+                              }`}
+                            >
+                              {statusOpt}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     ) : col.dataType === 'number' || col.key.includes('stock') || col.key.includes('quantity') || col.key.includes('rate') ? (
                       /* Numeric input */
