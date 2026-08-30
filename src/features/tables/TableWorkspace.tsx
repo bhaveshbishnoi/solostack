@@ -27,7 +27,8 @@ import {
   SlidersHorizontal,
   CheckSquare,
   Square,
-  Sigma
+  Sigma,
+  Printer
 } from 'lucide-react';
 
 interface TableWorkspaceProps {
@@ -50,7 +51,7 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
   } = useWorkbookStore();
 
   const { tableDensity, setTableDensity, sheetHiddenColumns, setSheetHiddenColumns } = useSettingsStore();
-  const { addNotification, setTargetRecord } = useUIStore();
+  const { addNotification, setTargetRecord, openModal } = useUIStore();
 
   const currentSheet = sheets[sheetName];
   const [searchQuery, setSearchQuery] = useState('');
@@ -747,8 +748,22 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
                 })}
 
                 {/* Row Action Buttons */}
-                <td className="w-36 min-w-[144px] px-3 py-1.5 text-center border-border/60">
+                <td className={`${sheetName === '_Sales' ? 'w-44 min-w-[176px]' : 'w-36 min-w-[144px]'} px-3 py-1.5 text-center border-border/60`}>
                   <div className="inline-flex items-center gap-1.5">
+                    {sheetName === '_Sales' && (
+                      <button
+                        onClick={() => {
+                          openModal('invoice_preview', {
+                            saleId: row[primaryIdKey] || row.sale_id,
+                            saleRecord: row,
+                          });
+                        }}
+                        className="p-1.5 text-emerald-500 bg-emerald-500/10 hover:bg-emerald-500 hover:text-white border border-emerald-500/25 rounded-lg transition shadow-2xs inline-flex items-center justify-center"
+                        title="View / Print Tax Invoice"
+                      >
+                        <Printer className="h-4 w-4" />
+                      </button>
+                    )}
                     <button
                       onClick={() => {
                         setTargetRecord({ sheetName, rowId: row[primaryIdKey], row, mode: 'view' });

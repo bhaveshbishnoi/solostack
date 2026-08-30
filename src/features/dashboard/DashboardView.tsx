@@ -33,7 +33,8 @@ import {
   Activity,
   Utensils,
   Home,
-  Wrench
+  Wrench,
+  Printer
 } from 'lucide-react';
 
 export const DashboardView: React.FC = () => {
@@ -1213,7 +1214,8 @@ export const DashboardView: React.FC = () => {
                       <th className="py-2.5 px-3 border-r border-border/60">{dashboardMeta.recentColCustomer}</th>
                       <th className="py-2.5 px-3 border-r border-border/60">{dashboardMeta.recentColDate}</th>
                       <th className="py-2.5 px-3 border-r border-border/60">Payment Method</th>
-                      <th className="py-2.5 px-3 text-right">{dashboardMeta.recentColAmount}</th>
+                      <th className="py-2.5 px-3 border-r border-border/60 text-right">{dashboardMeta.recentColAmount}</th>
+                      <th className="py-2.5 px-3 text-center w-16">Invoice</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/60">
@@ -1226,8 +1228,17 @@ export const DashboardView: React.FC = () => {
                             {sale.paymentMethod}
                           </span>
                         </td>
-                        <td className="py-2 px-3 text-right font-mono font-bold text-foreground">
+                        <td className="py-2 px-3 text-right font-mono font-bold text-foreground border-r border-border/60">
                           {formatCurrency(sale.amount, currency, currencySymbol)}
+                        </td>
+                        <td className="py-2 px-3 text-center">
+                          <button
+                            onClick={() => openModal('invoice_preview', { saleId: sale.id })}
+                            className="p-1 text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/15 rounded-md transition inline-flex items-center justify-center"
+                            title="View / Print Tax Invoice"
+                          >
+                            <Printer className="h-3.5 w-3.5" />
+                          </button>
                         </td>
                       </tr>
                     ))}

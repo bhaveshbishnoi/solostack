@@ -244,5 +244,12 @@ describe('Workbook Lifecycle & Excel Parity Engine', () => {
     expect(state.sheets['_Products'].rows.length).toBeGreaterThan(0);
     expect(state.sheets['_Customers'].rows[0].name).toBe('Suresh Verma');
   });
+
+  it('correctly converts numeric invoice amounts to words', async () => {
+    const { numberToWords } = await import('../src/lib/utils');
+    expect(numberToWords(0)).toBe('Zero Only');
+    expect(numberToWords(4500)).toBe('Four Thousand Five Hundred Only');
+    expect(numberToWords(152350)).toBe('One Lakh Fifty Two Thousand Three Hundred and Fifty Only');
+  });
 });
 

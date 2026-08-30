@@ -7,7 +7,8 @@ import {
   Edit2,
   Trash2,
   Check,
-  X
+  X,
+  Printer
 } from 'lucide-react';
 
 import { getBusinessTerminology } from '../../lib/businessTerminology';
@@ -15,7 +16,7 @@ import { getBusinessFlowType } from '../../types';
 
 export const RecordDetailPage: React.FC = () => {
   const { sheets, deleteRow, saveWorkbook, appConfig, setActiveSheet } = useWorkbookStore();
-  const { targetRecord, setTargetRecord, addNotification } = useUIStore();
+  const { targetRecord, setTargetRecord, addNotification, openModal } = useUIStore();
 
   const sheetName = targetRecord?.sheetName || '_Products';
   const currentSheet = sheets[sheetName];
@@ -86,6 +87,21 @@ export const RecordDetailPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          {sheetName === '_Sales' && (
+            <button
+              onClick={() => {
+                openModal('invoice_preview', {
+                  saleId: idVal,
+                  saleRecord: row,
+                });
+              }}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-sm transition"
+              title="View / Print Official Tax Invoice"
+            >
+              <Printer className="h-3.5 w-3.5" />
+              <span>Tax Invoice</span>
+            </button>
+          )}
           <button
             onClick={handleEdit}
             className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-sm teal-glow-sm transition"
