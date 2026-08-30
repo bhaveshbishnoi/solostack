@@ -10,6 +10,9 @@ import {
   X
 } from 'lucide-react';
 
+import { getBusinessTerminology } from '../../lib/businessTerminology';
+import { getBusinessFlowType } from '../../types';
+
 export const RecordDetailPage: React.FC = () => {
   const { sheets, deleteRow, saveWorkbook, appConfig, setActiveSheet } = useWorkbookStore();
   const { targetRecord, setTargetRecord, addNotification } = useUIStore();
@@ -17,6 +20,9 @@ export const RecordDetailPage: React.FC = () => {
   const sheetName = targetRecord?.sheetName || '_Products';
   const currentSheet = sheets[sheetName];
   const row = targetRecord?.row || {};
+
+  const currentFlow = getBusinessFlowType(appConfig?.businessType);
+  const businessMeta = getBusinessTerminology(currentFlow, sheetName);
 
   const currencySymbol = appConfig?.currencySymbol || '₹';
   const currency = appConfig?.currency || 'INR';
@@ -68,11 +74,13 @@ export const RecordDetailPage: React.FC = () => {
             <ArrowLeft className="h-4 w-4" />
           </button>
           <div>
-            <h1 className="text-base font-bold text-foreground font-mono">
-              {row['name'] ? `${row['name']} (${idVal})` : `${sheetTitle} Detail: ${idVal}`}
+            <h1 className="text-base font-bold text-foreground">
+              {row['name'] ? `${row['name']}` : `${businessMeta.sheetDisplayName} Entry`}
             </h1>
-            <div className="text-[10px] text-muted-foreground">
-              Table: <span className="font-mono">{sheetName}</span>
+            <div className="text-[10px] text-muted-foreground flex items-center gap-1.5 mt-0.5">
+              <span>Section: {businessMeta.sheetDisplayName}</span>
+              <span>•</span>
+              <span className="font-mono">{sheetName}</span>
             </div>
           </div>
         </div>
@@ -147,7 +155,7 @@ export const RecordDetailPage: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                    <span className="font-semibold">{col.name}</span>
+                    <span className="font-semibold">{businessMeta.columnDisplayNames[col.key] || col.name}</span>
                     <span className="font-mono text-[10px] opacity-60 uppercase">{col.dataType}</span>
                   </div>
                   <div className="text-sm font-bold text-foreground break-words font-mono">

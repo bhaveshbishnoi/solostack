@@ -2,7 +2,8 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useWorkbookStore } from '../../stores/workbookStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useUIStore } from '../../stores/uiStore';
-import { ColumnDef, DataType, TableRow } from '../../types';
+import { ColumnDef, DataType, TableRow, getBusinessFlowType } from '../../types';
+import { getBusinessTerminology } from '../../lib/businessTerminology';
 import { formatCurrency, formatDate } from '../../lib/utils';
 import {
   Search,
@@ -31,20 +32,6 @@ import {
 interface TableWorkspaceProps {
   sheetName: string;
 }
-
-// Smart default visible columns to prevent cluttered tables
-const RECOMMENDED_VISIBLE_COLUMNS: Record<string, string[]> = {
-  _Products: ['product_id', 'sku', 'name', 'selling_price', 'minimum_stock', 'status'],
-  _Categories: ['category_id', 'name', 'description', 'status'],
-  _Inventory: ['inventory_id', 'product_id', 'quantity', 'minimum_stock', 'updated_at'],
-  _Customers: ['customer_id', 'name', 'phone', 'email', 'gstin'],
-  _Suppliers: ['supplier_id', 'name', 'phone', 'email', 'gstin'],
-  _Sales: ['sale_id', 'customer_id', 'sale_date', 'total', 'payment_method', 'status'],
-  _SaleItems: ['sale_item_id', 'sale_id', 'product_id', 'quantity', 'unit_price', 'line_total'],
-  _Expenses: ['expense_id', 'date', 'category', 'description', 'amount', 'payment_method'],
-  _StockMovements: ['movement_id', 'product_id', 'type', 'quantity', 'reference_id', 'created_at'],
-  _GST: ['gst_rate_id', 'name', 'rate', 'is_default'],
-};
 
 export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => {
   const {
@@ -88,22 +75,32 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
   const [editValue, setEditValue] = useState<string>('');
   const editInputRef = useRef<HTMLInputElement>(null);
 
+  const currentFlow = getBusinessFlowType(appConfig?.businessType);
+  const businessMeta = useMemo(() => {
+    return getBusinessTerminology(currentFlow, sheetName);
+  }, [currentFlow, sheetName]);
+
   // Initialize hidden columns from settings or recommended defaults
   const hiddenColumns = useMemo(() => {
     if (!currentSheet) return [];
     if (sheetHiddenColumns[sheetName]) {
       return sheetHiddenColumns[sheetName];
     }
-    const recommended = RECOMMENDED_VISIBLE_COLUMNS[sheetName];
-    if (recommended) {
+    const recommended = businessMeta.recommendedVisibleColumns;
+    if (recommended && recommended.length > 0) {
       return currentSheet.columns.map((c) => c.key).filter((k) => !recommended.includes(k));
+    }
+    // Default smart filter: Automatically hide technical database IDs (ending in _id or 'id')
+    const idCols = currentSheet.columns.filter((c) => c.key.endsWith('_id') || c.key === 'id').map((c) => c.key);
+    if (idCols.length > 0 && idCols.length < currentSheet.columns.length) {
+      return idCols;
     }
     // For custom tables with more than 6 columns, keep first 6
     if (currentSheet.columns.length > 6) {
       return currentSheet.columns.slice(6).map((c) => c.key);
     }
     return [];
-  }, [currentSheet, sheetName, sheetHiddenColumns]);
+  }, [currentSheet, sheetName, sheetHiddenColumns, businessMeta]);
 
   // Primary ID key detection
   const primaryIdKey = useMemo(() => {
@@ -115,6 +112,19 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
 
   const currencySymbol = appConfig?.currencySymbol || '₹';
   const currency = appConfig?.currency || 'INR';
+
+  const getColumnHeaderTitle = (col: ColumnDef) => {
+    if (businessMeta.columnDisplayNames[col.key]) {
+      return businessMeta.columnDisplayNames[col.key];
+    }
+    if (col.name && !col.name.includes('_')) {
+      return col.name;
+    }
+    return col.key
+      .split('_')
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
+  };
 
   // Visible columns
   const visibleColumns = useMemo(() => {
@@ -306,14 +316,24 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
   };
 
   const handleResetRecommended = () => {
-    const recommended = RECOMMENDED_VISIBLE_COLUMNS[sheetName];
-    if (recommended) {
+    const recommended = businessMeta.recommendedVisibleColumns;
+    if (recommended && recommended.length > 0) {
       const hidden = currentSheet.columns.map((c) => c.key).filter((k) => !recommended.includes(k));
       setSheetHiddenColumns(sheetName, hidden);
     } else {
-      setSheetHiddenColumns(sheetName, currentSheet.columns.slice(6).map((c) => c.key));
+      const idCols = currentSheet.columns.filter((c) => c.key.endsWith('_id') || c.key === 'id').map((c) => c.key);
+      setSheetHiddenColumns(sheetName, idCols);
     }
-    addNotification('info', 'Columns Reset', 'Restored recommended columns');
+    addNotification('info', 'Columns Reset', 'Restored clean recommended columns without ID clutter');
+  };
+
+  const handleHideAllIds = () => {
+    const idCols = currentSheet.columns
+      .map((c) => c.key)
+      .filter((k) => k.endsWith('_id') || k === 'id');
+    const newHidden = Array.from(new Set([...hiddenColumns, ...idCols]));
+    setSheetHiddenColumns(sheetName, newHidden);
+    addNotification('info', 'Technical IDs Hidden', 'Internal database IDs hidden from view');
   };
 
   const handleHideColumnDirectly = (colKey: string) => {
@@ -391,15 +411,21 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
       {/* Table Toolbar */}
       <div className="h-14 border-b border-border bg-card/60 backdrop-blur-md px-6 flex items-center justify-between gap-4 shrink-0 select-none">
         <div className="flex items-center gap-3">
-          <h2 className="text-base font-extrabold text-foreground capitalize tracking-tight">
-            {sheetName.replace('_', '')}
-          </h2>
-          <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-mono font-medium">
-            {processedRows.length} rows
-          </span>
-          <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-mono font-semibold">
-            {visibleColumns.length}/{currentSheet.columns.length} cols
-          </span>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-extrabold text-foreground tracking-tight">
+                {businessMeta.sheetDisplayName}
+              </h2>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground font-mono">
+                {sheetName}
+              </span>
+            </div>
+            <div className="text-[11px] text-muted-foreground flex items-center gap-2 mt-0.5">
+              <span>{processedRows.length} total records</span>
+              <span>•</span>
+              <span className="text-primary font-medium">{visibleColumns.length}/{currentSheet.columns.length} columns visible</span>
+            </div>
+          </div>
         </div>
 
         {/* Center: Search */}
@@ -408,7 +434,7 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
             <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
             <input
               type="text"
-              placeholder={`Search ${processedRows.length} records in ${sheetName.replace('_', '')}...`}
+              placeholder={`Search in ${businessMeta.sheetDisplayName}...`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-1.5 text-xs bg-muted/40 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary placeholder:text-muted-foreground shadow-2xs"
@@ -476,10 +502,10 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
               setActiveSheet('record_form');
             }}
             className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-sm teal-glow-sm transition"
-            title="Open dedicated full page to create new record"
+            title={`Create new record in ${businessMeta.sheetDisplayName}`}
           >
             <Plus className="h-3.5 w-3.5" />
-            <span>Add Record</span>
+            <span>{businessMeta.addRecordTitle}</span>
           </button>
         </div>
       </div>
@@ -490,7 +516,7 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
           {/* Sticky Table Header */}
           <thead className="sticky top-0 bg-muted/60 dark:bg-card border-b border-border z-10 select-none shadow-xs backdrop-blur-md">
             <tr>
-              <th className="w-12 px-3 py-2.5 font-mono text-[10px] text-muted-foreground border-r border-border/70 text-center">
+              <th className="w-14 px-3 py-2.5 font-mono text-[10px] text-muted-foreground border-r border-border/70 text-center">
                 #
               </th>
               {visibleColumns.map((col) => {
@@ -519,7 +545,7 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
                           />
                           <button
                             onClick={() => handleRenameColumnSubmit(col.key)}
-                            className="text-primary hover:opacity-80 p-0.5"
+                            className="p-1 text-primary hover:bg-primary/10 rounded"
                           >
                             <Check className="h-3 w-3" />
                           </button>
@@ -529,7 +555,7 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
                           onClick={() => handleSort(col.key)}
                           className="flex items-center gap-1.5 cursor-pointer flex-1 truncate"
                         >
-                          <span className="truncate">{col.name}</span>
+                          <span className="truncate font-bold">{getColumnHeaderTitle(col)}</span>
                           <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-muted text-muted-foreground uppercase">
                             {col.dataType}
                           </span>
@@ -817,21 +843,30 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
 
             {/* Quick Actions & Column Search */}
             <div className="space-y-3 text-xs">
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center justify-between gap-1.5 flex-wrap">
+                <button
+                  type="button"
+                  onClick={handleHideAllIds}
+                  className="px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 rounded-lg border border-amber-500/20 transition text-[11px] font-bold flex items-center gap-1"
+                  title="Hide internal system IDs (product_id, category_id, etc.)"
+                >
+                  <EyeOff className="h-3 w-3 inline" />
+                  Hide System IDs
+                </button>
+                <button
+                  type="button"
+                  onClick={handleResetRecommended}
+                  className="px-2.5 py-1 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg border border-primary/20 transition text-[11px] font-semibold flex items-center gap-1"
+                >
+                  <RotateCcw className="h-3 w-3 inline" />
+                  Recommended
+                </button>
                 <button
                   type="button"
                   onClick={handleShowAllColumns}
                   className="px-2.5 py-1 bg-muted/60 hover:bg-muted text-foreground rounded-lg border border-border transition text-[11px] font-semibold"
                 >
                   Show All ({currentSheet.columns.length})
-                </button>
-                <button
-                  type="button"
-                  onClick={handleResetRecommended}
-                  className="px-2.5 py-1 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg border border-primary/20 transition text-[11px] font-semibold"
-                >
-                  <RotateCcw className="h-3 w-3 inline mr-1" />
-                  Recommended
                 </button>
               </div>
 
@@ -852,7 +887,8 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
                   .filter((c) =>
                     !columnSearchFilter.trim() ||
                     c.name.toLowerCase().includes(columnSearchFilter.toLowerCase()) ||
-                    c.key.toLowerCase().includes(columnSearchFilter.toLowerCase())
+                    c.key.toLowerCase().includes(columnSearchFilter.toLowerCase()) ||
+                    getColumnHeaderTitle(c).toLowerCase().includes(columnSearchFilter.toLowerCase())
                   )
                   .map((col) => {
                     const isVisible = !hiddenColumns.includes(col.key);
@@ -869,9 +905,14 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
                           ) : (
                             <Square className="h-4 w-4 text-muted-foreground" />
                           )}
-                          <span className={`text-xs ${isVisible ? 'font-bold text-foreground' : 'text-muted-foreground'}`}>
-                            {col.name}
-                          </span>
+                          <div>
+                            <span className={`text-xs ${isVisible ? 'font-bold text-foreground' : 'text-muted-foreground'}`}>
+                              {getColumnHeaderTitle(col)}
+                            </span>
+                            <span className="text-[10px] font-mono text-muted-foreground ml-1.5 opacity-70">
+                              ({col.key})
+                            </span>
+                          </div>
                         </div>
 
                         <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground uppercase">

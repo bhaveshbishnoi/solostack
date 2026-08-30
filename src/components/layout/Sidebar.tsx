@@ -50,6 +50,8 @@ export const Sidebar: React.FC = () => {
           productsTitle: 'Medicines & Drugs',
           inventoryTitle: 'Batches & Expiry',
           customersTitle: 'Patients & Clients',
+          suppliersTitle: 'Pharma Distributors',
+          salesTitle: 'Dispensed Rx Ledger',
         };
       case 'wholesale':
         return {
@@ -59,6 +61,8 @@ export const Sidebar: React.FC = () => {
           productsTitle: 'Wholesale Catalog',
           inventoryTitle: 'Warehouse Inventory',
           customersTitle: 'B2B Client Accounts',
+          suppliersTitle: 'Manufacturers',
+          salesTitle: 'B2B Invoices Ledger',
         };
       case 'services':
         return {
@@ -68,6 +72,8 @@ export const Sidebar: React.FC = () => {
           productsTitle: 'Billable Services',
           inventoryTitle: 'Deliverables Pool',
           customersTitle: 'Clients & Retainers',
+          suppliersTitle: 'Contractors',
+          salesTitle: 'Client Invoices Ledger',
         };
       case 'manufacturing':
         return {
@@ -77,6 +83,8 @@ export const Sidebar: React.FC = () => {
           productsTitle: 'Assemblies & Goods',
           inventoryTitle: 'Raw Materials & Stock',
           customersTitle: 'Distributors & Buyers',
+          suppliersTitle: 'Material Suppliers',
+          salesTitle: 'Production Orders',
         };
       case 'taxi':
         return {
@@ -86,6 +94,8 @@ export const Sidebar: React.FC = () => {
           productsTitle: 'Cab Rates & Slabs',
           inventoryTitle: 'Vehicle Fleet Status',
           customersTitle: 'Passengers & Accounts',
+          suppliersTitle: 'Drivers & Fleet Owners',
+          salesTitle: 'Trips & Dispatch Ledger',
         };
       case 'hotel':
         return {
@@ -95,6 +105,8 @@ export const Sidebar: React.FC = () => {
           productsTitle: 'Rooms & Tariffs',
           inventoryTitle: 'Room Occupancy Status',
           customersTitle: 'Guests & Folios',
+          suppliersTitle: 'Vendors & Supplies',
+          salesTitle: 'Stay Folios Ledger',
         };
       case 'school':
         return {
@@ -104,6 +116,8 @@ export const Sidebar: React.FC = () => {
           productsTitle: 'Fee Heads & Slabs',
           inventoryTitle: 'Academic Assets',
           customersTitle: 'Students Roster',
+          suppliersTitle: 'Teachers & Academic Staff',
+          salesTitle: 'Fee Receipts Ledger',
         };
       case 'coaching':
         return {
@@ -113,6 +127,8 @@ export const Sidebar: React.FC = () => {
           productsTitle: 'Courses & Batches',
           inventoryTitle: 'Study Material Kits',
           customersTitle: 'Enrolled Students',
+          suppliersTitle: 'Instructors & Mentors',
+          salesTitle: 'Installments Ledger',
         };
       case 'payroll':
         return {
@@ -122,6 +138,8 @@ export const Sidebar: React.FC = () => {
           productsTitle: 'Salary Structures',
           inventoryTitle: 'Staff Allowances Pool',
           customersTitle: 'Employees Roster',
+          suppliersTitle: 'Contractors & Consultants',
+          salesTitle: 'Monthly Payslips Ledger',
         };
       case 'gym':
         return {
@@ -131,6 +149,8 @@ export const Sidebar: React.FC = () => {
           productsTitle: 'Membership Plans',
           inventoryTitle: 'Gym Equipment & Lockers',
           customersTitle: 'Active Members',
+          suppliersTitle: 'Personal Trainers',
+          salesTitle: 'Subscriptions Ledger',
         };
       case 'hospital':
         return {
@@ -140,6 +160,8 @@ export const Sidebar: React.FC = () => {
           productsTitle: 'Medical Procedures & OPD',
           inventoryTitle: 'Pharmacy & Bed Status',
           customersTitle: 'Patients Registry',
+          suppliersTitle: 'Doctors & Specialists',
+          salesTitle: 'OPD Encounters Ledger',
         };
       case 'retail':
       default:
@@ -150,6 +172,8 @@ export const Sidebar: React.FC = () => {
           productsTitle: 'Store Products',
           inventoryTitle: 'Store Inventory',
           customersTitle: 'Customers',
+          suppliersTitle: 'Suppliers',
+          salesTitle: 'Sales Ledger',
         };
     }
   }, [flowType]);
@@ -258,10 +282,10 @@ export const Sidebar: React.FC = () => {
             <button
               onClick={() => setActiveSheet('_Suppliers')}
               className={navItemClass('_Suppliers')}
-              title="Suppliers"
+              title={flowMeta.suppliersTitle}
             >
               <Building2 className="h-4 w-4 shrink-0" />
-              {!isSidebarCollapsed && <span>Suppliers</span>}
+              {!isSidebarCollapsed && <span>{flowMeta.suppliersTitle}</span>}
             </button>
           </div>
         </div>
@@ -286,10 +310,10 @@ export const Sidebar: React.FC = () => {
             <button
               onClick={() => setActiveSheet('_Sales')}
               className={navItemClass('_Sales')}
-              title="Transactions History"
+              title={flowMeta.salesTitle}
             >
               <Receipt className="h-4 w-4 shrink-0" />
-              {!isSidebarCollapsed && <span>Ledger / History</span>}
+              {!isSidebarCollapsed && <span>{flowMeta.salesTitle}</span>}
             </button>
           </div>
         </div>

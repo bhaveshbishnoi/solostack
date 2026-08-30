@@ -1,14 +1,17 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useWorkbookStore } from '../../stores/workbookStore';
 import { useUIStore } from '../../stores/uiStore';
-import { TableRow } from '../../types';
+import { TableRow, getBusinessFlowType } from '../../types';
+import { getBusinessTerminology } from '../../lib/businessTerminology';
 import {
   ArrowLeft,
   Save,
   Plus,
   CheckCircle2,
   Check,
-  X
+  X,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react';
 
 export const RecordFormPage: React.FC = () => {
@@ -18,6 +21,13 @@ export const RecordFormPage: React.FC = () => {
   const sheetName = targetRecord?.sheetName || '_Products';
   const mode = targetRecord?.mode || 'add';
   const currentSheet = sheets[sheetName];
+
+  const currentFlow = getBusinessFlowType(appConfig?.businessType);
+  const businessMeta = useMemo(() => {
+    return getBusinessTerminology(currentFlow, sheetName);
+  }, [currentFlow, sheetName]);
+
+  const [showTechnicalId, setShowTechnicalId] = useState(false);
 
   const currencySymbol = appConfig?.currencySymbol || '₹';
 
@@ -161,11 +171,13 @@ export const RecordFormPage: React.FC = () => {
             <ArrowLeft className="h-4 w-4" />
           </button>
           <div>
-            <h1 className="text-base font-bold text-foreground capitalize">
-              {mode === 'edit' ? `Edit ${sheetTitle} Record` : `Add New ${sheetTitle}`}
+            <h1 className="text-base font-bold text-foreground">
+              {mode === 'edit' ? businessMeta.editRecordTitle : businessMeta.addRecordTitle}
             </h1>
-            <div className="text-[10px] text-muted-foreground">
-              Table: <span className="font-mono">{sheetName}</span>
+            <div className="text-[10px] text-muted-foreground flex items-center gap-1.5 mt-0.5">
+              <span>Section: {businessMeta.sheetDisplayName}</span>
+              <span>•</span>
+              <span className="font-mono">{sheetName}</span>
             </div>
           </div>
         </div>
@@ -191,7 +203,7 @@ export const RecordFormPage: React.FC = () => {
             className="flex items-center gap-1.5 px-4 py-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-sm teal-glow-sm transition"
           >
             <Save className="h-3.5 w-3.5" />
-            <span>Save Record</span>
+            <span>{mode === 'edit' ? 'Save Changes' : businessMeta.addRecordTitle}</span>
           </button>
         </div>
       </div>
@@ -207,127 +219,143 @@ export const RecordFormPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
-            {currentSheet.columns.map((col) => {
-              const isIdCol = col.key === primaryIdKey;
-              const val = formData[col.key] ?? '';
+            {currentSheet.columns
+              .filter((col) => col.key !== primaryIdKey)
+              .map((col) => {
+                const val = formData[col.key] ?? '';
+                const fieldLabel = businessMeta.columnDisplayNames[col.key] || col.name || col.key;
 
-              return (
-                <div
-                  key={col.key}
-                  className={
-                    col.key.includes('description') || col.key.includes('address') || col.key.includes('notes')
-                      ? 'md:col-span-2'
-                      : ''
-                  }
-                >
-                  <label className="block font-semibold text-foreground mb-1 flex items-center justify-between">
-                    <span>
-                      {col.name} {col.required && <span className="text-destructive">*</span>}
-                    </span>
-                    <span className="text-[10px] font-mono text-muted-foreground uppercase">
-                      {col.dataType}
-                    </span>
-                  </label>
-
-                  {/* ID field */}
-                  {isIdCol ? (
-                    <div className="relative">
-                      <input
-                        disabled={mode === 'edit'}
-                        type="text"
-                        value={val}
-                        onChange={(e) => handleChange(col.key, e.target.value)}
-                        className="w-full px-3 py-2 bg-muted/40 border border-border rounded-xl text-foreground font-mono focus:outline-none focus:border-primary"
-                      />
-                      {mode === 'add' && (
-                        <span className="absolute right-3 top-2.5 text-[10px] text-primary font-bold">
-                          Auto-Increment
-                        </span>
-                      )}
-                    </div>
-                  ) : col.dataType === 'boolean' ? (
-                    /* Boolean toggle */
-                    <div className="flex items-center gap-2 pt-1">
-                      <button
-                        type="button"
-                        onClick={() => handleChange(col.key, !val)}
-                        className={`px-3 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1.5 transition ${
-                          val
-                            ? 'bg-primary/15 border-primary text-primary teal-glow-sm'
-                            : 'border-border text-muted-foreground bg-muted/20'
-                        }`}
-                      >
-                        {val ? (
-                          <>
-                            <Check className="h-3.5 w-3.5" />
-                            <span>Active / Enabled</span>
-                          </>
-                        ) : (
-                          <>
-                            <X className="h-3.5 w-3.5" />
-                            <span>Inactive / Disabled</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  ) : col.dataType === 'currency' || col.key.includes('price') || col.key.includes('amount') || col.key.includes('total') ? (
-                    /* Currency input */
-                    <div className="relative">
-                      <span className="absolute left-3 top-2 text-xs text-muted-foreground font-bold">
-                        {currencySymbol}
+                return (
+                  <div
+                    key={col.key}
+                    className={
+                      col.key.includes('description') || col.key.includes('address') || col.key.includes('notes')
+                        ? 'md:col-span-2'
+                        : ''
+                    }
+                  >
+                    <label className="block font-bold text-foreground mb-1 flex items-center justify-between">
+                      <span>
+                        {fieldLabel} {col.required && <span className="text-destructive">*</span>}
                       </span>
+                      <span className="text-[10px] font-mono text-muted-foreground uppercase">
+                        {col.dataType}
+                      </span>
+                    </label>
+
+                    {col.dataType === 'boolean' ? (
+                      /* Boolean toggle */
+                      <div className="flex items-center gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => handleChange(col.key, !val)}
+                          className={`px-3 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1.5 transition ${
+                            val
+                              ? 'bg-primary/15 border-primary text-primary teal-glow-sm'
+                              : 'border-border text-muted-foreground bg-muted/20'
+                          }`}
+                        >
+                          {val ? (
+                            <>
+                              <Check className="h-3.5 w-3.5" />
+                              <span>Active / Enabled</span>
+                            </>
+                          ) : (
+                            <>
+                              <X className="h-3.5 w-3.5" />
+                              <span>Inactive / Disabled</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    ) : col.dataType === 'currency' || col.key.includes('price') || col.key.includes('amount') || col.key.includes('total') ? (
+                      /* Currency input */
+                      <div className="relative">
+                        <span className="absolute left-3 top-2 text-xs text-muted-foreground font-bold">
+                          {currencySymbol}
+                        </span>
+                        <input
+                          type="number"
+                          step="any"
+                          value={val}
+                          onChange={(e) => handleChange(col.key, Number(e.target.value))}
+                          className="w-full pl-8 pr-3 py-2 bg-muted/30 border border-border rounded-xl text-foreground font-mono focus:outline-none focus:border-primary font-bold"
+                          placeholder="0.00"
+                        />
+                      </div>
+                    ) : col.dataType === 'number' || col.key.includes('stock') || col.key.includes('quantity') || col.key.includes('rate') ? (
+                      /* Numeric input */
                       <input
                         type="number"
                         step="any"
                         value={val}
                         onChange={(e) => handleChange(col.key, Number(e.target.value))}
-                        className="w-full pl-8 pr-3 py-2 bg-muted/30 border border-border rounded-xl text-foreground font-mono focus:outline-none focus:border-primary"
+                        className="w-full px-3 py-2 bg-muted/30 border border-border rounded-xl text-foreground font-mono focus:outline-none focus:border-primary font-bold"
+                        placeholder="0"
                       />
-                    </div>
-                  ) : col.dataType === 'number' || col.key.includes('stock') || col.key.includes('quantity') || col.key.includes('rate') ? (
-                    /* Numeric input */
-                    <input
-                      type="number"
-                      step="any"
-                      value={val}
-                      onChange={(e) => handleChange(col.key, Number(e.target.value))}
-                      className="w-full px-3 py-2 bg-muted/30 border border-border rounded-xl text-foreground font-mono focus:outline-none focus:border-primary"
-                    />
-                  ) : col.dataType === 'date' || col.key.includes('date') ? (
-                    /* Date input */
-                    <input
-                      type="date"
-                      value={String(val).split('T')[0]}
-                      onChange={(e) => handleChange(col.key, e.target.value)}
-                      className="w-full px-3 py-2 bg-muted/30 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary"
-                    />
-                  ) : col.key === 'category_id' && sheets['_Categories'] ? (
-                    /* Category dropdown */
-                    <select
-                      value={val}
-                      onChange={(e) => handleChange(col.key, e.target.value)}
-                      className="w-full px-3 py-2 bg-muted/30 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary"
-                    >
-                      <option value="">Select Category</option>
-                      {sheets['_Categories'].rows.map((cat) => (
-                        <option key={cat.category_id} value={cat.category_id}>
-                          {cat.name}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    /* Default text input */
-                    <input
-                      type="text"
-                      value={val}
-                      onChange={(e) => handleChange(col.key, e.target.value)}
-                      placeholder={`Enter ${col.name.toLowerCase()}...`}
-                      className="w-full px-3 py-2 bg-muted/30 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary"
-                    />
-                  )}
+                    ) : col.dataType === 'date' || col.key.includes('date') ? (
+                      /* Date input */
+                      <input
+                        type="date"
+                        value={String(val).split('T')[0]}
+                        onChange={(e) => handleChange(col.key, e.target.value)}
+                        className="w-full px-3 py-2 bg-muted/30 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary"
+                      />
+                    ) : col.key === 'category_id' && sheets['_Categories'] ? (
+                      /* Category dropdown */
+                      <select
+                        value={val}
+                        onChange={(e) => handleChange(col.key, e.target.value)}
+                        className="w-full px-3 py-2 bg-muted/30 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary"
+                      >
+                        <option value="">Select Category</option>
+                        {sheets['_Categories'].rows.map((cat) => (
+                          <option key={cat.category_id} value={cat.category_id}>
+                            {cat.name}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      /* Default text input */
+                      <input
+                        type="text"
+                        value={val}
+                        onChange={(e) => handleChange(col.key, e.target.value)}
+                        placeholder={`Enter ${fieldLabel.toLowerCase()}...`}
+                        className="w-full px-3 py-2 bg-muted/30 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary"
+                      />
+                    )}
+                  </div>
+                );
+              })}
+          </div>
+
+          {/* Collapsible Technical ID Reference */}
+          <div className="pt-2 border-t border-border/50">
+            <button
+              type="button"
+              onClick={() => setShowTechnicalId(!showTechnicalId)}
+              className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition font-medium"
+            >
+              {showTechnicalId ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+              <span>Technical Database Identifier ({primaryIdKey}: <span className="font-mono text-primary font-bold">{formData[primaryIdKey] || 'Auto-incremented'}</span>)</span>
+            </button>
+
+            {showTechnicalId && (
+              <div className="mt-2.5 p-3 bg-muted/20 border border-border rounded-xl text-xs space-y-1.5">
+                <div className="flex justify-between items-center text-[11px] text-muted-foreground">
+                  <span>System Primary ID Key: {primaryIdKey}</span>
+                  <span className="text-primary font-bold">{mode === 'edit' ? 'Locked ID' : 'Auto-Increment'}</span>
                 </div>
-              );
-            })}
+                <input
+                  disabled={mode === 'edit'}
+                  type="text"
+                  value={formData[primaryIdKey] ?? ''}
+                  onChange={(e) => handleChange(primaryIdKey, e.target.value)}
+                  className="w-full px-3 py-1.5 bg-muted/40 border border-border rounded-lg text-foreground font-mono text-xs focus:outline-none focus:border-primary"
+                />
+              </div>
+            )}
           </div>
 
           {/* Bottom Actions */}

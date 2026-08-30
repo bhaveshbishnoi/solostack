@@ -1,11 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useWorkbookStore } from '../../stores/workbookStore';
 import { useUIStore } from '../../stores/uiStore';
 import { X, PlusCircle, Package } from 'lucide-react';
+import { getBusinessTerminology } from '../../lib/businessTerminology';
+import { getBusinessFlowType } from '../../types';
 
 export const AddProductModal: React.FC = () => {
   const { activeModal, closeModal, addNotification } = useUIStore();
   const { sheets, addRow, saveWorkbook, appConfig } = useWorkbookStore();
+
+  const currentFlow = getBusinessFlowType(appConfig?.businessType);
+  const businessMeta = useMemo(() => {
+    return getBusinessTerminology(currentFlow, '_Products');
+  }, [currentFlow]);
 
   const isOpen = activeModal === 'add_product';
   const categoryRows = sheets['_Categories']?.rows || [];
@@ -85,7 +92,7 @@ export const AddProductModal: React.FC = () => {
         <div className="flex items-center justify-between border-b border-border pb-3">
           <div className="flex items-center gap-2">
             <Package className="h-5 w-5 text-primary" />
-            <h3 className="text-base font-bold text-foreground">Add New Product</h3>
+            <h3 className="text-base font-bold text-foreground">{businessMeta.addRecordTitle}</h3>
           </div>
           <button onClick={closeModal} className="text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
@@ -94,36 +101,40 @@ export const AddProductModal: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
           <div>
-            <label className="block font-medium text-foreground mb-1">Product Name *</label>
+            <label className="block font-semibold text-foreground mb-1">
+              {businessMeta.columnDisplayNames.name || 'Product / Item Name'} *
+            </label>
             <input
               required
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Wireless Mouse M350"
-              className="w-full px-3 py-2 bg-muted/50 border border-border rounded-lg text-foreground focus:outline-none focus:border-primary"
+              placeholder={`Enter ${businessMeta.sheetDisplayName.toLowerCase()} name...`}
+              className="w-full px-3 py-2 bg-muted/50 border border-border rounded-lg text-foreground focus:outline-none focus:border-primary font-medium"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-medium text-foreground mb-1">SKU / Code</label>
+              <label className="block font-semibold text-foreground mb-1">
+                {businessMeta.columnDisplayNames.sku || 'Code / Plate #'}
+              </label>
               <input
                 type="text"
                 value={sku}
                 onChange={(e) => setSku(e.target.value)}
-                placeholder="e.g. LOGI-M350"
-                className="w-full px-3 py-2 bg-muted/50 border border-border rounded-lg text-foreground focus:outline-none focus:border-primary"
+                placeholder="e.g. Code, Model, Plate #"
+                className="w-full px-3 py-2 bg-muted/50 border border-border rounded-lg text-foreground focus:outline-none focus:border-primary font-mono"
               />
             </div>
             <div>
-              <label className="block font-medium text-foreground mb-1">Category</label>
+              <label className="block font-semibold text-foreground mb-1">Category / Group</label>
               <select
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
                 className="w-full px-3 py-2 bg-muted/50 border border-border rounded-lg text-foreground focus:outline-none focus:border-primary"
               >
-                <option value="">General</option>
+                <option value="">Standard Category</option>
                 {categoryRows.map((cat) => (
                   <option key={cat.category_id} value={cat.category_id}>
                     {cat.name}
@@ -135,18 +146,22 @@ export const AddProductModal: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block font-medium text-foreground mb-1">Purchase Price</label>
+              <label className="block font-semibold text-foreground mb-1">
+                {businessMeta.columnDisplayNames.purchase_price || 'Cost / Base Payout'}
+              </label>
               <input
                 type="number"
                 min="0"
                 step="any"
                 value={purchasePrice}
                 onChange={(e) => setPurchasePrice(Number(e.target.value))}
-                className="w-full px-3 py-2 bg-muted/50 border border-border rounded-lg text-foreground focus:outline-none focus:border-primary"
+                className="w-full px-3 py-2 bg-muted/50 border border-border rounded-lg text-foreground focus:outline-none focus:border-primary font-mono"
               />
             </div>
             <div>
-              <label className="block font-medium text-foreground mb-1">Selling Price *</label>
+              <label className="block font-semibold text-foreground mb-1">
+                {businessMeta.columnDisplayNames.selling_price || 'Rate / Price'} *
+              </label>
               <input
                 required
                 type="number"
@@ -154,7 +169,7 @@ export const AddProductModal: React.FC = () => {
                 step="any"
                 value={sellingPrice}
                 onChange={(e) => setSellingPrice(Number(e.target.value))}
-                className="w-full px-3 py-2 bg-muted/50 border border-border rounded-lg text-foreground focus:outline-none focus:border-primary"
+                className="w-full px-3 py-2 bg-muted/50 border border-border rounded-lg text-foreground focus:outline-none focus:border-primary font-bold font-mono"
               />
             </div>
           </div>
