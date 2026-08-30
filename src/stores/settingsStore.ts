@@ -14,11 +14,15 @@ interface SettingsState {
   invoiceFooterNote: string;
   defaultPaymentMethod: string;
   receiptAutoPrint: boolean;
+  lastWorkbookPath: string | null;
+  hasCompletedOnboarding: boolean;
 
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
   setAutoSave: (enabled: boolean, interval?: number) => void;
   setTableDensity: (density: 'compact' | 'normal' | 'comfortable') => void;
   setSheetHiddenColumns: (sheetName: string, hiddenCols: string[]) => void;
+  setLastWorkbookPath: (path: string | null) => void;
+  setHasCompletedOnboarding: (completed: boolean) => void;
   setInvoicePreferences: (prefs: {
     invoiceFooterNote?: string;
     defaultPaymentMethod?: string;
@@ -48,10 +52,30 @@ export const useSettingsStore = create<SettingsState>((set) => {
     invoiceFooterNote: (typeof window !== 'undefined' && localStorage.getItem('exdrow_invoice_footer')) || 'Thank you for your business! Goods once sold are subject to store policy.',
     defaultPaymentMethod: (typeof window !== 'undefined' && localStorage.getItem('exdrow_default_payment')) || 'Cash',
     receiptAutoPrint: (typeof window !== 'undefined' && localStorage.getItem('exdrow_autoprint') === 'true') || false,
+    lastWorkbookPath: (typeof window !== 'undefined' && localStorage.getItem('exdrow_last_workbook_path')) || null,
+    hasCompletedOnboarding: (typeof window !== 'undefined' && localStorage.getItem('exdrow_has_onboarded') === 'true'),
     businessAddress: '123 Market Road, Suite 400',
     businessPhone: '+91 98765 43210',
     businessEmail: 'contact@mybusiness.local',
     businessGstin: '27AAAAA0000A1Z5',
+
+    setLastWorkbookPath: (path) => {
+      if (typeof window !== 'undefined') {
+        if (path) {
+          localStorage.setItem('exdrow_last_workbook_path', path);
+        } else {
+          localStorage.removeItem('exdrow_last_workbook_path');
+        }
+      }
+      set({ lastWorkbookPath: path });
+    },
+
+    setHasCompletedOnboarding: (hasCompletedOnboarding) => {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('exdrow_has_onboarded', String(hasCompletedOnboarding));
+      }
+      set({ hasCompletedOnboarding });
+    },
 
     setTheme: (theme) => {
       if (typeof window !== 'undefined') {

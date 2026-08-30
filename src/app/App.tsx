@@ -33,7 +33,14 @@ export const App: React.FC = () => {
     saveWorkbook,
   } = useWorkbookStore();
 
-  const { theme, autoSaveEnabled, autoSaveIntervalSeconds } = useSettingsStore();
+  const {
+    theme,
+    autoSaveEnabled,
+    autoSaveIntervalSeconds,
+    lastWorkbookPath,
+    hasCompletedOnboarding,
+  } = useSettingsStore();
+  const { openWorkbook } = useWorkbookStore();
   const { openModal, addNotification } = useUIStore();
 
   // Apply dark theme class to <html>
@@ -66,12 +73,32 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [saveWorkbook, addNotification]);
 
-  // Auto-open Welcome Modal if no workbook is loaded
+  // On App Launch: Auto-restore last opened workbook, or show welcome modal strictly ONCE for brand new users
   useEffect(() => {
-    if (!metadata) {
-      openModal('welcome');
-    }
-  }, [metadata, openModal]);
+    let isMounted = true;
+
+    const restoreLastWorkbookOrShowOnboarding = async () => {
+      if (lastWorkbookPath && !metadata) {
+        try {
+          await openWorkbook(lastWorkbookPath);
+          return;
+        } catch (err) {
+          console.warn('Could not auto-reload previous workbook:', err);
+        }
+      }
+
+      // Strictly show welcome popup ONETIME if user has never onboarded
+      if (!hasCompletedOnboarding && !metadata && isMounted) {
+        openModal('welcome');
+      }
+    };
+
+    restoreLastWorkbookOrShowOnboarding();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Debounced Auto-Save
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);

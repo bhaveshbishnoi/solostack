@@ -355,7 +355,7 @@ export const DashboardView: React.FC = () => {
               {flowType === 'services' && <Briefcase className="h-3 w-3 text-amber-400" />}
               {flowType === 'manufacturing' && <Factory className="h-3 w-3 text-cyan-400" />}
               {flowType === 'retail' && <Store className="h-3 w-3 text-primary" />}
-              <span>{appConfig?.businessType || 'Retail Store'} Flow</span>
+              <span>{appConfig?.businessType || 'Retail'} Edition</span>
             </span>
           </div>
           <p className="text-xs text-muted-foreground">
@@ -376,8 +376,22 @@ export const DashboardView: React.FC = () => {
             onClick={() => setActiveSheet('new_sale')}
             className="flex items-center gap-2 px-4 py-2 text-xs bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-md teal-glow transition font-bold"
           >
-            <ShoppingCart className="h-4 w-4" />
-            <span>Open Business Flow (POS)</span>
+            {flowType === 'pharmacy' && <Stethoscope className="h-4 w-4" />}
+            {flowType === 'wholesale' && <Truck className="h-4 w-4" />}
+            {flowType === 'services' && <Briefcase className="h-4 w-4" />}
+            {flowType === 'manufacturing' && <Factory className="h-4 w-4" />}
+            {flowType === 'retail' && <ShoppingCart className="h-4 w-4" />}
+            <span>
+              {flowType === 'pharmacy'
+                ? 'Prescribe & Dispense'
+                : flowType === 'wholesale'
+                ? 'New B2B Order'
+                : flowType === 'services'
+                ? 'Bill Client Deliverable'
+                : flowType === 'manufacturing'
+                ? 'Production Console'
+                : 'Counter POS'}
+            </span>
           </button>
         </div>
       </div>

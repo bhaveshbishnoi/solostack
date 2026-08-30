@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { workbookService } from '../services/workbookService';
+import { useSettingsStore } from './settingsStore';
 import { AppConfig, BackupInfo, ColumnDef, CustomTableDef, SaveStatus, SheetData, TableRow, WorkbookMetadata } from '../types';
 
 interface WorkbookState {
@@ -121,6 +122,10 @@ export const useWorkbookStore = create<WorkbookState>((set, get) => ({
         appConfig: config,
       });
 
+      // Save workbook path and onboarding status to local settings
+      useSettingsStore.getState().setLastWorkbookPath(metadata.filePath);
+      useSettingsStore.getState().setHasCompletedOnboarding(true);
+
       // Auto-load backup list
       try {
         const backups = await workbookService.listBackups(filePath);
@@ -176,6 +181,10 @@ export const useWorkbookStore = create<WorkbookState>((set, get) => ({
         isSaving: false,
         appConfig,
       });
+
+      // Save workbook path and onboarding status to local settings
+      useSettingsStore.getState().setLastWorkbookPath(metadata.filePath);
+      useSettingsStore.getState().setHasCompletedOnboarding(true);
 
       if (typeof filePathOrFile === 'string') {
         const backups = await workbookService.listBackups(filePathOrFile);

@@ -1,13 +1,13 @@
 import React from 'react';
 import { useWorkbookStore } from '../../stores/workbookStore';
 import { useUIStore } from '../../stores/uiStore';
+import { getBusinessFlowType } from '../../types';
 import {
   LayoutDashboard,
   Package,
   Boxes,
   Users,
   Building2,
-  ShoppingCart,
   Receipt,
   Percent,
   Wallet,
@@ -19,12 +19,70 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertTriangle,
-  Layers
+  Layers,
+  Store,
+  Truck,
+  Stethoscope,
+  Briefcase,
+  Factory
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
-  const { sheets, activeSheetName, setActiveSheet } = useWorkbookStore();
+  const { sheets, activeSheetName, setActiveSheet, appConfig } = useWorkbookStore();
   const { isSidebarCollapsed, toggleSidebar } = useUIStore();
+
+  const flowType = getBusinessFlowType(appConfig?.businessType);
+
+  const flowMeta = React.useMemo(() => {
+    switch (flowType) {
+      case 'pharmacy':
+        return {
+          editionName: 'Pharmacy Rx',
+          opTitle: 'Prescribe & Dispense',
+          opIcon: Stethoscope,
+          productsTitle: 'Medicines & Drugs',
+          inventoryTitle: 'Batches & Expiry',
+          customersTitle: 'Patients & Clients',
+        };
+      case 'wholesale':
+        return {
+          editionName: 'Wholesale B2B',
+          opTitle: 'B2B Order & Dispatch',
+          opIcon: Truck,
+          productsTitle: 'Wholesale Catalog',
+          inventoryTitle: 'Warehouse Inventory',
+          customersTitle: 'B2B Client Accounts',
+        };
+      case 'services':
+        return {
+          editionName: 'Services & Retainers',
+          opTitle: 'Bill Client / Retainer',
+          opIcon: Briefcase,
+          productsTitle: 'Billable Services',
+          inventoryTitle: 'Deliverables Pool',
+          customersTitle: 'Clients & Retainers',
+        };
+      case 'manufacturing':
+        return {
+          editionName: 'Manufacturing BOM',
+          opTitle: 'Production Run (BOM)',
+          opIcon: Factory,
+          productsTitle: 'Assemblies & Goods',
+          inventoryTitle: 'Raw Materials & Stock',
+          customersTitle: 'Distributors & Buyers',
+        };
+      case 'retail':
+      default:
+        return {
+          editionName: 'Retail POS',
+          opTitle: 'Point of Sale (POS)',
+          opIcon: Store,
+          productsTitle: 'Store Products',
+          inventoryTitle: 'Store Inventory',
+          customersTitle: 'Customers',
+        };
+    }
+  }, [flowType]);
 
   // Count low stock items for badge
   const inventorySheet = sheets['_Inventory'];
@@ -76,18 +134,18 @@ export const Sidebar: React.FC = () => {
         {/* Business Group */}
         <div>
           {!isSidebarCollapsed && (
-            <div className="text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider px-2 mb-1">
-              Business
+            <div className="text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider px-2 mb-1 flex items-center justify-between">
+              <span>{flowMeta.editionName}</span>
             </div>
           )}
           <div className="space-y-0.5">
             <button
               onClick={() => setActiveSheet('_Products')}
               className={navItemClass('_Products')}
-              title="Products"
+              title={flowMeta.productsTitle}
             >
               <Package className="h-4 w-4 shrink-0" />
-              {!isSidebarCollapsed && <span>Products</span>}
+              {!isSidebarCollapsed && <span>{flowMeta.productsTitle}</span>}
             </button>
 
             <button
@@ -102,12 +160,12 @@ export const Sidebar: React.FC = () => {
             <button
               onClick={() => setActiveSheet('_Inventory')}
               className={navItemClass('_Inventory')}
-              title="Inventory"
+              title={flowMeta.inventoryTitle}
             >
               <Boxes className="h-4 w-4 shrink-0" />
               {!isSidebarCollapsed && (
                 <div className="flex-1 flex items-center justify-between">
-                  <span>Inventory</span>
+                  <span>{flowMeta.inventoryTitle}</span>
                   {lowStockCount > 0 && (
                     <span className="flex items-center gap-1 text-[10px] px-1.5 py-0.2 bg-amber-500/20 text-amber-500 rounded-full font-bold">
                       <AlertTriangle className="h-3 w-3" />
@@ -121,10 +179,10 @@ export const Sidebar: React.FC = () => {
             <button
               onClick={() => setActiveSheet('_Customers')}
               className={navItemClass('_Customers')}
-              title="Customers"
+              title={flowMeta.customersTitle}
             >
               <Users className="h-4 w-4 shrink-0" />
-              {!isSidebarCollapsed && <span>Customers</span>}
+              {!isSidebarCollapsed && <span>{flowMeta.customersTitle}</span>}
             </button>
 
             <button
@@ -138,30 +196,30 @@ export const Sidebar: React.FC = () => {
           </div>
         </div>
 
-        {/* Sales Group */}
+        {/* Operations Group */}
         <div>
           {!isSidebarCollapsed && (
             <div className="text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider px-2 mb-1">
-              Sales & Orders
+              Operations
             </div>
           )}
           <div className="space-y-0.5">
             <button
               onClick={() => setActiveSheet('new_sale')}
               className={navItemClass('new_sale')}
-              title="New Sale (POS)"
+              title={flowMeta.opTitle}
             >
-              <ShoppingCart className="h-4 w-4 shrink-0 text-emerald-500" />
-              {!isSidebarCollapsed && <span className="font-semibold">New Sale (POS)</span>}
+              <flowMeta.opIcon className="h-4 w-4 shrink-0 text-emerald-500" />
+              {!isSidebarCollapsed && <span className="font-bold">{flowMeta.opTitle}</span>}
             </button>
 
             <button
               onClick={() => setActiveSheet('_Sales')}
               className={navItemClass('_Sales')}
-              title="Sales History"
+              title="Transactions History"
             >
               <Receipt className="h-4 w-4 shrink-0" />
-              {!isSidebarCollapsed && <span>Sales History</span>}
+              {!isSidebarCollapsed && <span>Ledger / History</span>}
             </button>
           </div>
         </div>

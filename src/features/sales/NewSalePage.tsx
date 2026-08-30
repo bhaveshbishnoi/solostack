@@ -3,7 +3,7 @@ import { useWorkbookStore } from '../../stores/workbookStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useUIStore } from '../../stores/uiStore';
 import { formatCurrency, formatDate } from '../../lib/utils';
-import { BusinessFlowType, getBusinessFlowType } from '../../types';
+import { getBusinessFlowType } from '../../types';
 import {
   ArrowLeft,
   ShoppingCart,
@@ -50,9 +50,49 @@ export const NewSalePage: React.FC = () => {
   const { defaultPaymentMethod } = useSettingsStore();
   const { addNotification } = useUIStore();
 
-  // Active business flow mode (defaults to businessType in config)
-  const defaultFlow = getBusinessFlowType(appConfig?.businessType);
-  const [currentFlow, setCurrentFlow] = useState<BusinessFlowType>(defaultFlow);
+  // Active business edition is determined strictly by the user's business type
+  const currentFlow = getBusinessFlowType(appConfig?.businessType);
+
+  const editionInfo = useMemo(() => {
+    switch (currentFlow) {
+      case 'pharmacy':
+        return {
+          title: 'Pharmacy Rx & Medicine Dispensing',
+          badge: 'Pharmacy Edition',
+          icon: Stethoscope,
+          iconColor: 'text-emerald-500',
+        };
+      case 'wholesale':
+        return {
+          title: 'Wholesale B2B Order & Dispatch',
+          badge: 'Wholesale B2B Edition',
+          icon: Truck,
+          iconColor: 'text-indigo-400',
+        };
+      case 'services':
+        return {
+          title: 'Client Invoicing & Services Retainers',
+          badge: 'Services Edition',
+          icon: Briefcase,
+          iconColor: 'text-amber-400',
+        };
+      case 'manufacturing':
+        return {
+          title: 'Manufacturing & BOM Assembly Console',
+          badge: 'Manufacturing Edition',
+          icon: Factory,
+          iconColor: 'text-cyan-400',
+        };
+      case 'retail':
+      default:
+        return {
+          title: 'Retail Point of Sale (POS)',
+          badge: 'Retail POS Edition',
+          icon: Store,
+          iconColor: 'text-primary',
+        };
+    }
+  }, [currentFlow]);
 
   const [catalogViewMode, setCatalogViewMode] = useState<'table' | 'grid'>('table');
 
@@ -512,14 +552,6 @@ export const NewSalePage: React.FC = () => {
     setPatientName('');
   };
 
-  const FLOW_CONFIGS: { id: BusinessFlowType; label: string; icon: any; desc: string; badge: string }[] = [
-    { id: 'retail', label: 'Retail POS', icon: Store, desc: 'High-speed counter sale with instant thermal / A4 receipt', badge: 'Fast Counter' },
-    { id: 'wholesale', label: 'Wholesale B2B', icon: Truck, desc: 'Bulk volume orders, Net 15/30/60 credit terms & dispatch tracking', badge: 'B2B Credit' },
-    { id: 'pharmacy', label: 'Pharmacy Rx', icon: Stethoscope, desc: 'Batch number verification, expiry monitoring & doctor prescriptions', badge: 'Batch & Expiry' },
-    { id: 'services', label: 'Services Billing', icon: Briefcase, desc: 'Hourly consulting, project deliverables & milestone retainers', badge: 'No Inventory' },
-    { id: 'manufacturing', label: 'Assembly & BOM', icon: Factory, desc: 'Bill of Materials recipe execution & raw material conversion', badge: 'Production Run' },
-  ];
-
   // If manufacturing run completed, show production certificate
   if (completedProduction) {
     return (
@@ -779,7 +811,7 @@ export const NewSalePage: React.FC = () => {
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-background">
-      {/* Top Header */}
+      {/* Dedicated Business Solution Header */}
       <div className="h-14 border-b border-border bg-card/60 px-6 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           <button
@@ -789,52 +821,31 @@ export const NewSalePage: React.FC = () => {
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <div className="flex items-center gap-2">
-            <ShoppingCart className="h-5 w-5 text-emerald-500" />
-            <h1 className="text-base font-bold text-foreground">Point of Sale & Business Operations</h1>
+          <div className="flex items-center gap-2.5">
+            <editionInfo.icon className={`h-5 w-5 ${editionInfo.iconColor}`} />
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-base font-bold text-foreground">{editionInfo.title}</h1>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/15 text-primary font-bold">
+                  {editionInfo.badge}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <div className="text-right hidden sm:block">
+            <div className="text-xs font-semibold text-foreground">{appConfig?.businessName || 'My Business'}</div>
+            <div className="text-[10px] text-muted-foreground">{appConfig?.businessType || 'Retail'} Solution</div>
+          </div>
           <button
             onClick={() => setActiveSheet('_Sales')}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-muted/60 hover:bg-muted text-foreground border border-border rounded-lg transition"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-muted/60 hover:bg-muted text-foreground border border-border rounded-lg transition font-medium"
           >
             <Receipt className="h-3.5 w-3.5" />
-            <span>Sales Ledger</span>
+            <span>Ledger</span>
           </button>
-        </div>
-      </div>
-
-      {/* Business Flow Selector Bar */}
-      <div className="bg-card/40 border-b border-border/80 px-6 py-2 flex items-center justify-between gap-4 shrink-0 overflow-x-auto">
-        <div className="flex items-center gap-2">
-          {FLOW_CONFIGS.map((flow) => {
-            const Icon = flow.icon;
-            const isActive = currentFlow === flow.id;
-            return (
-              <button
-                key={flow.id}
-                onClick={() => setCurrentFlow(flow.id)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition shrink-0 ${
-                  isActive
-                    ? 'bg-primary text-primary-foreground shadow-sm teal-glow-sm'
-                    : 'bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60'
-                }`}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                <span>{flow.label}</span>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${
-                  isActive ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground'
-                }`}>
-                  {flow.badge}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-        <div className="text-[11px] text-muted-foreground hidden xl:block font-medium">
-          Active Flow: <b className="text-foreground">{FLOW_CONFIGS.find((f) => f.id === currentFlow)?.label}</b> • {FLOW_CONFIGS.find((f) => f.id === currentFlow)?.desc}
         </div>
       </div>
 
