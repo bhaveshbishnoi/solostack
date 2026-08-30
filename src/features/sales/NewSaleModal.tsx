@@ -296,8 +296,8 @@ export const NewSaleModal: React.FC = () => {
                         <div className="text-xs font-bold text-foreground">
                           {formatCurrency(prod.selling_price, currency, currencySymbol)}
                         </div>
-                        <span className="text-[10px] text-primary group-hover:underline">
-                          + Add
+                        <span className="text-[10px] text-primary group-hover:underline font-bold">
+                          Add
                         </span>
                       </div>
                     </div>

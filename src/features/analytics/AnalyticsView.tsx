@@ -1,11 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { useWorkbookStore } from '../../stores/workbookStore';
+import { useSettingsStore } from '../../stores/settingsStore';
 import { formatCurrency } from '../../lib/utils';
 import ReactECharts from 'echarts-for-react';
 
-
 export const AnalyticsView: React.FC = () => {
   const { sheets, appConfig } = useWorkbookStore();
+  const { theme } = useSettingsStore();
   const [activeTab, setActiveTab] = useState<'sales' | 'inventory' | 'customers' | 'products'>('sales');
 
   const currencySymbol = appConfig?.currencySymbol || '₹';
@@ -48,6 +49,12 @@ export const AnalyticsView: React.FC = () => {
 
   // Sales by payment method chart (Multi-color donut)
   const paymentMethodOption = useMemo(() => {
+    const isDark = theme !== 'light';
+    const textColor = isDark ? '#94a3b8' : '#64748b';
+    const tooltipBg = isDark ? 'rgba(15, 23, 42, 0.94)' : 'rgba(255, 255, 255, 0.98)';
+    const tooltipBorder = isDark ? 'rgba(51, 65, 85, 0.6)' : 'rgba(203, 213, 225, 0.9)';
+    const tooltipText = isDark ? '#f8fafc' : '#0f172a';
+
     const counts: Record<string, number> = {};
     salesRows.forEach((s) => {
       const method = s.payment_method || 'Cash';
@@ -57,9 +64,10 @@ export const AnalyticsView: React.FC = () => {
     return {
       tooltip: {
         trigger: 'item',
-        backgroundColor: 'rgba(15, 23, 42, 0.92)',
-        borderColor: 'rgba(51, 65, 85, 0.6)',
-        textStyle: { color: '#f8fafc', fontSize: 12 },
+        backgroundColor: tooltipBg,
+        borderColor: tooltipBorder,
+        textStyle: { color: tooltipText, fontSize: 12 },
+        extraCssText: 'box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2); border-radius: 12px;',
         formatter: (item: any) => {
           return `<div style="font-weight:700;margin-bottom:2px">${item.name}</div>
             <div style="font-family:monospace">${formatCurrency(item.value, currency, currencySymbol)} (${item.percent}%)</div>`;
@@ -68,7 +76,7 @@ export const AnalyticsView: React.FC = () => {
       legend: {
         bottom: '0%',
         type: 'scroll',
-        textStyle: { color: '#94a3b8', fontSize: 11 },
+        textStyle: { color: textColor, fontSize: 11 },
       },
       color: VIBRANT_PALETTE,
       series: [
@@ -78,14 +86,14 @@ export const AnalyticsView: React.FC = () => {
           radius: ['42%', '70%'],
           itemStyle: {
             borderRadius: 6,
-            borderColor: 'rgba(15, 23, 42, 0.6)',
+            borderColor: isDark ? 'rgba(15, 23, 42, 0.6)' : '#ffffff',
             borderWidth: 2,
           },
           data: Object.entries(counts).map(([name, value]) => ({ name, value })),
         },
       ],
     };
-  }, [salesRows, currency, currencySymbol]);
+  }, [salesRows, currency, currencySymbol, theme]);
 
   // Top products by revenue
   const topProducts = useMemo(() => {
@@ -114,12 +122,20 @@ export const AnalyticsView: React.FC = () => {
 
   // Top products bar chart option (Each bar with its own vibrant color)
   const topProductsChartOption = useMemo(() => {
+    const isDark = theme !== 'light';
+    const textColor = isDark ? '#94a3b8' : '#64748b';
+    const tooltipBg = isDark ? 'rgba(15, 23, 42, 0.94)' : 'rgba(255, 255, 255, 0.98)';
+    const tooltipBorder = isDark ? 'rgba(51, 65, 85, 0.6)' : 'rgba(203, 213, 225, 0.9)';
+    const tooltipText = isDark ? '#f8fafc' : '#0f172a';
+    const gridLineColor = isDark ? 'rgba(51, 65, 85, 0.2)' : 'rgba(226, 232, 240, 0.8)';
+
     return {
       tooltip: {
         trigger: 'axis',
-        backgroundColor: 'rgba(15, 23, 42, 0.92)',
-        borderColor: 'rgba(51, 65, 85, 0.6)',
-        textStyle: { color: '#f8fafc', fontSize: 12 },
+        backgroundColor: tooltipBg,
+        borderColor: tooltipBorder,
+        textStyle: { color: tooltipText, fontSize: 12 },
+        extraCssText: 'box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2); border-radius: 12px;',
         formatter: (params: any[]) => {
           if (!params.length) return '';
           const p = params[0];
@@ -131,18 +147,18 @@ export const AnalyticsView: React.FC = () => {
       xAxis: {
         type: 'category',
         data: topProducts.map((p) => p.name.length > 14 ? p.name.substring(0, 12) + '...' : p.name),
-        axisLine: { lineStyle: { color: '#475569' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10, interval: 0, rotate: 15 },
+        axisLine: { lineStyle: { color: isDark ? '#475569' : '#cbd5e1' } },
+        axisLabel: { color: textColor, fontSize: 10, interval: 0, rotate: 15 },
       },
       yAxis: {
         type: 'value',
-        axisLine: { lineStyle: { color: '#475569' } },
+        axisLine: { lineStyle: { color: isDark ? '#475569' : '#cbd5e1' } },
         axisLabel: {
-          color: '#94a3b8',
+          color: textColor,
           fontSize: 10,
           formatter: (val: number) => `${currencySymbol}${val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val}`,
         },
-        splitLine: { lineStyle: { color: '#334155', opacity: 0.15 } },
+        splitLine: { lineStyle: { color: gridLineColor } },
       },
       series: [
         {
@@ -155,10 +171,16 @@ export const AnalyticsView: React.FC = () => {
         },
       ],
     };
-  }, [topProducts, currency, currencySymbol]);
+  }, [topProducts, currency, currencySymbol, theme]);
 
   // Inventory Stock Health Donut Chart
   const stockHealthOption = useMemo(() => {
+    const isDark = theme !== 'light';
+    const textColor = isDark ? '#94a3b8' : '#64748b';
+    const tooltipBg = isDark ? 'rgba(15, 23, 42, 0.94)' : 'rgba(255, 255, 255, 0.98)';
+    const tooltipBorder = isDark ? 'rgba(51, 65, 85, 0.6)' : 'rgba(203, 213, 225, 0.9)';
+    const tooltipText = isDark ? '#f8fafc' : '#0f172a';
+
     let healthyCount = 0;
     let lowCount = 0;
     let outCount = 0;
@@ -174,11 +196,12 @@ export const AnalyticsView: React.FC = () => {
     return {
       tooltip: {
         trigger: 'item',
-        backgroundColor: 'rgba(15, 23, 42, 0.92)',
-        borderColor: 'rgba(51, 65, 85, 0.6)',
-        textStyle: { color: '#f8fafc', fontSize: 12 },
+        backgroundColor: tooltipBg,
+        borderColor: tooltipBorder,
+        textStyle: { color: tooltipText, fontSize: 12 },
+        extraCssText: 'box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2); border-radius: 12px;',
       },
-      legend: { bottom: '0%', textStyle: { color: '#94a3b8', fontSize: 11 } },
+      legend: { bottom: '0%', textStyle: { color: textColor, fontSize: 11 } },
       color: ['#10b981', '#f59e0b', '#f43f5e'],
       series: [
         {
@@ -187,7 +210,7 @@ export const AnalyticsView: React.FC = () => {
           radius: ['45%', '72%'],
           itemStyle: {
             borderRadius: 6,
-            borderColor: 'rgba(15, 23, 42, 0.6)',
+            borderColor: isDark ? 'rgba(15, 23, 42, 0.6)' : '#ffffff',
             borderWidth: 2,
           },
           data: [
@@ -198,10 +221,17 @@ export const AnalyticsView: React.FC = () => {
         },
       ],
     };
-  }, [inventoryRows]);
+  }, [inventoryRows, theme]);
 
   // Product Margin Comparison Chart
   const productMarginsChartOption = useMemo(() => {
+    const isDark = theme !== 'light';
+    const textColor = isDark ? '#94a3b8' : '#64748b';
+    const tooltipBg = isDark ? 'rgba(15, 23, 42, 0.94)' : 'rgba(255, 255, 255, 0.98)';
+    const tooltipBorder = isDark ? 'rgba(51, 65, 85, 0.6)' : 'rgba(203, 213, 225, 0.9)';
+    const tooltipText = isDark ? '#f8fafc' : '#0f172a';
+    const gridLineColor = isDark ? 'rgba(51, 65, 85, 0.2)' : 'rgba(226, 232, 240, 0.8)';
+
     const topMarginProducts = productRows.slice(0, 8);
     const names = topMarginProducts.map((p) => p.name.length > 12 ? p.name.substring(0, 10) + '...' : p.name);
     const costData = topMarginProducts.map((p) => Number(p.purchase_price || 0));
@@ -210,9 +240,10 @@ export const AnalyticsView: React.FC = () => {
     return {
       tooltip: {
         trigger: 'axis',
-        backgroundColor: 'rgba(15, 23, 42, 0.92)',
-        borderColor: 'rgba(51, 65, 85, 0.6)',
-        textStyle: { color: '#f8fafc', fontSize: 12 },
+        backgroundColor: tooltipBg,
+        borderColor: tooltipBorder,
+        textStyle: { color: tooltipText, fontSize: 12 },
+        extraCssText: 'box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2); border-radius: 12px;',
         formatter: (params: any[]) => {
           if (!params.length) return '';
           let res = `<div style="font-weight:700;margin-bottom:4px">${params[0].name}</div>`;
@@ -228,24 +259,24 @@ export const AnalyticsView: React.FC = () => {
       legend: {
         data: ['Cost Price', 'Selling Price'],
         top: '0%',
-        textStyle: { color: '#94a3b8', fontSize: 11 },
+        textStyle: { color: textColor, fontSize: 11 },
       },
       grid: { left: '3%', right: '4%', bottom: '8%', top: '14%', containLabel: true },
       xAxis: {
         type: 'category',
         data: names,
-        axisLine: { lineStyle: { color: '#475569' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
+        axisLine: { lineStyle: { color: isDark ? '#475569' : '#cbd5e1' } },
+        axisLabel: { color: textColor, fontSize: 10 },
       },
       yAxis: {
         type: 'value',
-        axisLine: { lineStyle: { color: '#475569' } },
+        axisLine: { lineStyle: { color: isDark ? '#475569' : '#cbd5e1' } },
         axisLabel: {
-          color: '#94a3b8',
+          color: textColor,
           fontSize: 10,
           formatter: (val: number) => `${currencySymbol}${val}`,
         },
-        splitLine: { lineStyle: { color: '#334155', opacity: 0.15 } },
+        splitLine: { lineStyle: { color: gridLineColor } },
       },
       series: [
         {
@@ -262,7 +293,7 @@ export const AnalyticsView: React.FC = () => {
         },
       ],
     };
-  }, [productRows, currency, currencySymbol]);
+  }, [productRows, currency, currencySymbol, theme]);
 
   return (
     <div className="flex-1 overflow-y-auto p-6 space-y-6">

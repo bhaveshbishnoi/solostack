@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { useWorkbookStore } from '../../stores/workbookStore';
+import { useSettingsStore } from '../../stores/settingsStore';
 import { useUIStore } from '../../stores/uiStore';
 import { formatCurrency, formatDate } from '../../lib/utils';
 import ReactECharts from 'echarts-for-react';
@@ -21,6 +22,7 @@ import {
 
 export const DashboardView: React.FC = () => {
   const { sheets, appConfig, setActiveSheet } = useWorkbookStore();
+  const { theme } = useSettingsStore();
   const { openModal, setTargetRecord } = useUIStore();
 
   const currencySymbol = appConfig?.currencySymbol || '₹';
@@ -91,6 +93,13 @@ export const DashboardView: React.FC = () => {
 
   // Chart 1: Multi-metric Sales & Volume Trend (Date vs Revenue & Order Count)
   const salesTrendOption = useMemo(() => {
+    const isDark = theme !== 'light';
+    const textColor = isDark ? '#94a3b8' : '#64748b';
+    const tooltipBg = isDark ? 'rgba(15, 23, 42, 0.94)' : 'rgba(255, 255, 255, 0.98)';
+    const tooltipBorder = isDark ? 'rgba(51, 65, 85, 0.6)' : 'rgba(203, 213, 225, 0.9)';
+    const tooltipText = isDark ? '#f8fafc' : '#0f172a';
+    const gridLineColor = isDark ? 'rgba(51, 65, 85, 0.2)' : 'rgba(226, 232, 240, 0.8)';
+
     const dateRevenueMap: Record<string, number> = {};
     const dateOrdersMap: Record<string, number> = {};
 
@@ -109,12 +118,13 @@ export const DashboardView: React.FC = () => {
     return {
       tooltip: {
         trigger: 'axis',
-        backgroundColor: 'rgba(15, 23, 42, 0.92)',
-        borderColor: 'rgba(51, 65, 85, 0.6)',
-        textStyle: { color: '#f8fafc', fontSize: 12 },
+        backgroundColor: tooltipBg,
+        borderColor: tooltipBorder,
+        textStyle: { color: tooltipText, fontSize: 12 },
+        extraCssText: 'box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1); border-radius: 12px;',
         formatter: (params: any[]) => {
           if (!params || !params.length) return '';
-          let res = `<div style="font-weight:700;margin-bottom:4px;color:#94a3b8">${params[0].name}</div>`;
+          let res = `<div style="font-weight:700;margin-bottom:4px;color:${textColor}">${params[0].name}</div>`;
           params.forEach((item) => {
             const valStr = item.seriesName === 'Revenue'
               ? formatCurrency(item.value, currency, currencySymbol)
@@ -134,27 +144,27 @@ export const DashboardView: React.FC = () => {
         data: ['Revenue', 'Orders'],
         top: '0%',
         right: '4%',
-        textStyle: { color: '#94a3b8', fontSize: 11 },
+        textStyle: { color: textColor, fontSize: 11 },
       },
       grid: { left: '3%', right: '4%', bottom: '3%', top: '14%', containLabel: true },
       xAxis: {
         type: 'category',
         data: dates.length ? dates : ['No Sales Yet'],
-        axisLine: { lineStyle: { color: '#475569' } },
-        axisLabel: { color: '#94a3b8', fontSize: 10 },
+        axisLine: { lineStyle: { color: isDark ? '#475569' : '#cbd5e1' } },
+        axisLabel: { color: textColor, fontSize: 10 },
       },
       yAxis: [
         {
           type: 'value',
           name: 'Revenue',
-          nameTextStyle: { color: '#94a3b8', fontSize: 10 },
+          nameTextStyle: { color: textColor, fontSize: 10 },
           axisLine: { lineStyle: { color: '#0d9488' } },
           axisLabel: {
-            color: '#94a3b8',
+            color: textColor,
             fontSize: 10,
             formatter: (val: number) => `${currencySymbol}${val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val}`,
           },
-          splitLine: { lineStyle: { color: '#334155', opacity: 0.15 } },
+          splitLine: { lineStyle: { color: gridLineColor } },
         },
         {
           type: 'value',
@@ -162,7 +172,7 @@ export const DashboardView: React.FC = () => {
           nameTextStyle: { color: '#818cf8', fontSize: 10 },
           minInterval: 1,
           axisLine: { lineStyle: { color: '#6366f1' } },
-          axisLabel: { color: '#94a3b8', fontSize: 10 },
+          axisLabel: { color: textColor, fontSize: 10 },
           splitLine: { show: false },
         },
       ],
@@ -195,7 +205,7 @@ export const DashboardView: React.FC = () => {
           name: 'Orders',
           type: 'bar',
           yAxisIndex: 1,
-          barMaxWidth: 20,
+          barMaxWidth: 22,
           itemStyle: {
             color: {
               type: 'linear',
@@ -214,10 +224,16 @@ export const DashboardView: React.FC = () => {
         },
       ],
     };
-  }, [salesRows, currency, currencySymbol]);
+  }, [salesRows, currency, currencySymbol, theme]);
 
   // Chart 2: Category Distribution (Rich Multi-Color Donut)
   const categoryOption = useMemo(() => {
+    const isDark = theme !== 'light';
+    const textColor = isDark ? '#94a3b8' : '#64748b';
+    const tooltipBg = isDark ? 'rgba(15, 23, 42, 0.94)' : 'rgba(255, 255, 255, 0.98)';
+    const tooltipBorder = isDark ? 'rgba(51, 65, 85, 0.6)' : 'rgba(203, 213, 225, 0.9)';
+    const tooltipText = isDark ? '#f8fafc' : '#0f172a';
+
     const categoryRows = sheets['_Categories']?.rows || [];
     const catCountMap: Record<string, number> = {};
 
@@ -246,9 +262,10 @@ export const DashboardView: React.FC = () => {
     return {
       tooltip: {
         trigger: 'item',
-        backgroundColor: 'rgba(15, 23, 42, 0.92)',
-        borderColor: 'rgba(51, 65, 85, 0.6)',
-        textStyle: { color: '#f8fafc', fontSize: 12 },
+        backgroundColor: tooltipBg,
+        borderColor: tooltipBorder,
+        textStyle: { color: tooltipText, fontSize: 12 },
+        extraCssText: 'box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2); border-radius: 12px;',
         formatter: (item: any) => {
           return `<div style="font-weight:700;margin-bottom:2px">${item.name}</div>
             <div style="font-family:monospace">${item.value} products (${item.percent}%)</div>`;
@@ -257,8 +274,8 @@ export const DashboardView: React.FC = () => {
       legend: {
         bottom: '0%',
         type: 'scroll',
-        textStyle: { color: '#94a3b8', fontSize: 11 },
-        pageTextStyle: { color: '#94a3b8' },
+        textStyle: { color: textColor, fontSize: 11 },
+        pageTextStyle: { color: textColor },
       },
       color: VIBRANT_PALETTE,
       series: [
@@ -269,7 +286,7 @@ export const DashboardView: React.FC = () => {
           avoidLabelOverlap: true,
           itemStyle: {
             borderRadius: 6,
-            borderColor: 'rgba(15, 23, 42, 0.6)',
+            borderColor: isDark ? 'rgba(15, 23, 42, 0.7)' : '#ffffff',
             borderWidth: 2,
           },
           label: {
@@ -280,14 +297,14 @@ export const DashboardView: React.FC = () => {
               show: true,
               fontSize: 12,
               fontWeight: 'bold',
-              color: '#f8fafc',
+              color: isDark ? '#f8fafc' : '#0f172a',
             },
           },
           data: data.length ? data : [{ name: 'No Categories', value: 1 }],
         },
       ],
     };
-  }, [productRows, sheets]);
+  }, [productRows, sheets, theme]);
 
   return (
     <div className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -465,7 +482,7 @@ export const DashboardView: React.FC = () => {
               <ArrowRight className="h-3 w-3" />
             </button>
           </div>
-          <div className="h-64 w-full">
+          <div className="h-72 w-full">
             <ReactECharts option={salesTrendOption} style={{ height: '100%', width: '100%' }} />
           </div>
         </div>
@@ -485,7 +502,7 @@ export const DashboardView: React.FC = () => {
               <ArrowRight className="h-3 w-3" />
             </button>
           </div>
-          <div className="h-64 w-full">
+          <div className="h-72 w-full">
             <ReactECharts option={categoryOption} style={{ height: '100%', width: '100%' }} />
           </div>
         </div>

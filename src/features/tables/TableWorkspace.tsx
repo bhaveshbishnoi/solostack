@@ -592,7 +592,7 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
                 );
               })}
 
-              <th className="w-24 px-3 py-2.5 font-bold text-muted-foreground text-center text-[11px]">
+              <th className="w-36 min-w-[144px] px-3 py-2.5 font-bold text-muted-foreground text-center text-[11px]">
                 Actions
               </th>
             </tr>
@@ -702,41 +702,43 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
                 })}
 
                 {/* Row Action Buttons */}
-                <td className="w-32 px-3 py-1.5 text-center space-x-1 border-border/60">
-                  <button
-                    onClick={() => {
-                      setTargetRecord({ sheetName, rowId: row[primaryIdKey], row, mode: 'view' });
-                      setActiveSheet('record_detail');
-                    }}
-                    className="p-1.5 text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10 rounded-lg transition-colors inline-flex items-center justify-center"
-                    title="View Record (Full Page)"
-                  >
-                    <FileText className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      setTargetRecord({ sheetName, rowId: row[primaryIdKey], row, mode: 'edit' });
-                      setActiveSheet('record_form');
-                    }}
-                    className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-colors inline-flex items-center justify-center"
-                    title="Edit Record (Full Page)"
-                  >
-                    <Edit3 className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDuplicateRow(row)}
-                    className="p-1.5 text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10 rounded-lg transition-colors inline-flex items-center justify-center"
-                    title="Duplicate Record"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteRow(row)}
-                    className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors inline-flex items-center justify-center"
-                    title="Delete Record"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                <td className="w-36 min-w-[144px] px-3 py-1.5 text-center border-border/60">
+                  <div className="inline-flex items-center gap-1.5">
+                    <button
+                      onClick={() => {
+                        setTargetRecord({ sheetName, rowId: row[primaryIdKey], row, mode: 'view' });
+                        setActiveSheet('record_detail');
+                      }}
+                      className="p-1.5 text-blue-500 bg-blue-500/10 hover:bg-blue-500 hover:text-white border border-blue-500/25 rounded-lg transition shadow-2xs inline-flex items-center justify-center"
+                      title="View Record (Full Page)"
+                    >
+                      <FileText className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setTargetRecord({ sheetName, rowId: row[primaryIdKey], row, mode: 'edit' });
+                        setActiveSheet('record_form');
+                      }}
+                      className="p-1.5 text-primary bg-primary/10 hover:bg-primary hover:text-primary-foreground border border-primary/25 rounded-lg transition shadow-2xs inline-flex items-center justify-center"
+                      title="Edit Record (Full Page)"
+                    >
+                      <Edit3 className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDuplicateRow(row)}
+                      className="p-1.5 text-amber-500 bg-amber-500/10 hover:bg-amber-500 hover:text-white border border-amber-500/25 rounded-lg transition shadow-2xs inline-flex items-center justify-center"
+                      title="Duplicate Record"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteRow(row)}
+                      className="p-1.5 text-destructive bg-destructive/10 hover:bg-destructive hover:text-white border border-destructive/25 rounded-lg transition shadow-2xs inline-flex items-center justify-center"
+                      title="Delete Record"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
