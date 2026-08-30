@@ -33,6 +33,13 @@ export const realestateTemplate: BusinessTemplate = {
       targetKey: 'product_id',
       relationship: 'Receipt items compute Monthly Rent + Society Maintenance + Parking',
     },
+    {
+      sourceSheet: '_Products',
+      sourceKey: 'category_id',
+      targetSheet: '_Categories',
+      targetKey: 'category_id',
+      relationship: 'Units belong to a Property Sector / Category',
+    },
   ],
   sheets: [
     {
@@ -41,7 +48,7 @@ export const realestateTemplate: BusinessTemplate = {
         { key: 'product_id', name: 'Unit Type ID', dataType: 'text', required: true },
         { key: 'sku', name: 'Plan Code', dataType: 'text', required: true },
         { key: 'name', name: 'Property / Unit Classification', dataType: 'text', required: true },
-        { key: 'category_id', name: 'Sector / Wing', dataType: 'text' },
+        { key: 'category_id', name: 'Sector / Wing', dataType: 'text', referenceTable: '_Categories', referenceKey: 'category_id' },
         { key: 'purchase_price', name: 'Society Maintenance Share', dataType: 'currency' },
         { key: 'selling_price', name: 'Standard Monthly Rent', dataType: 'currency', required: true },
         { key: 'gst_rate', name: 'Commercial GST %', dataType: 'number', defaultValue: 18 },
@@ -234,6 +241,41 @@ export const realestateTemplate: BusinessTemplate = {
           gst: 0,
           payment_method: 'Society Account UPI',
           notes: 'Invoice #PLUMB-88',
+        },
+      ],
+    },
+    {
+      name: '_Categories',
+      columns: [
+        { key: 'category_id', name: 'Category ID', dataType: 'text', required: true },
+        { key: 'name', name: 'Property Sector / Wing', dataType: 'text', required: true },
+        { key: 'description', name: 'Unit Mix & Asset Class', dataType: 'text' },
+        { key: 'status', name: 'Status', dataType: 'text', defaultValue: 'active' },
+      ],
+      rows: [
+        {
+          category_id: 'Residential Tower A',
+          name: 'Residential Tower A',
+          description: 'Premium family residences, high-rise 2BHK and 3BHK towers',
+          status: 'active',
+        },
+        {
+          category_id: 'Commercial Plaza',
+          name: 'Commercial Plaza Tower B',
+          description: 'Grade-A office suites with reception, elevators and cafeteria',
+          status: 'active',
+        },
+        {
+          category_id: 'Retail Promenade',
+          name: 'Retail Street Promenade',
+          description: 'Ground floor retail showrooms and boutique commercial outlets',
+          status: 'active',
+        },
+        {
+          category_id: 'Studio Pods',
+          name: 'Executive Studio Pods',
+          description: 'Fully furnished 1RK & 1BHK corporate rental pods',
+          status: 'active',
         },
       ],
     },

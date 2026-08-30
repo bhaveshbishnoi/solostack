@@ -12,7 +12,10 @@ import {
   Check,
   X,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Copy,
+  Wand2,
+  RotateCcw
 } from 'lucide-react';
 
 export const RecordFormPage: React.FC = () => {
@@ -29,6 +32,7 @@ export const RecordFormPage: React.FC = () => {
   }, [currentFlow, sheetName]);
 
   const [showTechnicalId, setShowTechnicalId] = useState(false);
+  const [refSearch, setRefSearch] = useState<Record<string, string>>({});
 
   const currencySymbol = appConfig?.currencySymbol || '₹';
   const currency = appConfig?.currency || 'INR';
@@ -92,12 +96,74 @@ export const RecordFormPage: React.FC = () => {
   }
 
   const handleChange = (key: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [key]: value }));
+    setFormData((prev) => {
+      const updated = { ...prev, [key]: value };
+      // Smart Auto-compute line_total or total when quantity, price, discount change
+      if (key === 'quantity' || key === 'unit_price' || key === 'price' || key === 'discount' || key === 'tax') {
+        const qty = Number(key === 'quantity' ? value : updated['quantity'] ?? 1);
+        const prc = Number(key === 'unit_price' || key === 'price' ? value : updated['unit_price'] ?? updated['price'] ?? 0);
+        const disc = Number(key === 'discount' ? value : updated['discount'] ?? 0);
+        const tx = Number(key === 'tax' ? value : updated['tax'] ?? 0);
+
+        const calculated = Math.max(0, (qty * prc) - disc + tx);
+        if ('line_total' in updated) {
+          updated['line_total'] = calculated;
+        } else if ('total' in updated && !('subtotal' in updated)) {
+          updated['total'] = calculated;
+        }
+      }
+      return updated;
+    });
   };
 
   const handleBack = () => {
     setActiveSheet(sheetName);
     setTargetRecord(null);
+  };
+
+  const handleCloneRecord = async () => {
+    try {
+      const nextId = getNextAutoIncrement(sheetName, primaryIdKey);
+      const cloneData: TableRow = { ...formData, [primaryIdKey]: nextId };
+      if (cloneData['sku']) cloneData['sku'] = getNextAutoIncrement(sheetName, 'sku');
+      if (cloneData['name']) cloneData['name'] = `${cloneData['name']} (Copy)`;
+      addRow(sheetName, cloneData);
+      await saveWorkbook();
+      addNotification('success', 'Record Cloned', `Created duplicate with ID ${nextId}`);
+      setTargetRecord({ sheetName, rowId: nextId, row: cloneData, mode: 'edit' });
+    } catch (err: any) {
+      addNotification('error', 'Clone Failed', err.message || 'Could not clone record');
+    }
+  };
+
+  const handleAutofillDefaults = () => {
+    const filled: TableRow = { ...formData };
+    currentSheet.columns.forEach((c) => {
+      if (c.key === primaryIdKey) return;
+      if (!filled[c.key] || String(filled[c.key]).trim() === '') {
+        if (c.dataType === 'date') filled[c.key] = new Date().toISOString().split('T')[0];
+        else if (c.dataType === 'currency' || c.dataType === 'number') filled[c.key] = c.defaultValue ?? 100;
+        else if (c.dataType === 'boolean') filled[c.key] = true;
+        else if (c.key === 'status') filled[c.key] = 'active';
+        else if (c.defaultValue) filled[c.key] = c.defaultValue;
+      }
+    });
+    setFormData(filled);
+    addNotification('info', 'Autofilled Defaults', 'Populated standard defaults for empty fields');
+  };
+
+  const handleResetForm = () => {
+    if (window.confirm('Reset all fields back to initial empty state?')) {
+      const resetData: TableRow = {};
+      currentSheet.columns.forEach((c) => {
+        if (c.key === primaryIdKey) {
+          resetData[c.key] = formData[c.key];
+        } else {
+          resetData[c.key] = c.defaultValue ?? '';
+        }
+      });
+      setFormData(resetData);
+    }
   };
 
   const handleSave = async (andAddAnother = false) => {
@@ -216,6 +282,36 @@ export const RecordFormPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          {mode === 'edit' && (
+            <button
+              onClick={handleCloneRecord}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-muted/50 hover:bg-muted text-foreground border border-border rounded-xl transition font-medium"
+              title="Duplicate this record with a new ID"
+            >
+              <Copy className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Clone Record</span>
+            </button>
+          )}
+
+          {mode === 'add' && (
+            <button
+              onClick={handleAutofillDefaults}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-muted/50 hover:bg-muted text-foreground border border-border rounded-xl transition font-medium"
+              title="Fill empty fields with standard defaults"
+            >
+              <Wand2 className="h-3.5 w-3.5 text-amber-500" />
+              <span className="hidden sm:inline">Autofill Defaults</span>
+            </button>
+          )}
+
+          <button
+            onClick={handleResetForm}
+            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl border border-border transition"
+            title="Reset fields to empty"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+          </button>
+
           <button
             onClick={handleBack}
             className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground rounded-lg transition"
@@ -370,38 +466,75 @@ export const RecordFormPage: React.FC = () => {
                         className="w-full px-3 py-2 bg-muted/30 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary"
                       />
                     ) : (col.referenceTable && sheets[col.referenceTable]) ? (
-                      /* Connected Foreign Key Table Dropdown */
-                      <select
-                        value={val}
-                        onChange={(e) => handleChange(col.key, e.target.value)}
-                        className="w-full px-3 py-2 bg-muted/30 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary font-medium"
-                      >
-                        <option value="">-- Select from {sheets[col.referenceTable]?.displayName || col.referenceTable} --</option>
-                        {sheets[col.referenceTable]?.rows.map((refRow, rIdx) => {
-                          const primaryKey = Object.keys(refRow)[0] || 'id';
-                          const displayVal = refRow.name || refRow.title || refRow.sku || refRow[primaryKey] || `Record #${rIdx + 1}`;
-                          const optValue = refRow[primaryKey] ?? displayVal;
-                          return (
-                            <option key={rIdx} value={optValue}>
-                              {displayVal} {optValue !== displayVal ? `(${optValue})` : ''}
-                            </option>
-                          );
-                        })}
-                      </select>
+                      /* Connected Foreign Key Table Dropdown with Quick Search */
+                      <div className="space-y-1.5">
+                        {sheets[col.referenceTable]?.rows.length > 3 && (
+                          <input
+                            type="text"
+                            value={refSearch[col.key] || ''}
+                            onChange={(e) => setRefSearch((prev) => ({ ...prev, [col.key]: e.target.value }))}
+                            placeholder={`Filter ${sheets[col.referenceTable]?.displayName || col.referenceTable}...`}
+                            className="w-full px-2.5 py-1 text-xs bg-muted/40 border border-border rounded-lg text-foreground focus:outline-none focus:border-primary placeholder:text-muted-foreground/60 font-medium"
+                          />
+                        )}
+                        <select
+                          value={val}
+                          onChange={(e) => handleChange(col.key, e.target.value)}
+                          className="w-full px-3 py-2 bg-muted/30 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary font-medium"
+                        >
+                          <option value="">-- Select from {sheets[col.referenceTable]?.displayName || col.referenceTable} --</option>
+                          {sheets[col.referenceTable]?.rows
+                            .filter((refRow) => {
+                              const q = (refSearch[col.key] || '').toLowerCase().trim();
+                              if (!q) return true;
+                              return Object.values(refRow).some((v) => String(v).toLowerCase().includes(q));
+                            })
+                            .map((refRow, rIdx) => {
+                              const primaryKey = Object.keys(refRow)[0] || 'id';
+                              const displayVal = refRow.name || refRow.title || refRow.sku || refRow[primaryKey] || `Record #${rIdx + 1}`;
+                              const optValue = refRow[primaryKey] ?? displayVal;
+                              return (
+                                <option key={rIdx} value={optValue}>
+                                  {displayVal} {optValue !== displayVal ? `(${optValue})` : ''}
+                                </option>
+                              );
+                            })}
+                        </select>
+                      </div>
                     ) : col.key === 'category_id' && sheets['_Categories'] ? (
-                      /* Category dropdown */
-                      <select
-                        value={val}
-                        onChange={(e) => handleChange(col.key, e.target.value)}
-                        className="w-full px-3 py-2 bg-muted/30 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary"
-                      >
-                        <option value="">Select Category</option>
-                        {sheets['_Categories'].rows.map((cat) => (
-                          <option key={cat.category_id} value={cat.category_id}>
-                            {cat.name}
-                          </option>
-                        ))}
-                      </select>
+                      /* Category dropdown with quick-pick chips */
+                      <div className="space-y-1.5">
+                        <select
+                          value={val}
+                          onChange={(e) => handleChange(col.key, e.target.value)}
+                          className="w-full px-3 py-2 bg-muted/30 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary"
+                        >
+                          <option value="">Select Category</option>
+                          {sheets['_Categories'].rows.map((cat) => (
+                            <option key={cat.category_id} value={cat.name || cat.category_id}>
+                              {cat.name}
+                            </option>
+                          ))}
+                        </select>
+                        {sheets['_Categories'].rows.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {sheets['_Categories'].rows.slice(0, 6).map((cat) => (
+                              <button
+                                key={cat.category_id}
+                                type="button"
+                                onClick={() => handleChange(col.key, cat.name || cat.category_id)}
+                                className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border transition ${
+                                  val === cat.name || val === cat.category_id
+                                    ? 'bg-primary/20 border-primary text-primary'
+                                    : 'bg-muted/40 border-border text-muted-foreground hover:text-foreground'
+                                }`}
+                              >
+                                {cat.name}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     ) : col.key === 'customer_id' && sheets['_Customers'] ? (
                       /* Customer dropdown */
                       <select

@@ -33,6 +33,13 @@ export const garageTemplate: BusinessTemplate = {
       targetKey: 'product_id',
       relationship: 'Invoice line items compute Spare Parts consumed + Labor service packages',
     },
+    {
+      sourceSheet: '_Products',
+      sourceKey: 'category_id',
+      targetSheet: '_Categories',
+      targetKey: 'category_id',
+      relationship: 'Services & Spares belong to a Workshop Repair Category',
+    },
   ],
   sheets: [
     {
@@ -41,7 +48,7 @@ export const garageTemplate: BusinessTemplate = {
         { key: 'product_id', name: 'Service / Part ID', dataType: 'text', required: true },
         { key: 'sku', name: 'Part # / Service Code', dataType: 'text', required: true },
         { key: 'name', name: 'Service Package / Spare Part', dataType: 'text', required: true },
-        { key: 'category_id', name: 'Category', dataType: 'text' },
+        { key: 'category_id', name: 'Repair Category', dataType: 'text', referenceTable: '_Categories', referenceKey: 'category_id' },
         { key: 'purchase_price', name: 'Cost / Trade Price', dataType: 'currency' },
         { key: 'selling_price', name: 'Customer Retail Price', dataType: 'currency', required: true },
         { key: 'gst_rate', name: 'GST %', dataType: 'number', defaultValue: 18 },
@@ -258,6 +265,41 @@ export const garageTemplate: BusinessTemplate = {
           gst: 378,
           payment_method: 'Cash',
           notes: 'Store supply invoice #DEGR-99',
+        },
+      ],
+    },
+    {
+      name: '_Categories',
+      columns: [
+        { key: 'category_id', name: 'Category ID', dataType: 'text', required: true },
+        { key: 'name', name: 'Workshop Department Name', dataType: 'text', required: true },
+        { key: 'description', name: 'Services & Spares Scope', dataType: 'text' },
+        { key: 'status', name: 'Status', dataType: 'text', defaultValue: 'active' },
+      ],
+      rows: [
+        {
+          category_id: 'Periodic Maintenance',
+          name: 'Periodic Maintenance & Oil Service',
+          description: 'Lube service, engine synthetic oil change, filter replacements, fluid top-up',
+          status: 'active',
+        },
+        {
+          category_id: 'Brakes & Suspension',
+          name: 'Brakes, Tyres & Suspension',
+          description: 'Disc pads, brake bleeding, shock absorber replacement, wheel alignment',
+          status: 'active',
+        },
+        {
+          category_id: 'Engine Diagnostics',
+          name: 'Engine & Transmission Overhaul',
+          description: 'OBD scanning, spark plugs, timing belt, radiator cooling, clutch assembly',
+          status: 'active',
+        },
+        {
+          category_id: 'Electricals & Battery',
+          name: 'Auto Electricals & Air Conditioning',
+          description: 'Battery health test, alternator check, AC gas recharge, wiring repair',
+          status: 'active',
         },
       ],
     },

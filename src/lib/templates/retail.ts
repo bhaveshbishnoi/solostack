@@ -33,6 +33,13 @@ export const retailTemplate: BusinessTemplate = {
       targetKey: 'product_id',
       relationship: 'Receipt items scan and deduct from catalog SKUs',
     },
+    {
+      sourceSheet: '_Products',
+      sourceKey: 'category_id',
+      targetSheet: '_Categories',
+      targetKey: 'category_id',
+      relationship: 'Products belong to a Retail Merchandise Category',
+    },
   ],
   sheets: [
     {
@@ -41,7 +48,7 @@ export const retailTemplate: BusinessTemplate = {
         { key: 'product_id', name: 'Product ID', dataType: 'text', required: true },
         { key: 'sku', name: 'SKU / Barcode', dataType: 'text', required: true },
         { key: 'name', name: 'Product Item Name', dataType: 'text', required: true },
-        { key: 'category_id', name: 'Category', dataType: 'text' },
+        { key: 'category_id', name: 'Merchandise Category', dataType: 'text', referenceTable: '_Categories', referenceKey: 'category_id' },
         { key: 'purchase_price', name: 'Cost Price', dataType: 'currency' },
         { key: 'selling_price', name: 'Selling Price (MRP)', dataType: 'currency', required: true },
         { key: 'gst_rate', name: 'GST %', dataType: 'number', defaultValue: 18 },
@@ -86,7 +93,7 @@ export const retailTemplate: BusinessTemplate = {
       name: '_Inventory',
       columns: [
         { key: 'inventory_id', name: 'Inventory ID', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Product ID', dataType: 'text', required: true },
+        { key: 'product_id', name: 'Product ID', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Quantity in Stock', dataType: 'number' },
         { key: 'minimum_stock', name: 'Minimum Stock', dataType: 'number' },
         { key: 'updated_at', name: 'Last Restock Date', dataType: 'date' },
@@ -162,7 +169,7 @@ export const retailTemplate: BusinessTemplate = {
       name: '_Sales',
       columns: [
         { key: 'sale_id', name: 'Receipt No', dataType: 'text', required: true },
-        { key: 'customer_id', name: 'Customer Name', dataType: 'text', required: true },
+        { key: 'customer_id', name: 'Customer Name', dataType: 'text', required: true, referenceTable: '_Customers', referenceKey: 'customer_id' },
         { key: 'sale_date', name: 'Date', dataType: 'date', required: true },
         { key: 'subtotal', name: 'Subtotal', dataType: 'currency' },
         { key: 'discount', name: 'Discount', dataType: 'currency' },
@@ -191,8 +198,8 @@ export const retailTemplate: BusinessTemplate = {
       name: '_SaleItems',
       columns: [
         { key: 'sale_item_id', name: 'Item ID', dataType: 'text', required: true },
-        { key: 'sale_id', name: 'Receipt No', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Product ID', dataType: 'text', required: true },
+        { key: 'sale_id', name: 'Receipt No', dataType: 'text', required: true, referenceTable: '_Sales', referenceKey: 'sale_id' },
+        { key: 'product_id', name: 'Product ID', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Quantity', dataType: 'number' },
         { key: 'unit_price', name: 'Price', dataType: 'currency' },
         { key: 'discount', name: 'Discount', dataType: 'currency' },
@@ -234,6 +241,41 @@ export const retailTemplate: BusinessTemplate = {
           gst: 450,
           payment_method: 'Cash',
           notes: 'Invoice #BAG-99',
+        },
+      ],
+    },
+    {
+      name: '_Categories',
+      columns: [
+        { key: 'category_id', name: 'Category ID', dataType: 'text', required: true },
+        { key: 'name', name: 'Merchandise Category Name', dataType: 'text', required: true },
+        { key: 'description', name: 'Aisle & Department Scope', dataType: 'text' },
+        { key: 'status', name: 'Status', dataType: 'text', defaultValue: 'active' },
+      ],
+      rows: [
+        {
+          category_id: 'Electronics & Peripherals',
+          name: 'Electronics & Peripherals',
+          description: 'Wireless mice, keyboards, USB chargers, Bluetooth speakers, cables',
+          status: 'active',
+        },
+        {
+          category_id: 'Apparel & Fashion',
+          name: 'Apparel & Lifestyle Fashion',
+          description: 'Cotton t-shirts, denim trousers, casual shirts, accessories',
+          status: 'active',
+        },
+        {
+          category_id: 'Groceries & Gourmet',
+          name: 'Groceries & Gourmet Foods',
+          description: 'Organic grains, spreads, artisan coffee, snacks and beverages',
+          status: 'active',
+        },
+        {
+          category_id: 'Home & Kitchen Essentials',
+          name: 'Home & Kitchen Essentials',
+          description: 'Glassware, stainless steel cookware, organizer containers, linens',
+          status: 'active',
         },
       ],
     },

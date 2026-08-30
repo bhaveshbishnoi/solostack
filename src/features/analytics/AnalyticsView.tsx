@@ -10,14 +10,16 @@ import {
   DollarSign,
   Users,
   ArrowUpRight,
-  BarChart3
+  BarChart3,
+  Wallet,
+  FileText
 } from 'lucide-react';
 import ReactECharts from 'echarts-for-react';
 
 export const AnalyticsView: React.FC = () => {
   const { sheets, appConfig } = useWorkbookStore();
   const { theme } = useSettingsStore();
-  const [activeTab, setActiveTab] = useState<'overview' | 'sales' | 'inventory' | 'customers' | 'products'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'sales' | 'inventory' | 'customers' | 'products' | 'expenses'>('overview');
 
   const flowType = getBusinessFlowType(appConfig?.businessType);
   const salesMeta = useMemo(() => getBusinessTerminology(flowType, '_Sales'), [flowType]);
@@ -34,9 +36,13 @@ export const AnalyticsView: React.FC = () => {
   const customerRows = sheets['_Customers']?.rows || [];
   const saleItemRows = sheets['_SaleItems']?.rows || [];
   const categoryRows = sheets['_Categories']?.rows || [];
+  const expenseRows = sheets['_Expenses']?.rows || [];
 
   // Metrics
   const totalRevenue = useMemo(() => salesRows.reduce((a, b) => a + Number(b.total || 0), 0), [salesRows]);
+  const totalExpenses = useMemo(() => expenseRows.reduce((a, b) => a + Number(b.amount || 0), 0), [expenseRows]);
+  const netOperatingProfit = totalRevenue - totalExpenses;
+  const netProfitMargin = totalRevenue > 0 ? ((netOperatingProfit / totalRevenue) * 100).toFixed(1) : '0.0';
   const aov = useMemo(() => (salesRows.length ? totalRevenue / salesRows.length : 0), [salesRows, totalRevenue]);
 
   // Inventory valuation: sum of (purchase_price * current_stock)
@@ -541,6 +547,58 @@ export const AnalyticsView: React.FC = () => {
     };
   }, [saleItemRows, productRows, categoryRows, theme, currency, currencySymbol, editionAnalyticsMeta.chart1Title]);
 
+  const expensesCategoryOption = useMemo(() => {
+    const isDark = theme === 'dark';
+    const textColor = isDark ? '#94a3b8' : '#64748b';
+    const tooltipBg = isDark ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+    const tooltipBorder = isDark ? '#334155' : '#e2e8f0';
+    const tooltipText = isDark ? '#f8fafc' : '#0f172a';
+
+    const catMap: Record<string, number> = {};
+    expenseRows.forEach((r) => {
+      const cat = r.category || 'General Operations';
+      catMap[cat] = (catMap[cat] || 0) + (Number(r.amount) || 0);
+    });
+
+    const data = Object.entries(catMap).map(([name, value]) => ({ name, value }));
+    if (data.length === 0) {
+      data.push({ name: 'Operational Outflows', value: 1 });
+    }
+
+    return {
+      tooltip: {
+        trigger: 'item',
+        backgroundColor: tooltipBg,
+        borderColor: tooltipBorder,
+        textStyle: { color: tooltipText, fontSize: 12 },
+        extraCssText: 'box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2); border-radius: 12px;',
+        formatter: (item: any) => {
+          return `<div style="font-weight:700;margin-bottom:2px">${item.name}</div>
+            <div style="font-family:monospace">${formatCurrency(item.value, currency, currencySymbol)} (${item.percent}%)</div>`;
+        },
+      },
+      legend: {
+        bottom: '0%',
+        type: 'scroll',
+        textStyle: { color: textColor, fontSize: 11 },
+      },
+      color: ['#ef4444', '#f97316', '#f59e0b', '#8b5cf6', '#06b6d4', '#10b981'],
+      series: [
+        {
+          name: 'Operating Expenses',
+          type: 'pie',
+          radius: ['42%', '70%'],
+          itemStyle: {
+            borderRadius: 6,
+            borderColor: isDark ? 'rgba(15, 23, 42, 0.6)' : '#ffffff',
+            borderWidth: 2,
+          },
+          data,
+        },
+      ],
+    };
+  }, [expenseRows, theme, currency, currencySymbol]);
+
   return (
     <div className="flex-1 overflow-y-auto p-6 space-y-6">
       {/* Top Header */}
@@ -592,6 +650,15 @@ export const AnalyticsView: React.FC = () => {
             }`}
           >
             {custMeta.sheetDisplayName}
+          </button>
+          <button
+            onClick={() => setActiveTab('expenses')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-xl transition ${
+              activeTab === 'expenses' ? 'bg-primary text-primary-foreground shadow-sm teal-glow-sm' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Wallet className="h-3.5 w-3.5" />
+            <span>Operating Expenses & P&L</span>
           </button>
         </div>
       </div>
@@ -654,6 +721,48 @@ export const AnalyticsView: React.FC = () => {
                 {editionAnalyticsMeta.kpi4Val}
               </div>
               <div className="text-[11px] text-muted-foreground mt-1">Active registered directory</div>
+            </div>
+          </div>
+
+          {/* Executive P&L Snapshot */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-card border border-border rounded-2xl p-4 flex items-center gap-4 shadow-sm">
+              <div className="p-3 rounded-2xl bg-emerald-500/15 text-emerald-500">
+                <TrendingUp className="h-5 w-5" />
+              </div>
+              <div>
+                <span className="text-[11px] font-semibold text-muted-foreground">Gross Operating Revenue</span>
+                <div className="text-lg font-extrabold text-foreground font-mono">
+                  {formatCurrency(totalRevenue, currency, currencySymbol)}
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-card border border-border rounded-2xl p-4 flex items-center gap-4 shadow-sm">
+              <div className="p-3 rounded-2xl bg-rose-500/15 text-rose-500">
+                <Wallet className="h-5 w-5" />
+              </div>
+              <div>
+                <span className="text-[11px] font-semibold text-muted-foreground">Operating Expenses Burn</span>
+                <div className="text-lg font-extrabold text-rose-500 font-mono">
+                  {formatCurrency(totalExpenses, currency, currencySymbol)}
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-card border border-border rounded-2xl p-4 flex items-center gap-4 shadow-sm">
+              <div className={`p-3 rounded-2xl ${netOperatingProfit >= 0 ? 'bg-teal-500/15 text-teal-400' : 'bg-amber-500/15 text-amber-400'}`}>
+                <DollarSign className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-semibold text-muted-foreground">Net Operating Profit</span>
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-muted text-primary">{netProfitMargin}% Margin</span>
+                </div>
+                <div className={`text-lg font-extrabold font-mono ${netOperatingProfit >= 0 ? 'text-teal-400' : 'text-rose-400'}`}>
+                  {formatCurrency(netOperatingProfit, currency, currencySymbol)}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -925,6 +1034,144 @@ export const AnalyticsView: React.FC = () => {
                       </tr>
                     );
                   })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab: Expenses & P&L */}
+      {activeTab === 'expenses' && (
+        <div className="space-y-6">
+          {/* 3 Summary KPIs */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+              <div className="flex items-center justify-between text-muted-foreground mb-2">
+                <span className="text-xs font-semibold">Total Operating Outflows</span>
+                <div className="p-2 rounded-xl bg-rose-500/15 text-rose-500">
+                  <Wallet className="h-4 w-4" />
+                </div>
+              </div>
+              <div className="text-2xl font-extrabold text-foreground font-mono">
+                {formatCurrency(totalExpenses, currency, currencySymbol)}
+              </div>
+              <div className="text-[11px] text-muted-foreground mt-1">Recorded operational vouchers</div>
+            </div>
+
+            <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+              <div className="flex items-center justify-between text-muted-foreground mb-2">
+                <span className="text-xs font-semibold">Net Operating Profit</span>
+                <div className={`p-2 rounded-xl ${netOperatingProfit >= 0 ? 'bg-emerald-500/15 text-emerald-500' : 'bg-amber-500/15 text-amber-500'}`}>
+                  <DollarSign className="h-4 w-4" />
+                </div>
+              </div>
+              <div className={`text-2xl font-extrabold font-mono ${netOperatingProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                {formatCurrency(netOperatingProfit, currency, currencySymbol)}
+              </div>
+              <div className="text-[11px] text-muted-foreground mt-1 font-semibold">
+                Operating Profit Margin: <span className="text-primary font-bold">{netProfitMargin}%</span>
+              </div>
+            </div>
+
+            <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+              <div className="flex items-center justify-between text-muted-foreground mb-2">
+                <span className="text-xs font-semibold">Expense Records Count</span>
+                <div className="p-2 rounded-xl bg-purple-500/15 text-purple-400">
+                  <FileText className="h-4 w-4" />
+                </div>
+              </div>
+              <div className="text-2xl font-extrabold text-foreground font-mono">
+                {expenseRows.length}
+              </div>
+              <div className="text-[11px] text-muted-foreground mt-1">Audited expense entries</div>
+            </div>
+          </div>
+
+          {/* Expenses Donut Chart & Category Breakdown */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-foreground">Operational Spend by Category</h3>
+                  <p className="text-xs text-muted-foreground">Outflow concentration split</p>
+                </div>
+              </div>
+              <div className="h-72">
+                <ReactECharts option={expensesCategoryOption} style={{ height: '100%', width: '100%' }} />
+              </div>
+            </div>
+
+            <div className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-foreground">Profit & Loss Executive Summary</h3>
+                  <p className="text-xs text-muted-foreground">Operating margin structure</p>
+                </div>
+              </div>
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border">
+                  <span className="text-xs font-medium text-foreground">Gross Invoiced Revenue</span>
+                  <span className="text-sm font-bold font-mono text-foreground">{formatCurrency(totalRevenue, currency, currencySymbol)}</span>
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-xl bg-rose-500/10 border border-rose-500/20">
+                  <span className="text-xs font-medium text-rose-400">Total Operating Expenses</span>
+                  <span className="text-sm font-bold font-mono text-rose-500">-{formatCurrency(totalExpenses, currency, currencySymbol)}</span>
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-xl bg-primary/10 border border-primary/30">
+                  <div>
+                    <div className="text-xs font-bold text-primary">Net Operating Profit (EBITDA)</div>
+                    <div className="text-[10px] text-muted-foreground">Margin: {netProfitMargin}% of revenue</div>
+                  </div>
+                  <span className={`text-base font-extrabold font-mono ${netOperatingProfit >= 0 ? 'text-primary' : 'text-rose-500'}`}>
+                    {formatCurrency(netOperatingProfit, currency, currencySymbol)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Itemized Expenses Ledger Table */}
+          <div className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-foreground">Expense Vouchers Ledger</h3>
+                <p className="text-xs text-muted-foreground">Detailed historical business disbursements</p>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-border text-muted-foreground font-bold">
+                    <th className="py-2.5 px-3">Date</th>
+                    <th className="py-2.5 px-3">Voucher #</th>
+                    <th className="py-2.5 px-3">Category</th>
+                    <th className="py-2.5 px-3">Description</th>
+                    <th className="py-2.5 px-3">Channel</th>
+                    <th className="py-2.5 px-3 text-right">Tax (GST)</th>
+                    <th className="py-2.5 px-3 text-right">Amount</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {expenseRows.map((exp, idx) => (
+                    <tr key={idx} className="hover:bg-muted/20">
+                      <td className="py-2.5 px-3 text-muted-foreground">{String(exp.date || '').split('T')[0] || '-'}</td>
+                      <td className="py-2.5 px-3 font-mono font-semibold text-foreground">{exp.expense_id}</td>
+                      <td className="py-2.5 px-3">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-muted text-foreground border border-border">
+                          {exp.category || 'General'}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3 text-foreground font-medium">{exp.description}</td>
+                      <td className="py-2.5 px-3 text-muted-foreground">{exp.payment_method || '-'}</td>
+                      <td className="py-2.5 px-3 text-right font-mono text-muted-foreground">
+                        {formatCurrency(Number(exp.gst || 0), currency, currencySymbol)}
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-mono font-bold text-rose-500">
+                        {formatCurrency(Number(exp.amount || 0), currency, currencySymbol)}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>

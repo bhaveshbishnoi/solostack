@@ -81,9 +81,12 @@ export const BusinessTemplateHubModal: React.FC = () => {
 
   if (!isOpen) return null;
 
-  const handleApply = async () => {
+    const handleApply = async () => {
     try {
       await applyBusinessTemplate(selectedTemplate, customBusinessName.trim() || selectedTemplate.title);
+      try {
+        localStorage.setItem('exdrow_template_configured', 'true');
+      } catch {}
       addNotification(
         'success',
         'Business Schema Applied!',

@@ -33,6 +33,13 @@ export const salonTemplate: BusinessTemplate = {
       targetKey: 'product_id',
       relationship: 'Bill line items calculate Treatments performed + Products sold',
     },
+    {
+      sourceSheet: '_Products',
+      sourceKey: 'category_id',
+      targetSheet: '_Categories',
+      targetKey: 'category_id',
+      relationship: 'Treatments belong to a Salon Beauty Category',
+    },
   ],
   sheets: [
     {
@@ -41,7 +48,7 @@ export const salonTemplate: BusinessTemplate = {
         { key: 'product_id', name: 'Service / Product ID', dataType: 'text', required: true },
         { key: 'sku', name: 'Treatment Code', dataType: 'text', required: true },
         { key: 'name', name: 'Service / Treatment Name', dataType: 'text', required: true },
-        { key: 'category_id', name: 'Category', dataType: 'text' },
+        { key: 'category_id', name: 'Beauty Category', dataType: 'text', referenceTable: '_Categories', referenceKey: 'category_id' },
         { key: 'purchase_price', name: 'Product Consumable Cost', dataType: 'currency' },
         { key: 'selling_price', name: 'Service Price / MRP', dataType: 'currency', required: true },
         { key: 'gst_rate', name: 'Salon GST %', dataType: 'number', defaultValue: 18 },
@@ -244,6 +251,41 @@ export const salonTemplate: BusinessTemplate = {
           gst: 432,
           payment_method: 'UPI',
           notes: 'Invoice #TOWL-88',
+        },
+      ],
+    },
+    {
+      name: '_Categories',
+      columns: [
+        { key: 'category_id', name: 'Category ID', dataType: 'text', required: true },
+        { key: 'name', name: 'Salon Section / Category', dataType: 'text', required: true },
+        { key: 'description', name: 'Treatments & Rituals Included', dataType: 'text' },
+        { key: 'status', name: 'Status', dataType: 'text', defaultValue: 'active' },
+      ],
+      rows: [
+        {
+          category_id: 'Hair Treatments',
+          name: 'Hair Care & Hair Spa',
+          description: 'Keratin smoothing, botox ritual, global color, hair spa, haircuts',
+          status: 'active',
+        },
+        {
+          category_id: 'Skin Care & Facials',
+          name: 'Skin Care & Advanced Facials',
+          description: 'Hydra facials, de-tan therapy, collagen boost, cleanups',
+          status: 'active',
+        },
+        {
+          category_id: 'Nails & Pedicure',
+          name: 'Nails & Hand/Foot Spa',
+          description: 'Gel polish, extensions, paraffin manicure, therapeutic pedicure',
+          status: 'active',
+        },
+        {
+          category_id: 'Bridal & Makeup',
+          name: 'Bridal & Occasion Makeup',
+          description: 'HD party makeup, bridal glam, pre-wedding rituals, saree draping',
+          status: 'active',
         },
       ],
     },

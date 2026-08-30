@@ -33,6 +33,13 @@ export const wholesaleTemplate: BusinessTemplate = {
       targetKey: 'product_id',
       relationship: 'Invoice line items compute carton lots x Case Price',
     },
+    {
+      sourceSheet: '_Products',
+      sourceKey: 'category_id',
+      targetSheet: '_Categories',
+      targetKey: 'category_id',
+      relationship: 'Products belong to a Wholesale Commodity Category',
+    },
   ],
   sheets: [
     {
@@ -41,7 +48,7 @@ export const wholesaleTemplate: BusinessTemplate = {
         { key: 'product_id', name: 'Product ID', dataType: 'text', required: true },
         { key: 'sku', name: 'Case SKU / Barcode', dataType: 'text', required: true },
         { key: 'name', name: 'Wholesale Product / Pack', dataType: 'text', required: true },
-        { key: 'category_id', name: 'Product Category', dataType: 'text' },
+        { key: 'category_id', name: 'Product Category', dataType: 'text', referenceTable: '_Categories', referenceKey: 'category_id' },
         { key: 'purchase_price', name: 'Factory Purchase Cost', dataType: 'currency' },
         { key: 'selling_price', name: 'Dealer Wholesale Price', dataType: 'currency', required: true },
         { key: 'gst_rate', name: 'GST %', dataType: 'number', defaultValue: 18 },
@@ -71,8 +78,8 @@ export const wholesaleTemplate: BusinessTemplate = {
     {
       name: '_Inventory',
       columns: [
-        { key: 'inventory_id', name: 'Warehouse Bin ID', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Product ID', dataType: 'text', required: true },
+        { key: 'inventory_id', name: 'Bin Location', dataType: 'text', required: true },
+        { key: 'product_id', name: 'Product ID', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Cartons in Warehouse', dataType: 'number' },
         { key: 'minimum_stock', name: 'Buffer Stock', dataType: 'number' },
         { key: 'updated_at', name: 'Stock Audit Date', dataType: 'date' },
@@ -141,7 +148,7 @@ export const wholesaleTemplate: BusinessTemplate = {
       name: '_Sales',
       columns: [
         { key: 'sale_id', name: 'Invoice No', dataType: 'text', required: true },
-        { key: 'customer_id', name: 'Dealer Name', dataType: 'text', required: true },
+        { key: 'customer_id', name: 'Dealer Name', dataType: 'text', required: true, referenceTable: '_Customers', referenceKey: 'customer_id' },
         { key: 'sale_date', name: 'Invoice Date', dataType: 'date', required: true },
         { key: 'subtotal', name: 'Taxable Amount', dataType: 'currency' },
         { key: 'discount', name: 'Trade Discount', dataType: 'currency' },
@@ -170,8 +177,8 @@ export const wholesaleTemplate: BusinessTemplate = {
       name: '_SaleItems',
       columns: [
         { key: 'sale_item_id', name: 'Item ID', dataType: 'text', required: true },
-        { key: 'sale_id', name: 'Invoice No', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Product ID', dataType: 'text', required: true },
+        { key: 'sale_id', name: 'Invoice No', dataType: 'text', required: true, referenceTable: '_Sales', referenceKey: 'sale_id' },
+        { key: 'product_id', name: 'Product ID', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Carton Count', dataType: 'number' },
         { key: 'unit_price', name: 'Case Price', dataType: 'currency' },
         { key: 'discount', name: 'Discount', dataType: 'currency' },
@@ -213,6 +220,41 @@ export const wholesaleTemplate: BusinessTemplate = {
           gst: 0,
           payment_method: 'Direct Bank Transfer',
           notes: 'LR #TRK-98124',
+        },
+      ],
+    },
+    {
+      name: '_Categories',
+      columns: [
+        { key: 'category_id', name: 'Category ID', dataType: 'text', required: true },
+        { key: 'name', name: 'Commodity Category Name', dataType: 'text', required: true },
+        { key: 'description', name: 'Product Class & Packaging', dataType: 'text' },
+        { key: 'status', name: 'Status', dataType: 'text', defaultValue: 'active' },
+      ],
+      rows: [
+        {
+          category_id: 'Packaged Beverages',
+          name: 'Packaged Beverages & Tea',
+          description: 'CTC tea master cartons, roasted coffee beans, juice cases',
+          status: 'active',
+        },
+        {
+          category_id: 'Bulk Staples & Grains',
+          name: 'Bulk Foodgrains & Staples',
+          description: '50kg gunny bags of basmati rice, organic wheat, unpolished pulses',
+          status: 'active',
+        },
+        {
+          category_id: 'Edible Oils & Fats',
+          name: 'Edible Oils & Cooking Fats',
+          description: '15L commercial tin containers of refined mustard and soy oil',
+          status: 'active',
+        },
+        {
+          category_id: 'Cleaning & Institutional',
+          name: 'Cleaning & Institutional Care',
+          description: '5L bulk detergent cans, surface disinfectants, sanitizers',
+          status: 'active',
         },
       ],
     },

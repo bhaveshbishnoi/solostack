@@ -33,6 +33,13 @@ export const servicesTemplate: BusinessTemplate = {
       targetKey: 'product_id',
       relationship: 'Invoice line items calculate hourly/milestone units x Agreed Service Rate',
     },
+    {
+      sourceSheet: '_Products',
+      sourceKey: 'category_id',
+      targetSheet: '_Categories',
+      targetKey: 'category_id',
+      relationship: 'Services belong to a Practice Group Category',
+    },
   ],
   sheets: [
     {
@@ -41,7 +48,7 @@ export const servicesTemplate: BusinessTemplate = {
         { key: 'product_id', name: 'Service ID', dataType: 'text', required: true },
         { key: 'sku', name: 'Service Code', dataType: 'text', required: true },
         { key: 'name', name: 'Service / Scope of Work', dataType: 'text', required: true },
-        { key: 'category_id', name: 'Service Practice', dataType: 'text' },
+        { key: 'category_id', name: 'Service Practice', dataType: 'text', referenceTable: '_Categories', referenceKey: 'category_id' },
         { key: 'purchase_price', name: 'Contractor Cost', dataType: 'currency' },
         { key: 'selling_price', name: 'Standard Hourly / Milestone Rate', dataType: 'currency', required: true },
         { key: 'gst_rate', name: 'Service GST %', dataType: 'number', defaultValue: 18 },
@@ -86,7 +93,7 @@ export const servicesTemplate: BusinessTemplate = {
       name: '_Inventory',
       columns: [
         { key: 'inventory_id', name: 'Deliverable ID', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Service ID', dataType: 'text', required: true },
+        { key: 'product_id', name: 'Service ID', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Available Hours / Milestones', dataType: 'number' },
         { key: 'minimum_stock', name: 'Committed Minimum', dataType: 'number' },
         { key: 'updated_at', name: 'Last Logged', dataType: 'date' },
@@ -155,7 +162,7 @@ export const servicesTemplate: BusinessTemplate = {
       name: '_Sales',
       columns: [
         { key: 'sale_id', name: 'Invoice No', dataType: 'text', required: true },
-        { key: 'customer_id', name: 'Client Name', dataType: 'text', required: true },
+        { key: 'customer_id', name: 'Client Name', dataType: 'text', required: true, referenceTable: '_Customers', referenceKey: 'customer_id' },
         { key: 'sale_date', name: 'Invoice Date', dataType: 'date', required: true },
         { key: 'subtotal', name: 'Services Subtotal', dataType: 'currency' },
         { key: 'discount', name: 'Client Discount', dataType: 'currency' },
@@ -184,8 +191,8 @@ export const servicesTemplate: BusinessTemplate = {
       name: '_SaleItems',
       columns: [
         { key: 'sale_item_id', name: 'Item ID', dataType: 'text', required: true },
-        { key: 'sale_id', name: 'Invoice No', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Service ID', dataType: 'text', required: true },
+        { key: 'sale_id', name: 'Invoice No', dataType: 'text', required: true, referenceTable: '_Sales', referenceKey: 'sale_id' },
+        { key: 'product_id', name: 'Service ID', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Billable Hours', dataType: 'number' },
         { key: 'unit_price', name: 'Hourly Rate', dataType: 'currency' },
         { key: 'discount', name: 'Discount', dataType: 'currency' },
@@ -227,6 +234,41 @@ export const servicesTemplate: BusinessTemplate = {
           gst: 1512,
           payment_method: 'Corporate Credit Card',
           notes: 'Billable back to Nexus Labs',
+        },
+      ],
+    },
+    {
+      name: '_Categories',
+      columns: [
+        { key: 'category_id', name: 'Category ID', dataType: 'text', required: true },
+        { key: 'name', name: 'Practice Group Name', dataType: 'text', required: true },
+        { key: 'description', name: 'Consulting Practice & Domain', dataType: 'text' },
+        { key: 'status', name: 'Status', dataType: 'text', defaultValue: 'active' },
+      ],
+      rows: [
+        {
+          category_id: 'Engineering & Cloud',
+          name: 'Software Engineering & Cloud Architecture',
+          description: 'Full-stack engineering, microservices, DevOps, AWS & Kubernetes infrastructure',
+          status: 'active',
+        },
+        {
+          category_id: 'Product Design & UX',
+          name: 'Product Design & UX/UI Research',
+          description: 'Design systems, wireframing, high-fidelity prototypes, user research interviews',
+          status: 'active',
+        },
+        {
+          category_id: 'Growth & Performance',
+          name: 'Digital Marketing & Growth Retainers',
+          description: 'Performance marketing, SEO technical audit, conversion rate optimization (CRO)',
+          status: 'active',
+        },
+        {
+          category_id: 'Cybersecurity & Audit',
+          name: 'Cybersecurity & Compliance Auditing',
+          description: 'VAPT vulnerability assessments, SOC-2 readiness, GDPR compliance roadmaps',
+          status: 'active',
         },
       ],
     },

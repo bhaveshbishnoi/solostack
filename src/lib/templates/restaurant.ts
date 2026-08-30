@@ -33,6 +33,13 @@ export const restaurantTemplate: BusinessTemplate = {
       targetKey: 'product_id',
       relationship: 'Food bill line items map to Dish SKU and Price',
     },
+    {
+      sourceSheet: '_Products',
+      sourceKey: 'category_id',
+      targetSheet: '_Categories',
+      targetKey: 'category_id',
+      relationship: 'Dishes belong to a Kitchen Course Menu Category',
+    },
   ],
   sheets: [
     {
@@ -41,7 +48,7 @@ export const restaurantTemplate: BusinessTemplate = {
         { key: 'product_id', name: 'Dish ID', dataType: 'text', required: true },
         { key: 'sku', name: 'Item Code', dataType: 'text', required: true },
         { key: 'name', name: 'Menu Item / Dish Name', dataType: 'text', required: true },
-        { key: 'category_id', name: 'Course / Category', dataType: 'text' },
+        { key: 'category_id', name: 'Course / Category', dataType: 'text', referenceTable: '_Categories', referenceKey: 'category_id' },
         { key: 'purchase_price', name: 'Food Cost (Raw Materials)', dataType: 'currency' },
         { key: 'selling_price', name: 'Menu Price', dataType: 'currency', required: true },
         { key: 'gst_rate', name: 'Restaurant GST %', dataType: 'number', defaultValue: 5 },
@@ -278,6 +285,41 @@ export const restaurantTemplate: BusinessTemplate = {
           gst: 0,
           payment_method: 'UPI',
           notes: 'Invoice #LPG-9921',
+        },
+      ],
+    },
+    {
+      name: '_Categories',
+      columns: [
+        { key: 'category_id', name: 'Category ID', dataType: 'text', required: true },
+        { key: 'name', name: 'Course Menu Category', dataType: 'text', required: true },
+        { key: 'description', name: 'Kitchen Department & Prep Station', dataType: 'text' },
+        { key: 'status', name: 'Status', dataType: 'text', defaultValue: 'active' },
+      ],
+      rows: [
+        {
+          category_id: 'Starters & Appetizers',
+          name: 'Starters & Tandoor Station',
+          description: 'Live clay oven kebabs, tikkas, crispy platters',
+          status: 'active',
+        },
+        {
+          category_id: 'Main Course',
+          name: 'Main Course & Biryanis',
+          description: 'Handi curries, dum biryanis, gravies, freshly baked breads',
+          status: 'active',
+        },
+        {
+          category_id: 'Beverages & Mocktails',
+          name: 'Bar & Mocktails Counter',
+          description: 'Craft coolers, fresh fruit crushes, cold coffee, signature lassi',
+          status: 'active',
+        },
+        {
+          category_id: 'Desserts & Sweets',
+          name: 'Desserts & Bakery Station',
+          description: 'Sizzling brownies, artisan kulfi, hot gulab jamun with ice cream',
+          status: 'active',
         },
       ],
     },

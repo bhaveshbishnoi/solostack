@@ -302,6 +302,10 @@ export const useWorkbookStore = create<WorkbookState>((set, get) => ({
         isSaving: false,
       });
 
+      try {
+        localStorage.setItem('exdrow_template_configured', 'true');
+      } catch {}
+
       // Save directly to the workbook file if open
       if (state.metadata) {
         await get().saveWorkbook();

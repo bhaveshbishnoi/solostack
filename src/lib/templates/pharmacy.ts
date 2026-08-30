@@ -33,6 +33,13 @@ export const pharmacyTemplate: BusinessTemplate = {
       targetKey: 'product_id',
       relationship: 'Dispensed items compute strips/bottles x Medicine MRP',
     },
+    {
+      sourceSheet: '_Products',
+      sourceKey: 'category_id',
+      targetSheet: '_Categories',
+      targetKey: 'category_id',
+      relationship: 'Medicines belong to a Drug Schedule & Therapeutic Category',
+    },
   ],
   sheets: [
     {
@@ -41,7 +48,7 @@ export const pharmacyTemplate: BusinessTemplate = {
         { key: 'product_id', name: 'Drug ID', dataType: 'text', required: true },
         { key: 'sku', name: 'Batch & HSN', dataType: 'text', required: true },
         { key: 'name', name: 'Medicine Name & Salt', dataType: 'text', required: true },
-        { key: 'category_id', name: 'Schedule / Class', dataType: 'text' },
+        { key: 'category_id', name: 'Drug Category', dataType: 'text', referenceTable: '_Categories', referenceKey: 'category_id' },
         { key: 'purchase_price', name: 'Stockist Purchase Rate', dataType: 'currency' },
         { key: 'selling_price', name: 'Maximum Retail Price (MRP)', dataType: 'currency', required: true },
         { key: 'gst_rate', name: 'Medicine GST %', dataType: 'number', defaultValue: 12 },
@@ -86,7 +93,7 @@ export const pharmacyTemplate: BusinessTemplate = {
       name: '_Inventory',
       columns: [
         { key: 'inventory_id', name: 'Batch Record ID', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Drug ID', dataType: 'text', required: true },
+        { key: 'product_id', name: 'Drug ID', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Strips in Stock', dataType: 'number' },
         { key: 'minimum_stock', name: 'Expiry Alert Date', dataType: 'text' },
         { key: 'updated_at', name: 'Last Stocked Date', dataType: 'date' },
@@ -162,7 +169,7 @@ export const pharmacyTemplate: BusinessTemplate = {
       name: '_Sales',
       columns: [
         { key: 'sale_id', name: 'Bill ID', dataType: 'text', required: true },
-        { key: 'customer_id', name: 'Patient Name', dataType: 'text', required: true },
+        { key: 'customer_id', name: 'Patient Name', dataType: 'text', required: true, referenceTable: '_Customers', referenceKey: 'customer_id' },
         { key: 'sale_date', name: 'Bill Date', dataType: 'date', required: true },
         { key: 'subtotal', name: 'Taxable Amount', dataType: 'currency' },
         { key: 'discount', name: 'Discount', dataType: 'currency' },
@@ -191,8 +198,8 @@ export const pharmacyTemplate: BusinessTemplate = {
       name: '_SaleItems',
       columns: [
         { key: 'sale_item_id', name: 'Item ID', dataType: 'text', required: true },
-        { key: 'sale_id', name: 'Bill ID', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Drug ID', dataType: 'text', required: true },
+        { key: 'sale_id', name: 'Bill ID', dataType: 'text', required: true, referenceTable: '_Sales', referenceKey: 'sale_id' },
+        { key: 'product_id', name: 'Drug ID', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Strips Dispensed', dataType: 'number' },
         { key: 'unit_price', name: 'MRP', dataType: 'currency' },
         { key: 'discount', name: 'Discount', dataType: 'currency' },
@@ -244,6 +251,41 @@ export const pharmacyTemplate: BusinessTemplate = {
           gst: 0,
           payment_method: 'Cash',
           notes: 'Vaccine fridge log',
+        },
+      ],
+    },
+    {
+      name: '_Categories',
+      columns: [
+        { key: 'category_id', name: 'Category ID', dataType: 'text', required: true },
+        { key: 'name', name: 'Therapeutic Category Name', dataType: 'text', required: true },
+        { key: 'description', name: 'Schedule & Formulation Class', dataType: 'text' },
+        { key: 'status', name: 'Status', dataType: 'text', defaultValue: 'active' },
+      ],
+      rows: [
+        {
+          category_id: 'Prescription Antibiotics',
+          name: 'Antibiotics & Antibacterials (Schedule H)',
+          description: 'Amoxicillin, Azithromycin, Cefixime requiring valid prescription',
+          status: 'active',
+        },
+        {
+          category_id: 'OTC Pain Relief',
+          name: 'Pain Relief & Antipyretics (OTC)',
+          description: 'Paracetamol, Ibuprofen, Diclofenac gels and sprays',
+          status: 'active',
+        },
+        {
+          category_id: 'Cardiovascular & Diabetes',
+          name: 'Cardiac & Diabetic Maintenance',
+          description: 'Metformin, Telmisartan, Atorvastatin chronic medications',
+          status: 'active',
+        },
+        {
+          category_id: 'Vitamins & Supplements',
+          name: 'Nutraceuticals & Wellness',
+          description: 'Vitamin C, Zinc, Multivitamins, Calcium D3 syrups & capsules',
+          status: 'active',
         },
       ],
     },

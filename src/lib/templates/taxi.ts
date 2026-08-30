@@ -33,6 +33,13 @@ export const taxiTemplate: BusinessTemplate = {
       targetKey: 'product_id',
       relationship: 'Trip Line items calculate fare according to the Cab Rate Slab',
     },
+    {
+      sourceSheet: '_Products',
+      sourceKey: 'category_id',
+      targetSheet: '_Categories',
+      targetKey: 'category_id',
+      relationship: 'Vehicles belong to a Fleet Category',
+    },
   ],
   sheets: [
     {
@@ -41,7 +48,7 @@ export const taxiTemplate: BusinessTemplate = {
         { key: 'product_id', name: 'Cab Slab ID', dataType: 'text', required: true },
         { key: 'sku', name: 'Vehicle Model / Code', dataType: 'text', required: true },
         { key: 'name', name: 'Cab Category & Model', dataType: 'text', required: true },
-        { key: 'category_id', name: 'Fleet Category', dataType: 'text' },
+        { key: 'category_id', name: 'Fleet Category', dataType: 'text', referenceTable: '_Categories', referenceKey: 'category_id' },
         { key: 'purchase_price', name: 'Driver Base Payout', dataType: 'currency' },
         { key: 'selling_price', name: 'Base Fare / Per Km Rate', dataType: 'currency', required: true },
         { key: 'gst_rate', name: 'Transport GST %', dataType: 'number', defaultValue: 5 },
@@ -341,6 +348,47 @@ export const taxiTemplate: BusinessTemplate = {
           gst: 0,
           payment_method: 'Net Banking',
           notes: 'Fleet pool account',
+        },
+      ],
+    },
+    {
+      name: '_Categories',
+      columns: [
+        { key: 'category_id', name: 'Category ID', dataType: 'text', required: true },
+        { key: 'name', name: 'Fleet Category Name', dataType: 'text', required: true },
+        { key: 'description', name: 'Description & Vehicle Types', dataType: 'text' },
+        { key: 'status', name: 'Status', dataType: 'text', defaultValue: 'active' },
+      ],
+      rows: [
+        {
+          category_id: 'Sedan',
+          name: 'Sedan Prime',
+          description: '4-passenger air-conditioned sedans (Dzire, Etios, Amaze)',
+          status: 'active',
+        },
+        {
+          category_id: 'SUV',
+          name: 'SUV Premium',
+          description: '6-7 passenger family & luggage vehicles (Innova Crysta, Ertiga)',
+          status: 'active',
+        },
+        {
+          category_id: 'Hatchback',
+          name: 'Hatchback City',
+          description: '4-passenger compact city transit (WagonR, Tiago)',
+          status: 'active',
+        },
+        {
+          category_id: 'Luxury',
+          name: 'Executive Luxury',
+          description: 'Chauffeured luxury cars (Mercedes E-Class, BMW 5)',
+          status: 'active',
+        },
+        {
+          category_id: 'Outstation',
+          name: 'Intercity Outstation',
+          description: 'Long distance one-way and round-trip highway fleet',
+          status: 'active',
         },
       ],
     },

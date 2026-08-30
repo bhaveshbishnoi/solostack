@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useWorkbookStore } from '../../stores/workbookStore';
 import { useUIStore } from '../../stores/uiStore';
 import { getBusinessFlowType } from '../../types';
@@ -296,6 +296,16 @@ export const Sidebar: React.FC = () => {
     }
   };
 
+  // Show template setup button ONLY once initially, never again after a template is chosen
+  const isTemplateConfigured = useMemo(() => {
+    if (typeof window === 'undefined') return true;
+    if (localStorage.getItem('exdrow_template_configured') === 'true') return true;
+    if (appConfig?.businessType && appConfig.businessType !== 'General' && appConfig.businessType !== 'Retail Store') {
+      return true;
+    }
+    return false;
+  }, [appConfig?.businessType]);
+
   const navItemClass = (sheetKey: string) => {
     const isActive = activeSheetName === sheetKey;
     return `w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition select-none ${
@@ -324,8 +334,8 @@ export const Sidebar: React.FC = () => {
             {!isSidebarCollapsed && <span>Dashboard</span>}
           </button>
 
-          {/* Show template setup button ONLY if no template has been configured yet */}
-          {!appConfig?.businessType && (
+          {/* Show template setup button ONLY once initially, never again after selection */}
+          {!isTemplateConfigured && (
             <button
               onClick={() => openModal('business_templates')}
               className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-primary hover:bg-primary/10 transition mt-1 border border-primary/20"

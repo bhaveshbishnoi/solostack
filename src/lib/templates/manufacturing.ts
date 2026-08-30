@@ -33,6 +33,13 @@ export const manufacturingTemplate: BusinessTemplate = {
       targetKey: 'product_id',
       relationship: 'Production dispatch items map to manufactured goods',
     },
+    {
+      sourceSheet: '_Products',
+      sourceKey: 'category_id',
+      targetSheet: '_Categories',
+      targetKey: 'category_id',
+      relationship: 'Finished goods belong to an Industrial Product Line',
+    },
   ],
   sheets: [
     {
@@ -41,7 +48,7 @@ export const manufacturingTemplate: BusinessTemplate = {
         { key: 'product_id', name: 'Assembly ID', dataType: 'text', required: true },
         { key: 'sku', name: 'Model / Part #', dataType: 'text', required: true },
         { key: 'name', name: 'Finished Good / Assembly', dataType: 'text', required: true },
-        { key: 'category_id', name: 'Product Line', dataType: 'text' },
+        { key: 'category_id', name: 'Product Line', dataType: 'text', referenceTable: '_Categories', referenceKey: 'category_id' },
         { key: 'purchase_price', name: 'BOM Component Cost', dataType: 'currency' },
         { key: 'selling_price', name: 'Ex-Factory Selling Price', dataType: 'currency', required: true },
         { key: 'gst_rate', name: 'Industrial GST %', dataType: 'number', defaultValue: 18 },
@@ -71,8 +78,8 @@ export const manufacturingTemplate: BusinessTemplate = {
     {
       name: '_Inventory',
       columns: [
-        { key: 'inventory_id', name: 'Bin Location', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Assembly ID', dataType: 'text', required: true },
+        { key: 'inventory_id', name: 'Shop Floor Bay', dataType: 'text', required: true },
+        { key: 'product_id', name: 'Assembly ID', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Finished Units in Stock', dataType: 'number' },
         { key: 'minimum_stock', name: 'Safety Stock', dataType: 'number' },
         { key: 'updated_at', name: 'Production Audit', dataType: 'date' },
@@ -141,7 +148,7 @@ export const manufacturingTemplate: BusinessTemplate = {
       name: '_Sales',
       columns: [
         { key: 'sale_id', name: 'Order No', dataType: 'text', required: true },
-        { key: 'customer_id', name: 'Buyer Enterprise', dataType: 'text', required: true },
+        { key: 'customer_id', name: 'Buyer Enterprise', dataType: 'text', required: true, referenceTable: '_Customers', referenceKey: 'customer_id' },
         { key: 'sale_date', name: 'Dispatch Date', dataType: 'date', required: true },
         { key: 'subtotal', name: 'Ex-Factory Amount', dataType: 'currency' },
         { key: 'discount', name: 'Contract Discount', dataType: 'currency' },
@@ -170,8 +177,8 @@ export const manufacturingTemplate: BusinessTemplate = {
       name: '_SaleItems',
       columns: [
         { key: 'sale_item_id', name: 'Item ID', dataType: 'text', required: true },
-        { key: 'sale_id', name: 'Order No', dataType: 'text', required: true },
-        { key: 'product_id', name: 'Assembly ID', dataType: 'text', required: true },
+        { key: 'sale_id', name: 'Order No', dataType: 'text', required: true, referenceTable: '_Sales', referenceKey: 'sale_id' },
+        { key: 'product_id', name: 'Assembly ID', dataType: 'text', required: true, referenceTable: '_Products', referenceKey: 'product_id' },
         { key: 'quantity', name: 'Quantity Produced', dataType: 'number' },
         { key: 'unit_price', name: 'Unit Price', dataType: 'currency' },
         { key: 'discount', name: 'Discount', dataType: 'currency' },
@@ -213,6 +220,41 @@ export const manufacturingTemplate: BusinessTemplate = {
           gst: 882,
           payment_method: 'Bank Transfer',
           notes: 'PO #TOOL-991',
+        },
+      ],
+    },
+    {
+      name: '_Categories',
+      columns: [
+        { key: 'category_id', name: 'Category ID', dataType: 'text', required: true },
+        { key: 'name', name: 'Product Line Category', dataType: 'text', required: true },
+        { key: 'description', name: 'Manufacturing Sector & Standard', dataType: 'text' },
+        { key: 'status', name: 'Status', dataType: 'text', defaultValue: 'active' },
+      ],
+      rows: [
+        {
+          category_id: 'Power Electronics',
+          name: 'Power Electronics & Inverters',
+          description: 'Grid-tie & hybrid solar inverters, MPPT chargers, static UPS',
+          status: 'active',
+        },
+        {
+          category_id: 'Industrial Automation',
+          name: 'Industrial Automation & PLC',
+          description: 'Programmable logic controllers, VFD motor drives, sensor assemblies',
+          status: 'active',
+        },
+        {
+          category_id: 'Structural Assemblies',
+          name: 'Structural Fabrications & Enclosures',
+          description: 'Sheet metal enclosures, mounting brackets, IP65 junction boxes',
+          status: 'active',
+        },
+        {
+          category_id: 'Battery Packs',
+          name: 'Energy Storage & Lithium Packs',
+          description: 'LFP battery modules with integrated BMS and thermal sensors',
+          status: 'active',
         },
       ],
     },

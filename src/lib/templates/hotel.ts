@@ -33,6 +33,13 @@ export const hotelTemplate: BusinessTemplate = {
       targetKey: 'product_id',
       relationship: 'Folio billing items calculate nights duration x Room Tariff',
     },
+    {
+      sourceSheet: '_Products',
+      sourceKey: 'category_id',
+      targetSheet: '_Categories',
+      targetKey: 'category_id',
+      relationship: 'Rooms belong to a Hotel Wing / Tier',
+    },
   ],
   sheets: [
     {
@@ -41,7 +48,7 @@ export const hotelTemplate: BusinessTemplate = {
         { key: 'product_id', name: 'Room Category Code', dataType: 'text', required: true },
         { key: 'sku', name: 'Category Code', dataType: 'text', required: true },
         { key: 'name', name: 'Room Type & View', dataType: 'text', required: true },
-        { key: 'category_id', name: 'Wing / Floor', dataType: 'text' },
+        { key: 'category_id', name: 'Wing / Floor Tier', dataType: 'text', referenceTable: '_Categories', referenceKey: 'category_id' },
         { key: 'purchase_price', name: 'Turnaround Cost', dataType: 'currency' },
         { key: 'selling_price', name: 'Nightly Tariff', dataType: 'currency', required: true },
         { key: 'gst_rate', name: 'GST %', dataType: 'number', defaultValue: 12 },
@@ -275,6 +282,41 @@ export const hotelTemplate: BusinessTemplate = {
           gst: 540,
           payment_method: 'Corporate Card',
           notes: 'Invoice #HK-9921',
+        },
+      ],
+    },
+    {
+      name: '_Categories',
+      columns: [
+        { key: 'category_id', name: 'Category ID', dataType: 'text', required: true },
+        { key: 'name', name: 'Wing & Floor Tier', dataType: 'text', required: true },
+        { key: 'description', name: 'Scope & Floor Level', dataType: 'text' },
+        { key: 'status', name: 'Status', dataType: 'text', defaultValue: 'active' },
+      ],
+      rows: [
+        {
+          category_id: 'Standard Floor',
+          name: 'Standard Floor (Levels 1-3)',
+          description: 'Comfort rooms with courtyard and city views',
+          status: 'active',
+        },
+        {
+          category_id: 'Club Floor',
+          name: 'Executive Club (Levels 4-7)',
+          description: 'Includes lounge access, complimentary breakfast and hi-speed WiFi',
+          status: 'active',
+        },
+        {
+          category_id: 'Suites',
+          name: 'Luxury Suites',
+          description: 'Separate living hall, jacuzzi, and panoramic sea/city view',
+          status: 'active',
+        },
+        {
+          category_id: 'Villas',
+          name: 'Private Pool Villas',
+          description: 'Secluded villa estates with private plunge pools and personal butler',
+          status: 'active',
         },
       ],
     },
