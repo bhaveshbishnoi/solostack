@@ -139,8 +139,27 @@ export const ReportsView: React.FC = () => {
         </div>
 
         <div>
-          <label className="block font-medium text-foreground mb-1">Columns to Include</label>
-          <div className="flex flex-wrap gap-1 max-h-16 overflow-y-auto p-1 bg-muted/30 border border-border rounded-lg">
+          <div className="flex items-center justify-between mb-1">
+            <label className="font-semibold text-foreground">Columns to Include ({displayedColumns.length}/{columns.length})</label>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setSelectedColKeys(columns.map((c) => c.key))}
+                className="text-[10px] text-primary hover:underline font-bold"
+              >
+                Select All
+              </button>
+              <span className="text-muted-foreground">•</span>
+              <button
+                type="button"
+                onClick={() => setSelectedColKeys(columns.slice(0, 3).map((c) => c.key))}
+                className="text-[10px] text-muted-foreground hover:text-foreground"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto p-2 bg-muted/20 border border-border rounded-xl">
             {columns.map((col) => {
               const isSelected = selectedColKeys.includes(col.key);
               return (
@@ -149,15 +168,16 @@ export const ReportsView: React.FC = () => {
                   type="button"
                   onClick={() => {
                     if (isSelected) {
+                      if (selectedColKeys.length <= 1) return;
                       setSelectedColKeys(selectedColKeys.filter((k) => k !== col.key));
                     } else {
                       setSelectedColKeys([...selectedColKeys, col.key]);
                     }
                   }}
-                  className={`px-2 py-0.5 rounded text-[10px] font-medium flex items-center gap-1 transition ${
+                  className={`px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1.5 transition ${
                     isSelected
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground hover:text-foreground'
+                      ? 'bg-primary text-primary-foreground shadow-xs'
+                      : 'bg-muted/80 text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   {isSelected ? <CheckSquare className="h-3 w-3" /> : <Square className="h-3 w-3" />}
@@ -178,28 +198,37 @@ export const ReportsView: React.FC = () => {
               {selectedSheet.replace('_', '')} Report
             </h2>
             <div className="text-xs text-muted-foreground mt-0.5">
-              {appConfig?.businessName} • Generated on {formatDate(new Date().toISOString())}
+              Generated on {formatDate(new Date().toISOString())} • {filteredRows.length} records • {displayedColumns.length} columns
             </div>
           </div>
-          <div className="text-right text-xs text-muted-foreground font-mono">
-            Records count: <b>{filteredRows.length}</b>
+          <div className="text-right text-xs">
+            <span className="font-bold text-foreground text-sm">{appConfig?.businessName}</span>
+            <div className="text-muted-foreground">{appConfig?.businessType}</div>
           </div>
         </div>
 
-        {/* Table of Results */}
-        <div className="overflow-x-auto">
+        {/* Tabular Grid */}
+        <div className="overflow-x-auto border border-border rounded-xl">
           <table className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="border-b border-border text-muted-foreground">
-                <th className="py-2.5 font-semibold">#</th>
-                {displayedColumns.map((col) => (
-                  <th key={col.key} className="py-2.5 font-semibold">
-                    {col.name}
-                  </th>
-                ))}
+            <thead className="bg-muted/50 border-b border-border text-foreground font-bold">
+              <tr>
+                <th className="py-2.5 px-3 border-r border-border font-mono text-center text-[10px] w-12">#</th>
+                {displayedColumns.map((col) => {
+                  const isNum =
+                    col.key.includes('total') ||
+                    col.key.includes('subtotal') ||
+                    col.key.includes('amount') ||
+                    col.key.includes('price') ||
+                    col.key.includes('quantity');
+                  return (
+                    <th key={col.key} className={`py-2.5 px-3.5 border-r border-border text-[11px] ${isNum ? 'text-right' : ''}`}>
+                      {col.name}
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-border/60">
               {filteredRows.length === 0 ? (
                 <tr>
                   <td colSpan={displayedColumns.length + 1} className="py-8 text-center text-muted-foreground">
@@ -208,18 +237,32 @@ export const ReportsView: React.FC = () => {
                 </tr>
               ) : (
                 filteredRows.map((row, idx) => (
-                  <tr key={idx} className="hover:bg-muted/20">
-                    <td className="py-2 text-muted-foreground/70 font-mono text-[11px]">{idx + 1}</td>
+                  <tr key={idx} className="even:bg-muted/10 odd:bg-card hover:bg-primary/5 transition">
+                    <td className="py-2 px-3 text-center text-muted-foreground/70 font-mono text-[10px] border-r border-border/60">
+                      {idx + 1}
+                    </td>
                     {displayedColumns.map((col) => {
                       const val = row[col.key];
+                      const isNum =
+                        col.key.includes('total') ||
+                        col.key.includes('subtotal') ||
+                        col.key.includes('amount') ||
+                        col.key.includes('price');
+
                       let displayVal = val ?? '-';
-                      if (col.key.includes('total') || col.key.includes('subtotal') || col.key.includes('amount') || col.key.includes('price')) {
+                      if (isNum) {
                         displayVal = formatCurrency(val, currency, currencySymbol);
                       } else if (col.key.includes('date')) {
                         displayVal = formatDate(val);
                       }
+
                       return (
-                        <td key={col.key} className="py-2 text-foreground font-mono">
+                        <td
+                          key={col.key}
+                          className={`py-2 px-3.5 text-foreground border-r border-border/60 ${
+                            isNum || col.key.includes('quantity') ? 'font-mono text-right font-medium' : ''
+                          }`}
+                        >
                           {displayVal}
                         </td>
                       );
@@ -232,20 +275,26 @@ export const ReportsView: React.FC = () => {
             {/* Summary Totals Row */}
             {filteredRows.length > 0 && Object.keys(numericTotals).length > 0 && (
               <tfoot>
-                <tr className="border-t-2 border-border font-bold bg-muted/20">
-                  <td className="py-3 text-foreground font-semibold">Total</td>
-                  {displayedColumns.map((col) => {
+                <tr className="border-t-2 border-border font-bold bg-muted/40 text-xs">
+                  <td className="py-2.5 px-3 text-center text-muted-foreground font-mono border-r border-border">Σ</td>
+                  {displayedColumns.map((col, idx) => {
                     const totalVal = numericTotals[col.key];
+                    const isFirst = idx === 0;
+
                     if (totalVal !== undefined) {
                       return (
-                        <td key={col.key} className="py-3 text-primary font-mono font-bold">
+                        <td key={col.key} className="py-2.5 px-3.5 text-primary font-mono font-extrabold text-right border-r border-border">
                           {col.key.includes('quantity')
                             ? totalVal
                             : formatCurrency(totalVal, currency, currencySymbol)}
                         </td>
                       );
                     }
-                    return <td key={col.key} className="py-3"></td>;
+                    return (
+                      <td key={col.key} className={`py-2.5 px-3.5 border-r border-border ${isFirst ? 'font-bold' : ''}`}>
+                        {isFirst ? `Total (${filteredRows.length})` : ''}
+                      </td>
+                    );
                   })}
                 </tr>
               </tfoot>

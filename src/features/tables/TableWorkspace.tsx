@@ -13,7 +13,7 @@ import {
   Trash2,
   Copy,
   Download,
-  Eye,
+  EyeOff,
   Columns,
   Edit2,
   Edit3,
@@ -21,11 +21,29 @@ import {
   MoreVertical,
   X,
   Check,
+  RotateCcw,
+  SlidersHorizontal,
+  CheckSquare,
+  Square
 } from 'lucide-react';
 
 interface TableWorkspaceProps {
   sheetName: string;
 }
+
+// Smart default visible columns to prevent cluttered tables
+const RECOMMENDED_VISIBLE_COLUMNS: Record<string, string[]> = {
+  _Products: ['product_id', 'sku', 'name', 'selling_price', 'minimum_stock', 'status'],
+  _Categories: ['category_id', 'name', 'description', 'status'],
+  _Inventory: ['inventory_id', 'product_id', 'quantity', 'minimum_stock', 'updated_at'],
+  _Customers: ['customer_id', 'name', 'phone', 'email', 'gstin'],
+  _Suppliers: ['supplier_id', 'name', 'phone', 'email', 'gstin'],
+  _Sales: ['sale_id', 'customer_id', 'sale_date', 'total', 'payment_method', 'status'],
+  _SaleItems: ['sale_item_id', 'sale_id', 'product_id', 'quantity', 'unit_price', 'line_total'],
+  _Expenses: ['expense_id', 'date', 'category', 'description', 'amount', 'payment_method'],
+  _StockMovements: ['movement_id', 'product_id', 'type', 'quantity', 'reference_id', 'created_at'],
+  _GST: ['gst_rate_id', 'name', 'rate', 'is_default'],
+};
 
 export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => {
   const {
@@ -41,15 +59,17 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
     setActiveSheet,
   } = useWorkbookStore();
 
-  const { tableDensity } = useSettingsStore();
+  const { tableDensity, setTableDensity, sheetHiddenColumns, setSheetHiddenColumns } = useSettingsStore();
   const { addNotification, setTargetRecord } = useUIStore();
 
   const currentSheet = sheets[sheetName];
   const [searchQuery, setSearchQuery] = useState('');
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
-  const [hiddenColumns, setHiddenColumns] = useState<string[]>([]);
-  const [showColumnPicker, setShowColumnPicker] = useState(false);
+
+  // Column manager modal state
+  const [isColumnModalOpen, setIsColumnModalOpen] = useState(false);
+  const [columnSearchFilter, setColumnSearchFilter] = useState('');
 
   // New Column creation modal state
   const [isAddColumnOpen, setIsAddColumnOpen] = useState(false);
@@ -67,6 +87,23 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
   const [editValue, setEditValue] = useState<string>('');
   const editInputRef = useRef<HTMLInputElement>(null);
 
+  // Initialize hidden columns from settings or recommended defaults
+  const hiddenColumns = useMemo(() => {
+    if (!currentSheet) return [];
+    if (sheetHiddenColumns[sheetName]) {
+      return sheetHiddenColumns[sheetName];
+    }
+    const recommended = RECOMMENDED_VISIBLE_COLUMNS[sheetName];
+    if (recommended) {
+      return currentSheet.columns.map((c) => c.key).filter((k) => !recommended.includes(k));
+    }
+    // For custom tables with more than 6 columns, keep first 6
+    if (currentSheet.columns.length > 6) {
+      return currentSheet.columns.slice(6).map((c) => c.key);
+    }
+    return [];
+  }, [currentSheet, sheetName, sheetHiddenColumns]);
+
   // Primary ID key detection
   const primaryIdKey = useMemo(() => {
     if (!currentSheet?.columns.length) return 'id';
@@ -81,7 +118,8 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
   // Visible columns
   const visibleColumns = useMemo(() => {
     if (!currentSheet) return [];
-    return currentSheet.columns.filter((c) => !hiddenColumns.includes(c.key));
+    const list = currentSheet.columns.filter((c) => !hiddenColumns.includes(c.key));
+    return list.length > 0 ? list : currentSheet.columns.slice(0, 1);
   }, [currentSheet, hiddenColumns]);
 
   // Filtered and Sorted Rows
@@ -121,6 +159,26 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
 
     return rows;
   }, [currentSheet, searchQuery, sortColumn, sortDirection]);
+
+  // Automatic column sums for numeric/currency columns
+  const columnTotals = useMemo(() => {
+    const totals: Record<string, number> = {};
+    visibleColumns.forEach((col) => {
+      const isNum =
+        col.dataType === 'number' ||
+        col.dataType === 'currency' ||
+        col.key.includes('price') ||
+        col.key.includes('amount') ||
+        col.key.includes('total') ||
+        col.key.includes('quantity') ||
+        col.key.includes('stock');
+
+      if (isNum) {
+        totals[col.key] = processedRows.reduce((acc, row) => acc + Number(row[col.key] || 0), 0);
+      }
+    });
+    return totals;
+  }, [visibleColumns, processedRows]);
 
   // Focus inline editor on open
   useEffect(() => {
@@ -171,7 +229,7 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
 
     const idVal = row[primaryIdKey];
     updateRow(sheetName, primaryIdKey, idVal, { [colKey]: parsedVal });
-    
+
     if (nextCell) {
       setEditingCell(nextCell);
       const nextRow = processedRows[nextCell.rowIdx];
@@ -206,7 +264,6 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
     addRow(sheetName, newRow);
     addNotification('success', 'Row Added', `Auto-incremented ID: ${nextId}`);
 
-    // Auto-focus the second column for immediate typing
     const targetCol = visibleColumns.length > 1 ? visibleColumns[1].key : visibleColumns[0].key;
     setEditingCell({ rowIdx: 0, colKey: targetCol });
     setEditValue('');
@@ -233,7 +290,43 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
     }
   };
 
-  // Add New Column (Cell/Column Schema)
+  // Column visibility management
+  const handleToggleColumn = (colKey: string) => {
+    const isHidden = hiddenColumns.includes(colKey);
+    const newHidden = isHidden
+      ? hiddenColumns.filter((k) => k !== colKey)
+      : [...hiddenColumns, colKey];
+    setSheetHiddenColumns(sheetName, newHidden);
+  };
+
+  const handleShowAllColumns = () => {
+    setSheetHiddenColumns(sheetName, []);
+    addNotification('info', 'Columns Shown', 'All columns are now visible');
+  };
+
+  const handleResetRecommended = () => {
+    const recommended = RECOMMENDED_VISIBLE_COLUMNS[sheetName];
+    if (recommended) {
+      const hidden = currentSheet.columns.map((c) => c.key).filter((k) => !recommended.includes(k));
+      setSheetHiddenColumns(sheetName, hidden);
+    } else {
+      setSheetHiddenColumns(sheetName, currentSheet.columns.slice(6).map((c) => c.key));
+    }
+    addNotification('info', 'Columns Reset', 'Restored recommended columns');
+  };
+
+  const handleHideColumnDirectly = (colKey: string) => {
+    if (visibleColumns.length <= 1) {
+      addNotification('warning', 'Cannot Hide', 'At least one column must remain visible');
+      return;
+    }
+    const newHidden = [...hiddenColumns, colKey];
+    setSheetHiddenColumns(sheetName, newHidden);
+    setActiveColMenu(null);
+    addNotification('info', 'Column Hidden', `Hidden column "${colKey}". You can restore it from Columns.`);
+  };
+
+  // Add New Column
   const handleCreateColumn = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newColName.trim()) return;
@@ -288,21 +381,23 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
     addNotification('success', 'Export Complete', `Exported ${processedRows.length} rows to CSV`);
   };
 
-  const pyClass = tableDensity === 'compact' ? 'py-1.5' : tableDensity === 'comfortable' ? 'py-3.5' : 'py-2.5';
+  // Density classes for spreadsheet feel
+  const rowHeightClass =
+    tableDensity === 'compact' ? 'py-1.5 px-3 text-[11px]' : tableDensity === 'comfortable' ? 'py-3.5 px-4 text-xs' : 'py-2 px-3.5 text-xs';
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-background">
       {/* Table Toolbar */}
-      <div className="h-14 border-b border-border bg-card/60 px-6 flex items-center justify-between gap-4 shrink-0">
+      <div className="h-14 border-b border-border bg-card/60 backdrop-blur-md px-6 flex items-center justify-between gap-4 shrink-0 select-none">
         <div className="flex items-center gap-3">
-          <h2 className="text-base font-bold text-foreground capitalize">
+          <h2 className="text-base font-extrabold text-foreground capitalize tracking-tight">
             {sheetName.replace('_', '')}
           </h2>
-          <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-mono">
+          <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-mono font-medium">
             {processedRows.length} rows
           </span>
-          <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-mono">
-            {currentSheet.columns.length} columns
+          <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-mono font-semibold">
+            {visibleColumns.length}/{currentSheet.columns.length} cols
           </span>
         </div>
 
@@ -312,72 +407,62 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
             <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
             <input
               type="text"
-              placeholder={`Search in ${sheetName.replace('_', '')}...`}
+              placeholder={`Search ${processedRows.length} records in ${sheetName.replace('_', '')}...`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-1.5 text-xs bg-muted/50 border border-border rounded-lg text-foreground focus:outline-none focus:border-primary placeholder:text-muted-foreground"
+              className="w-full pl-9 pr-4 py-1.5 text-xs bg-muted/40 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary placeholder:text-muted-foreground shadow-2xs"
             />
           </div>
         </div>
 
-        {/* Right: Actions */}
+        {/* Right Actions */}
         <div className="flex items-center gap-2">
+          {/* Prominent Column Customization Button */}
+          <button
+            onClick={() => setIsColumnModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 rounded-xl transition font-bold teal-glow-sm"
+            title="Configure which columns are visible on this page"
+          >
+            <SlidersHorizontal className="h-3.5 w-3.5" />
+            <span>Columns ({visibleColumns.length}/{currentSheet.columns.length})</span>
+          </button>
+
           {/* Add Column Button */}
           <button
             onClick={() => setIsAddColumnOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 rounded-xl transition font-semibold"
-            title="Create new column/field in this sheet"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-muted/60 hover:bg-muted text-foreground border border-border rounded-xl transition font-medium"
+            title="Create new column attribute in this sheet"
           >
-            <Columns className="h-3.5 w-3.5" />
-            <span>+ New Column</span>
+            <Plus className="h-3.5 w-3.5" />
+            <span>+ Column</span>
           </button>
 
-          {/* Column Visibility toggle popover */}
-          <div className="relative">
+          {/* Density Toggle Button */}
+          <div className="flex items-center bg-muted/50 p-0.5 rounded-xl border border-border text-[10px] font-semibold">
             <button
-              onClick={() => setShowColumnPicker(!showColumnPicker)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-muted/60 hover:bg-muted text-foreground border border-border rounded-xl transition"
-              title="Configure visible columns"
+              onClick={() => setTableDensity('compact')}
+              className={`px-2 py-1 rounded-lg transition ${
+                tableDensity === 'compact' ? 'bg-primary text-primary-foreground font-bold shadow-xs' : 'text-muted-foreground hover:text-foreground'
+              }`}
+              title="Compact density"
             >
-              <Eye className="h-3.5 w-3.5 text-muted-foreground" />
-              <span>Columns</span>
+              Compact
             </button>
-
-            {showColumnPicker && (
-              <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-xl shadow-xl p-3 z-50 space-y-2 animate-in fade-in">
-                <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  Toggle Columns
-                </div>
-                <div className="space-y-1 max-h-48 overflow-y-auto">
-                  {currentSheet.columns.map((c) => {
-                    const isVisible = !hiddenColumns.includes(c.key);
-                    return (
-                      <label key={c.key} className="flex items-center gap-2 text-xs text-foreground cursor-pointer hover:bg-muted/50 p-1 rounded">
-                        <input
-                          type="checkbox"
-                          checked={isVisible}
-                          onChange={() => {
-                            if (isVisible) {
-                              setHiddenColumns([...hiddenColumns, c.key]);
-                            } else {
-                              setHiddenColumns(hiddenColumns.filter((k) => k !== c.key));
-                            }
-                          }}
-                          className="rounded border-border text-primary focus:ring-primary"
-                        />
-                        <span className="truncate">{c.name}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+            <button
+              onClick={() => setTableDensity('normal')}
+              className={`px-2 py-1 rounded-lg transition ${
+                tableDensity === 'normal' ? 'bg-primary text-primary-foreground font-bold shadow-xs' : 'text-muted-foreground hover:text-foreground'
+              }`}
+              title="Standard density"
+            >
+              Normal
+            </button>
           </div>
 
           <button
             onClick={handleExportCSV}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-muted/60 hover:bg-muted text-foreground border border-border rounded-xl transition"
-            title="Export view to CSV"
+            title="Export current view to CSV"
           >
             <Download className="h-3.5 w-3.5 text-muted-foreground" />
             <span>Export</span>
@@ -395,24 +480,18 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
             <Plus className="h-3.5 w-3.5" />
             <span>+ Add Record (Page)</span>
           </button>
-
-          {/* Quick Inline Add Row Button */}
-          <button
-            onClick={handleAddRowInline}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-muted/60 hover:bg-muted text-foreground border border-border rounded-xl transition font-medium"
-            title="Insert row directly inline with auto-increment ID"
-          >
-            <span>+ Quick Row</span>
-          </button>
         </div>
       </div>
 
-      {/* Table Canvas */}
-      <div className="flex-1 overflow-auto">
+      {/* Spreadsheet Canvas */}
+      <div className="flex-1 overflow-auto bg-card">
         <table className="w-full border-collapse text-left text-xs">
-          <thead className="sticky top-0 bg-card border-b border-border z-10 select-none shadow-sm">
+          {/* Sticky Table Header */}
+          <thead className="sticky top-0 bg-muted/60 dark:bg-card border-b border-border z-10 select-none shadow-xs backdrop-blur-md">
             <tr>
-              <th className="w-12 px-4 py-3 font-semibold text-muted-foreground/80 text-[11px]">#</th>
+              <th className="w-12 px-3 py-2.5 font-mono text-[10px] text-muted-foreground border-r border-border/70 text-center">
+                #
+              </th>
               {visibleColumns.map((col) => {
                 const isSorted = sortColumn === col.key;
                 const isMenuOpen = activeColMenu === col.key;
@@ -421,7 +500,7 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
                 return (
                   <th
                     key={col.key}
-                    className="px-4 py-3 font-semibold text-foreground text-[11px] group relative hover:bg-muted/40 transition"
+                    className="px-3.5 py-2.5 font-bold text-foreground text-[11px] border-r border-border/70 group relative hover:bg-primary/5 transition"
                   >
                     <div className="flex items-center justify-between gap-1.5">
                       {isRenaming ? (
@@ -439,7 +518,7 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
                           />
                           <button
                             onClick={() => handleRenameColumnSubmit(col.key)}
-                            className="text-emerald-500 hover:text-emerald-400 p-0.5"
+                            className="text-primary hover:opacity-80 p-0.5"
                           >
                             <Check className="h-3 w-3" />
                           </button>
@@ -447,10 +526,10 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
                       ) : (
                         <div
                           onClick={() => handleSort(col.key)}
-                          className="flex items-center gap-1.5 cursor-pointer flex-1"
+                          className="flex items-center gap-1.5 cursor-pointer flex-1 truncate"
                         >
                           <span className="truncate">{col.name}</span>
-                          <span className="text-[9px] font-mono px-1 rounded bg-muted/60 text-muted-foreground">
+                          <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-muted text-muted-foreground uppercase">
                             {col.dataType}
                           </span>
                           {isSorted ? (
@@ -465,7 +544,7 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
                         </div>
                       )}
 
-                      {/* Column Header Action Dropdown */}
+                      {/* Header Menu Action Dropdown */}
                       <div className="relative">
                         <button
                           onClick={(e) => {
@@ -478,7 +557,14 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
                         </button>
 
                         {isMenuOpen && (
-                          <div className="absolute right-0 mt-1 w-36 bg-card border border-border rounded-xl shadow-2xl py-1 z-50 animate-in fade-in">
+                          <div className="absolute right-0 mt-1 w-44 bg-card border border-border rounded-xl shadow-2xl py-1.5 z-50 animate-in fade-in space-y-0.5">
+                            <button
+                              onClick={() => handleHideColumnDirectly(col.key)}
+                              className="w-full px-3 py-1.5 text-left text-xs text-foreground hover:bg-muted flex items-center gap-2"
+                            >
+                              <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
+                              <span>Hide Column</span>
+                            </button>
                             <button
                               onClick={() => {
                                 setRenamingColKey(col.key);
@@ -487,14 +573,14 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
                               }}
                               className="w-full px-3 py-1.5 text-left text-xs text-foreground hover:bg-muted flex items-center gap-2"
                             >
-                              <Edit2 className="h-3 w-3 text-muted-foreground" />
+                              <Edit2 className="h-3.5 w-3.5 text-muted-foreground" />
                               <span>Rename Column</span>
                             </button>
                             <button
                               onClick={() => handleDeleteColumnConfirm(col.key)}
                               className="w-full px-3 py-1.5 text-left text-xs text-destructive hover:bg-destructive/10 flex items-center gap-2"
                             >
-                              <Trash2 className="h-3 w-3" />
+                              <Trash2 className="h-3.5 w-3.5" />
                               <span>Delete Column</span>
                             </button>
                           </div>
@@ -505,31 +591,35 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
                 );
               })}
 
-              {/* Plus Column Button as Table Header Header Cell */}
-              <th className="w-10 px-2 py-3 text-center">
-                <button
-                  onClick={() => setIsAddColumnOpen(true)}
-                  className="h-6 w-6 rounded bg-muted/60 hover:bg-muted hover:text-primary flex items-center justify-center text-muted-foreground transition mx-auto"
-                  title="Create new column (cell attribute)"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                </button>
-              </th>
-
-              <th className="w-20 px-4 py-3 font-semibold text-muted-foreground/80 text-right text-[11px]">
+              <th className="w-24 px-3 py-2.5 font-bold text-muted-foreground text-center text-[11px]">
                 Actions
               </th>
             </tr>
           </thead>
+
+          {/* Table Body */}
           <tbody className="divide-y divide-border/60">
             {processedRows.map((row, rIdx) => (
-              <tr key={row[primaryIdKey] || rIdx} className="hover:bg-muted/30 transition group">
-                <td className={`px-4 ${pyClass} text-muted-foreground/70 font-mono text-[11px]`}>
+              <tr
+                key={row[primaryIdKey] || rIdx}
+                className="even:bg-muted/15 odd:bg-card hover:bg-primary/5 transition group"
+              >
+                {/* Row Number */}
+                <td className="w-12 px-3 py-2 text-center text-muted-foreground/70 font-mono text-[10px] border-r border-border/60">
                   {rIdx + 1}
                 </td>
+
+                {/* Visible Data Cells */}
                 {visibleColumns.map((col, cIdx) => {
                   const val = row[col.key];
                   const isEditing = editingCell?.rowIdx === rIdx && editingCell?.colKey === col.key;
+                  const isNumberOrCurrency =
+                    col.dataType === 'number' ||
+                    col.dataType === 'currency' ||
+                    col.key.includes('price') ||
+                    col.key.includes('amount') ||
+                    col.key.includes('total') ||
+                    col.key.includes('quantity');
 
                   let displayVal: React.ReactNode = val ?? '-';
                   if (
@@ -544,12 +634,24 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
                     displayVal = formatDate(val);
                   } else if (typeof val === 'boolean') {
                     displayVal = val ? (
-                      <span className="px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-500 font-bold">
+                      <span className="px-2 py-0.5 rounded text-[10px] bg-primary/10 text-primary font-bold">
                         YES
                       </span>
                     ) : (
-                      <span className="px-1.5 py-0.5 rounded text-[10px] bg-muted text-muted-foreground">
+                      <span className="px-2 py-0.5 rounded text-[10px] bg-muted text-muted-foreground font-medium">
                         NO
+                      </span>
+                    );
+                  } else if (col.key === 'status') {
+                    displayVal = (
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                          val === 'active' || val === 'completed'
+                            ? 'bg-primary/15 text-primary'
+                            : 'bg-amber-500/15 text-amber-500'
+                        }`}
+                      >
+                        {String(val)}
                       </span>
                     );
                   }
@@ -558,7 +660,9 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
                     <td
                       key={col.key}
                       onClick={() => handleStartEdit(rIdx, col.key, val)}
-                      className={`px-4 ${pyClass} text-foreground truncate max-w-xs cursor-text relative group/cell hover:bg-muted/50`}
+                      className={`${rowHeightClass} text-foreground truncate max-w-xs cursor-text border-r border-border/60 relative group/cell hover:bg-muted/40 ${
+                        isNumberOrCurrency ? 'font-mono text-right' : ''
+                      }`}
                       title="Click to edit cell"
                     >
                       {isEditing ? (
@@ -581,31 +685,28 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
                               }
                             }}
                             onBlur={() => handleCommitEdit(row)}
-                            className="w-full px-2 py-1 text-xs bg-background border-2 border-primary rounded-md outline-none shadow-md text-foreground font-medium"
+                            className="w-full px-2 py-1 text-xs bg-background border-2 border-primary rounded-lg outline-none shadow-md text-foreground font-semibold"
                           />
                         </div>
                       ) : (
-                        <div className="flex items-center justify-between">
+                        <div className={`flex items-center ${isNumberOrCurrency ? 'justify-end' : 'justify-between'} gap-1.5`}>
                           <span className="truncate">{displayVal}</span>
-                          <Edit2 className="h-3 w-3 text-muted-foreground opacity-0 group-hover/cell:opacity-60 transition ml-1 shrink-0" />
+                          <Edit2 className="h-3 w-3 text-muted-foreground opacity-0 group-hover/cell:opacity-60 transition shrink-0" />
                         </div>
                       )}
                     </td>
                   );
                 })}
 
-                {/* Empty cell for the "+" column alignment */}
-                <td className="w-10"></td>
-
                 {/* Row Action Buttons */}
-                <td className={`px-4 ${pyClass} text-right space-x-1`}>
+                <td className="w-24 px-2 py-1 text-center space-x-1 border-border/60">
                   <button
                     onClick={() => {
                       setTargetRecord({ sheetName, rowId: row[primaryIdKey], row, mode: 'view' });
                       setActiveSheet('record_detail');
                     }}
                     className="p-1 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition rounded"
-                    title="View Full Record Details (Page)"
+                    title="View Record (Page)"
                   >
                     <FileText className="h-3.5 w-3.5" />
                   </button>
@@ -640,21 +741,154 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
             {/* Quick Add Row Button (Spreadsheet-like bottom row) */}
             <tr
               onClick={handleAddRowInline}
-              className="hover:bg-primary/5 cursor-pointer border-t border-dashed border-border/80 transition group"
+              className="hover:bg-primary/5 cursor-pointer border-t border-dashed border-primary/30 transition group"
             >
-              <td className="px-4 py-3 text-center text-primary font-bold">
+              <td className="px-3 py-2.5 text-center text-primary font-bold border-r border-border/60">
                 <Plus className="h-4 w-4 mx-auto group-hover:scale-125 transition" />
               </td>
               <td
-                colSpan={visibleColumns.length + 2}
-                className="px-4 py-3 text-xs font-semibold text-primary/80 group-hover:text-primary transition"
+                colSpan={visibleColumns.length + 1}
+                className="px-3.5 py-2.5 text-xs font-bold text-primary transition"
               >
-                + Click to insert new row (Auto-increments ID: <span className="font-mono">{getNextAutoIncrement(sheetName, primaryIdKey)}</span>)
+                + Click to insert row (Auto-increments ID: <span className="font-mono">{getNextAutoIncrement(sheetName, primaryIdKey)}</span>)
               </td>
             </tr>
           </tbody>
+
+          {/* Excel-Grade Summary Footer Row */}
+          {processedRows.length > 0 && (
+            <tfoot className="sticky bottom-0 bg-card border-t-2 border-border z-10 font-bold text-xs shadow-md">
+              <tr className="bg-muted/40">
+                <td className="w-12 px-3 py-2 text-center text-muted-foreground font-mono text-[10px] border-r border-border/70">
+                  Σ
+                </td>
+                {visibleColumns.map((col, idx) => {
+                  const hasTotal = columnTotals[col.key] !== undefined;
+                  const isFirst = idx === 0;
+
+                  return (
+                    <td
+                      key={col.key}
+                      className={`px-3.5 py-2 border-r border-border/70 text-foreground font-mono ${
+                        hasTotal ? 'text-right font-extrabold text-primary' : isFirst ? 'font-bold' : ''
+                      }`}
+                    >
+                      {hasTotal
+                        ? col.dataType === 'currency' || col.key.includes('price') || col.key.includes('amount') || col.key.includes('total')
+                          ? formatCurrency(columnTotals[col.key], currency, currencySymbol)
+                          : `${columnTotals[col.key]}`
+                        : isFirst
+                        ? `Total (${processedRows.length})`
+                        : ''}
+                    </td>
+                  );
+                })}
+                <td className="w-24 px-3 py-2"></td>
+              </tr>
+            </tfoot>
+          )}
         </table>
       </div>
+
+      {/* Column Configuration Modal */}
+      {isColumnModalOpen && (
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-4 select-none animate-in fade-in">
+          <div className="bg-card border border-border rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal className="h-5 w-5 text-primary" />
+                <div>
+                  <h3 className="text-sm font-bold text-foreground">Configure Columns</h3>
+                  <p className="text-[11px] text-muted-foreground">Select which columns to show for {sheetName.replace('_', '')}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsColumnModalOpen(false)}
+                className="text-muted-foreground hover:text-foreground p-1 rounded-lg"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Quick Actions & Column Search */}
+            <div className="space-y-3 text-xs">
+              <div className="flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={handleShowAllColumns}
+                  className="px-2.5 py-1 bg-muted/60 hover:bg-muted text-foreground rounded-lg border border-border transition text-[11px] font-semibold"
+                >
+                  Show All ({currentSheet.columns.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={handleResetRecommended}
+                  className="px-2.5 py-1 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg border border-primary/20 transition text-[11px] font-semibold"
+                >
+                  <RotateCcw className="h-3 w-3 inline mr-1" />
+                  Recommended
+                </button>
+              </div>
+
+              <div className="relative">
+                <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Filter columns..."
+                  value={columnSearchFilter}
+                  onChange={(e) => setColumnSearchFilter(e.target.value)}
+                  className="w-full pl-9 pr-3 py-1.5 bg-muted/30 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary text-xs"
+                />
+              </div>
+
+              {/* Column list with checkboxes */}
+              <div className="max-h-64 overflow-y-auto space-y-1.5 pr-1 divide-y divide-border/40">
+                {currentSheet.columns
+                  .filter((c) =>
+                    !columnSearchFilter.trim() ||
+                    c.name.toLowerCase().includes(columnSearchFilter.toLowerCase()) ||
+                    c.key.toLowerCase().includes(columnSearchFilter.toLowerCase())
+                  )
+                  .map((col) => {
+                    const isVisible = !hiddenColumns.includes(col.key);
+
+                    return (
+                      <div
+                        key={col.key}
+                        onClick={() => handleToggleColumn(col.key)}
+                        className="flex items-center justify-between p-2 rounded-xl hover:bg-muted/50 cursor-pointer transition select-none pt-2"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          {isVisible ? (
+                            <CheckSquare className="h-4 w-4 text-primary" />
+                          ) : (
+                            <Square className="h-4 w-4 text-muted-foreground" />
+                          )}
+                          <span className={`text-xs ${isVisible ? 'font-bold text-foreground' : 'text-muted-foreground'}`}>
+                            {col.name}
+                          </span>
+                        </div>
+
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground uppercase">
+                          {col.dataType}
+                        </span>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-border flex justify-end">
+              <button
+                onClick={() => setIsColumnModalOpen(false)}
+                className="px-4 py-2 bg-primary text-primary-foreground text-xs font-bold rounded-xl shadow-md teal-glow transition"
+              >
+                Done ({visibleColumns.length} Visible)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal: Create New Column (Cell Attribute) */}
       {isAddColumnOpen && (
@@ -662,7 +896,7 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
           <div className="bg-card border border-border rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
-                <Columns className="h-5 w-5 text-indigo-500" />
+                <Columns className="h-5 w-5 text-primary" />
                 <h3 className="text-base font-bold text-foreground">Add New Column</h3>
               </div>
               <button
@@ -675,7 +909,7 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
 
             <form onSubmit={handleCreateColumn} className="space-y-3.5 text-xs">
               <div>
-                <label className="block font-medium text-foreground mb-1">Column / Header Name *</label>
+                <label className="block font-semibold text-foreground mb-1">Column / Header Name *</label>
                 <input
                   autoFocus
                   required
@@ -683,16 +917,16 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
                   value={newColName}
                   onChange={(e) => setNewColName(e.target.value)}
                   placeholder="e.g. Warranty Period, Barcode, Serial Number"
-                  className="w-full px-3 py-2 bg-muted/50 border border-border rounded-lg text-foreground focus:outline-none focus:border-primary"
+                  className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary"
                 />
               </div>
 
               <div>
-                <label className="block font-medium text-foreground mb-1">Data Type</label>
+                <label className="block font-semibold text-foreground mb-1">Data Type</label>
                 <select
                   value={newColType}
                   onChange={(e) => setNewColType(e.target.value as DataType)}
-                  className="w-full px-3 py-2 bg-muted/50 border border-border rounded-lg text-foreground focus:outline-none focus:border-primary"
+                  className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary"
                 >
                   <option value="text">Text (General string)</option>
                   <option value="number">Number (Integer / Decimal)</option>
@@ -705,13 +939,13 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
               </div>
 
               <div>
-                <label className="block font-medium text-foreground mb-1">Default Cell Value (Optional)</label>
+                <label className="block font-semibold text-foreground mb-1">Default Cell Value (Optional)</label>
                 <input
                   type="text"
                   value={newColDefault}
                   onChange={(e) => setNewColDefault(e.target.value)}
                   placeholder="Initial value for existing rows"
-                  className="w-full px-3 py-2 bg-muted/50 border border-border rounded-lg text-foreground focus:outline-none focus:border-primary"
+                  className="w-full px-3 py-2 bg-muted/50 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary"
                 />
               </div>
 
@@ -719,13 +953,13 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
                 <button
                   type="button"
                   onClick={() => setIsAddColumnOpen(false)}
-                  className="px-3 py-1.5 text-muted-foreground hover:text-foreground rounded-lg"
+                  className="px-3.5 py-1.5 text-muted-foreground hover:text-foreground rounded-xl"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 bg-primary text-primary-foreground font-semibold rounded-lg shadow-sm hover:bg-primary/90 transition"
+                  className="px-4 py-1.5 bg-primary text-primary-foreground font-bold rounded-xl shadow-sm teal-glow-sm hover:bg-primary/90 transition"
                 >
                   Add Column
                 </button>

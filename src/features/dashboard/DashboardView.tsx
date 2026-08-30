@@ -400,32 +400,34 @@ export const DashboardView: React.FC = () => {
                 No transactions recorded yet. Click "Start New Sale" above!
               </div>
             ) : (
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-border text-muted-foreground">
-                    <th className="pb-2 font-medium">Customer</th>
-                    <th className="pb-2 font-medium">Date</th>
-                    <th className="pb-2 font-medium">Payment</th>
-                    <th className="pb-2 font-medium text-right">Amount</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {recentSales.map((sale) => (
-                    <tr key={sale.id} className="hover:bg-muted/40 transition">
-                      <td className="py-2.5 font-medium text-foreground">{sale.customerName}</td>
-                      <td className="py-2.5 text-muted-foreground">{formatDate(sale.date)}</td>
-                      <td className="py-2.5">
-                        <span className="px-2 py-0.5 rounded text-[10px] bg-muted font-medium">
-                          {sale.paymentMethod}
-                        </span>
-                      </td>
-                      <td className="py-2.5 text-right font-semibold text-foreground">
-                        {formatCurrency(sale.amount, currency, currencySymbol)}
-                      </td>
+              <div className="border border-border/80 rounded-xl overflow-hidden">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-muted/40 border-b border-border/80 font-bold text-foreground">
+                    <tr>
+                      <th className="py-2.5 px-3 border-r border-border/60">Customer</th>
+                      <th className="py-2.5 px-3 border-r border-border/60">Date</th>
+                      <th className="py-2.5 px-3 border-r border-border/60">Payment</th>
+                      <th className="py-2.5 px-3 text-right">Amount</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-border/60">
+                    {recentSales.map((sale) => (
+                      <tr key={sale.id} className="even:bg-muted/10 odd:bg-card hover:bg-primary/5 transition">
+                        <td className="py-2 px-3 font-semibold text-foreground border-r border-border/60">{sale.customerName}</td>
+                        <td className="py-2 px-3 text-muted-foreground border-r border-border/60">{formatDate(sale.date)}</td>
+                        <td className="py-2 px-3 border-r border-border/60">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] bg-primary/10 text-primary font-bold">
+                            {sale.paymentMethod}
+                          </span>
+                        </td>
+                        <td className="py-2 px-3 text-right font-mono font-bold text-foreground">
+                          {formatCurrency(sale.amount, currency, currencySymbol)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </div>
