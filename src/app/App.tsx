@@ -66,6 +66,13 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [saveWorkbook, addNotification]);
 
+  // Auto-open Welcome Modal if no workbook is loaded
+  useEffect(() => {
+    if (!metadata) {
+      openModal('welcome');
+    }
+  }, [metadata, openModal]);
+
   // Debounced Auto-Save
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
   useEffect(() => {

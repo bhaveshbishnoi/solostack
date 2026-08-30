@@ -30,6 +30,22 @@ export const Topbar: React.FC = () => {
   const { theme, setTheme } = useSettingsStore();
   const { openModal, setCommandPaletteOpen, addNotification } = useUIStore();
 
+  const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+  const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPod|iPad/.test(navigator.userAgent);
+
+  const handleDragWindow = (e: React.MouseEvent) => {
+    // Only drag if not clicking on interactive elements
+    const target = e.target as HTMLElement;
+    if (target.closest('button, input, select, a, kbd, [role="button"]')) {
+      return;
+    }
+    if (isTauri && e.buttons === 1) {
+      import('@tauri-apps/api/window')
+        .then(({ getCurrentWindow }) => getCurrentWindow().startDragging())
+        .catch(() => {});
+    }
+  };
+
   const handleBackup = async () => {
     try {
       const backup = await createBackup();
@@ -49,9 +65,15 @@ export const Topbar: React.FC = () => {
   };
 
   return (
-    <header className="h-14 border-b border-border bg-card/60 backdrop-blur-md px-4 flex items-center justify-between select-none z-30 shrink-0">
+    <header
+      data-tauri-drag-region
+      onMouseDown={handleDragWindow}
+      className={`h-14 border-b border-border bg-card/60 backdrop-blur-md flex items-center justify-between select-none z-30 shrink-0 ${
+        isTauri && isMac ? 'pl-[78px] pr-4' : 'px-4'
+      }`}
+    >
       {/* Left: Brand & Active Workbook Status */}
-      <div className="flex items-center gap-3">
+      <div data-tauri-drag-region className="flex items-center gap-3">
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center text-white shadow-sm teal-glow-sm font-black text-sm tracking-tight">
             Ex

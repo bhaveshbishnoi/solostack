@@ -44,11 +44,23 @@ export const WelcomeModal: React.FC = () => {
     setCurrencySymbol(symbols[curr] || '$');
   };
 
+  const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+
   const handleCreateNew = async () => {
     setLoading(true);
     try {
-      const sanitized = businessName.replace(/[^a-zA-Z0-9_-]/g, '_');
-      const filePath = `/workbooks/${sanitized || 'Business'}.xlsx`;
+      const sanitized = businessName.replace(/[^a-zA-Z0-9_-]/g, '_') || 'Business';
+      let filePath = `/workbooks/${sanitized}.xlsx`;
+
+      if (isTauri) {
+        try {
+          const { documentDir, join } = await import('@tauri-apps/api/path');
+          const docDir = await documentDir();
+          filePath = await join(docDir, `${sanitized}.xlsx`);
+        } catch {
+          filePath = `${sanitized}.xlsx`;
+        }
+      }
 
       const config: AppConfig = {
         businessName,
@@ -93,7 +105,17 @@ export const WelcomeModal: React.FC = () => {
         updatedAt: new Date().toISOString(),
       };
 
-      const filePath = '/workbooks/Apex_Retail_Demo.xlsx';
+      let filePath = '/workbooks/Apex_Retail_Demo.xlsx';
+      if (isTauri) {
+        try {
+          const { documentDir, join } = await import('@tauri-apps/api/path');
+          const docDir = await documentDir();
+          filePath = await join(docDir, 'Apex_Retail_Demo.xlsx');
+        } catch {
+          filePath = 'Apex_Retail_Demo.xlsx';
+        }
+      }
+
       await createWorkbook(filePath, config);
 
       // Populate demo business records
@@ -181,6 +203,27 @@ export const WelcomeModal: React.FC = () => {
     }
   };
 
+  const handleOpenExistingTauri = async () => {
+    try {
+      const { open } = await import('@tauri-apps/plugin-dialog');
+      const selected = await open({
+        multiple: false,
+        filters: [{ name: 'Excel Workbook', extensions: ['xlsx', 'xls'] }],
+      });
+      if (selected && typeof selected === 'string') {
+        setLoading(true);
+        await openWorkbook(selected);
+        const fileName = selected.split('/').pop() || selected;
+        addNotification('success', 'Workbook Loaded', `Opened ${fileName}`);
+        closeModal();
+      }
+    } catch (err: any) {
+      addNotification('error', 'Open Failed', err.message || 'Could not open workbook');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleOpenFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -230,21 +273,37 @@ export const WelcomeModal: React.FC = () => {
                 </div>
               </button>
 
-              <label className="flex flex-col items-center p-5 rounded-xl border border-border bg-muted/40 hover:bg-muted/80 hover:border-primary/50 transition cursor-pointer group">
-                <input
-                  type="file"
-                  accept=".xlsx"
-                  onChange={handleOpenFile}
-                  className="hidden"
-                />
-                <div className="h-10 w-10 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-3 group-hover:scale-110 transition">
-                  <FolderOpen className="h-5 w-5" />
-                </div>
-                <div className="text-sm font-semibold text-foreground">Open Existing .xlsx</div>
-                <div className="text-[11px] text-muted-foreground mt-1 text-center">
-                  Pick an existing Excel file from your computer.
-                </div>
-              </label>
+              {isTauri ? (
+                <button
+                  type="button"
+                  onClick={handleOpenExistingTauri}
+                  className="flex flex-col items-center p-5 rounded-xl border border-border bg-muted/40 hover:bg-muted/80 hover:border-primary/50 transition cursor-pointer group text-left"
+                >
+                  <div className="h-10 w-10 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                    <FolderOpen className="h-5 w-5" />
+                  </div>
+                  <div className="text-sm font-semibold text-foreground">Open Existing .xlsx</div>
+                  <div className="text-[11px] text-muted-foreground mt-1 text-center">
+                    Pick an existing Excel file from your computer.
+                  </div>
+                </button>
+              ) : (
+                <label className="flex flex-col items-center p-5 rounded-xl border border-border bg-muted/40 hover:bg-muted/80 hover:border-primary/50 transition cursor-pointer group">
+                  <input
+                    type="file"
+                    accept=".xlsx"
+                    onChange={handleOpenFile}
+                    className="hidden"
+                  />
+                  <div className="h-10 w-10 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-3 group-hover:scale-110 transition">
+                    <FolderOpen className="h-5 w-5" />
+                  </div>
+                  <div className="text-sm font-semibold text-foreground">Open Existing .xlsx</div>
+                  <div className="text-[11px] text-muted-foreground mt-1 text-center">
+                    Pick an existing Excel file from your computer.
+                  </div>
+                </label>
+              )}
             </div>
 
             {/* Quick Demo Option */}

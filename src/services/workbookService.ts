@@ -23,11 +23,26 @@ class TauriWorkbookService implements IWorkbookService {
     return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
   }
 
+  private async resolvePath(p: string): Promise<string> {
+    if (p.startsWith('/workbooks/')) {
+      try {
+        const { documentDir, join } = await import('@tauri-apps/api/path');
+        const docDir = await documentDir();
+        const base = p.replace('/workbooks/', '');
+        return await join(docDir, base);
+      } catch {
+        return p.replace('/workbooks/', '');
+      }
+    }
+    return p;
+  }
+
   async createWorkbook(filePath: string, config: AppConfig): Promise<WorkbookMetadata> {
+    const resolvedPath = await this.resolvePath(filePath);
     const { invoke } = await this.getTauri();
     const res = await invoke<any>('workbook_create', {
       req: {
-        file_path: filePath,
+        file_path: resolvedPath,
         config: {
           business_name: config.businessName,
           business_type: config.businessType,
@@ -54,11 +69,21 @@ class TauriWorkbookService implements IWorkbookService {
   }
 
   async openWorkbook(filePath: string | File): Promise<{ metadata: WorkbookMetadata; sheets: SheetData[] }> {
+    let targetPath: string;
     if (typeof filePath !== 'string') {
-      throw new Error('Tauri requires a string file path');
+      if ((filePath as any).path) {
+        targetPath = (filePath as any).path;
+      } else {
+        // Fallback to browser ExcelJS parser if native path is unavailable
+        const browserService = new BrowserWorkbookService();
+        return browserService.openWorkbook(filePath);
+      }
+    } else {
+      targetPath = await this.resolvePath(filePath);
     }
+
     const { invoke } = await this.getTauri();
-    const [meta, rawSheets] = await invoke<[any, any[]]>('workbook_open', { filePath });
+    const [meta, rawSheets] = await invoke<[any, any[]]>('workbook_open', { filePath: targetPath });
 
     const metadata: WorkbookMetadata = {
       filePath: meta.file_path,
@@ -87,6 +112,7 @@ class TauriWorkbookService implements IWorkbookService {
   }
 
   async saveWorkbook(filePath: string, sheets: SheetData[]): Promise<WorkbookMetadata> {
+    const resolvedPath = await this.resolvePath(filePath);
     const { invoke } = await this.getTauri();
     const mappedSheets = sheets.map((s) => ({
       name: s.name,
@@ -105,7 +131,7 @@ class TauriWorkbookService implements IWorkbookService {
 
     const res = await invoke<any>('workbook_save', {
       req: {
-        file_path: filePath,
+        file_path: resolvedPath,
         sheets: mappedSheets,
       },
     });
