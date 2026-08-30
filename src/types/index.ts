@@ -24,6 +24,8 @@ export type TableRow = Record<string, any>;
 
 export interface SheetData {
   name: string;
+  displayName?: string;
+  icon?: string;
   columns: ColumnDef[];
   rows: TableRow[];
 }
@@ -40,7 +42,11 @@ export type BusinessFlowType =
   | 'coaching'
   | 'payroll'
   | 'gym'
-  | 'hospital';
+  | 'hospital'
+  | 'restaurant'
+  | 'realestate'
+  | 'garage'
+  | 'salon';
 
 export function getBusinessFlowType(businessType?: string): BusinessFlowType {
   const bt = (businessType || '').toLowerCase();
@@ -51,6 +57,10 @@ export function getBusinessFlowType(businessType?: string): BusinessFlowType {
   if (bt.includes('payroll') || bt.includes('salary') || bt.includes('hr') || bt.includes('staff pay')) return 'payroll';
   if (bt.includes('gym') || bt.includes('fitness') || bt.includes('workout') || bt.includes('crossfit')) return 'gym';
   if (bt.includes('hospital') || bt.includes('clinic') || bt.includes('doctor') || bt.includes('nursing') || bt.includes('opd')) return 'hospital';
+  if (bt.includes('restaurant') || bt.includes('cafe') || bt.includes('dining') || bt.includes('kitchen') || bt.includes('food') || bt.includes('bar')) return 'restaurant';
+  if (bt.includes('realestate') || bt.includes('real estate') || bt.includes('rental') || bt.includes('property') || bt.includes('tenant') || bt.includes('flat') || bt.includes('lease')) return 'realestate';
+  if (bt.includes('garage') || bt.includes('mechanic') || bt.includes('auto') || bt.includes('workshop') || bt.includes('car repair')) return 'garage';
+  if (bt.includes('salon') || bt.includes('spa') || bt.includes('beauty') || bt.includes('parlour') || bt.includes('barber')) return 'salon';
   if (bt.includes('wholesale') || bt.includes('distribution') || bt.includes('b2b')) return 'wholesale';
   if (bt.includes('pharmacy') || bt.includes('medical') || bt.includes('chemist')) return 'pharmacy';
   if (bt.includes('service') || bt.includes('consult') || bt.includes('agency') || bt.includes('freelance')) return 'services';

@@ -182,10 +182,10 @@ describe('Workbook Lifecycle & Excel Parity Engine', () => {
     expect(computeAutoIncrement(numRows, 'id', 'id')).toBe(4);
   });
 
-  it('provides complete, interconnected templates for all 12 business types', async () => {
+  it('provides complete, interconnected templates for all 16 business types', async () => {
     const { getAllBusinessTemplates, getBusinessTemplate } = await import('../src/lib/templates');
     const templates = getAllBusinessTemplates();
-    expect(templates.length).toBe(12);
+    expect(templates.length).toBe(16);
 
     const expectedTypes = [
       'taxi',
@@ -195,6 +195,10 @@ describe('Workbook Lifecycle & Excel Parity Engine', () => {
       'payroll',
       'gym',
       'hospital',
+      'restaurant',
+      'realestate',
+      'garage',
+      'salon',
       'retail',
       'wholesale',
       'pharmacy',

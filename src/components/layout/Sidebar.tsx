@@ -12,7 +12,6 @@ import {
   Percent,
   Wallet,
   BarChart3,
-  Table as TableIcon,
   Plus,
   FileText,
   Settings,
@@ -32,8 +31,13 @@ import {
   BadgeDollarSign,
   Dumbbell,
   Activity,
-  Sparkles
+  Sparkles,
+  Utensils,
+  Home,
+  Wrench,
+  GripVertical
 } from 'lucide-react';
+import { getIconComponent } from '../common/IconPicker';
 
 export const Sidebar: React.FC = () => {
   const { sheets, activeSheetName, setActiveSheet, appConfig } = useWorkbookStore();
@@ -164,6 +168,50 @@ export const Sidebar: React.FC = () => {
           suppliersTitle: 'Doctors & Specialists',
           salesTitle: 'OPD Encounters Ledger',
         };
+      case 'restaurant':
+        return {
+          editionName: 'Restaurant & Cafe',
+          opTitle: 'Settle Food Bill (KOT)',
+          opIcon: Utensils,
+          productsTitle: 'Dishes & Menu Catalog',
+          inventoryTitle: 'Kitchen Prep Portions',
+          customersTitle: 'Dine-in Guests & Tables',
+          suppliersTitle: 'Kitchen Vendors & Dairy',
+          salesTitle: 'KOT & Table Orders',
+        };
+      case 'realestate':
+        return {
+          editionName: 'Property & Rental',
+          opTitle: 'Collect Monthly Rent',
+          opIcon: Home,
+          productsTitle: 'Rental Units & Properties',
+          inventoryTitle: 'Units & Flats Inventory',
+          customersTitle: 'Tenants & Leases',
+          suppliersTitle: 'Maintenance Contractors',
+          salesTitle: 'Rent Collections Ledger',
+        };
+      case 'garage':
+        return {
+          editionName: 'Auto Workshop & Garage',
+          opTitle: 'Create Repair Job',
+          opIcon: Wrench,
+          productsTitle: 'Service Packages & Spares',
+          inventoryTitle: 'Spare Parts Bin Stock',
+          customersTitle: 'Vehicle Owners & Job Cards',
+          suppliersTitle: 'Auto Spares Wholesalers',
+          salesTitle: 'Repair Invoices Ledger',
+        };
+      case 'salon':
+        return {
+          editionName: 'Salon & Wellness Spa',
+          opTitle: 'Bill Client Appointment',
+          opIcon: Sparkles,
+          productsTitle: 'Treatments & Cosmetics',
+          inventoryTitle: 'Cosmetics & Kits Stock',
+          customersTitle: 'Salon Clients Directory',
+          suppliersTitle: 'Beauty Brands & Suppliers',
+          salesTitle: 'Appointment Invoices',
+        };
       case 'retail':
       default:
         return {
@@ -196,6 +244,57 @@ export const Sidebar: React.FC = () => {
     if (!customTablesSheet) return [];
     return customTablesSheet.rows.filter((r) => r.pinned_to_sidebar);
   }, [customTablesSheet]);
+
+  const [draggedIndex, setDraggedIndex] = React.useState<number | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    e.dataTransfer.setData('text/plain', String(index));
+    e.dataTransfer.effectAllowed = 'move';
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    const sourceIndexStr = e.dataTransfer.getData('text/plain');
+    const sourceIndex = parseInt(sourceIndexStr, 10);
+    setDraggedIndex(null);
+
+    if (isNaN(sourceIndex) || sourceIndex === targetIndex || !customTablesSheet) return;
+
+    const sourceItem = customTables[sourceIndex];
+    const targetItem = customTables[targetIndex];
+    if (!sourceItem || !targetItem) return;
+
+    const newRows = [...customTablesSheet.rows];
+    const originalSourceIdx = newRows.findIndex((r) => r.table_id === sourceItem.table_id);
+    const originalTargetIdx = newRows.findIndex((r) => r.table_id === targetItem.table_id);
+
+    if (originalSourceIdx === -1 || originalTargetIdx === -1) return;
+
+    const [moved] = newRows.splice(originalSourceIdx, 1);
+    newRows.splice(originalTargetIdx, 0, moved);
+
+    useWorkbookStore.setState((state) => ({
+      sheets: {
+        ...state.sheets,
+        _CustomTables: {
+          ...customTablesSheet,
+          rows: newRows,
+        },
+      },
+    }));
+
+    try {
+      await useWorkbookStore.getState().saveWorkbook();
+    } catch {
+      // Ignored
+    }
+  };
 
   const navItemClass = (sheetKey: string) => {
     const isActive = activeSheetName === sheetKey;
@@ -409,18 +508,38 @@ export const Sidebar: React.FC = () => {
             </button>
           </div>
 
-          <div className="space-y-0.5">
-            {customTables.map((t) => (
-              <button
-                key={t.table_id}
-                onClick={() => setActiveSheet(t.name)}
-                className={navItemClass(t.name)}
-                title={t.display_name}
-              >
-                <TableIcon className="h-4 w-4 shrink-0 text-indigo-400" />
-                {!isSidebarCollapsed && <span className="truncate">{t.display_name}</span>}
-              </button>
-            ))}
+          <div className="space-y-1">
+            {customTables.map((t, idx) => {
+              const TableItemIcon = getIconComponent(t.icon);
+              const isBeingDragged = draggedIndex === idx;
+
+              return (
+                <div
+                  key={t.table_id}
+                  draggable={true}
+                  onDragStart={(e) => handleDragStart(e, idx)}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, idx)}
+                  className={`group relative flex items-center transition cursor-grab active:cursor-grabbing ${
+                    isBeingDragged ? 'opacity-30 scale-95' : 'opacity-100'
+                  }`}
+                >
+                  <button
+                    onClick={() => setActiveSheet(t.name)}
+                    className={navItemClass(t.name)}
+                    title={`${t.display_name} (Drag & drop to reorder)`}
+                  >
+                    <TableItemIcon className="h-4 w-4 shrink-0 text-primary" />
+                    {!isSidebarCollapsed && (
+                      <span className="truncate flex-1 text-left">{t.display_name}</span>
+                    )}
+                    {!isSidebarCollapsed && (
+                      <GripVertical className="h-3.5 w-3.5 text-muted-foreground/30 group-hover:text-muted-foreground transition opacity-0 group-hover:opacity-100 shrink-0 cursor-grab" />
+                    )}
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

@@ -301,6 +301,25 @@ export const RecordFormPage: React.FC = () => {
                         onChange={(e) => handleChange(col.key, e.target.value)}
                         className="w-full px-3 py-2 bg-muted/30 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary"
                       />
+                    ) : (col.referenceTable && sheets[col.referenceTable]) ? (
+                      /* Connected Foreign Key Table Dropdown */
+                      <select
+                        value={val}
+                        onChange={(e) => handleChange(col.key, e.target.value)}
+                        className="w-full px-3 py-2 bg-muted/30 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary font-medium"
+                      >
+                        <option value="">-- Select from {sheets[col.referenceTable]?.displayName || col.referenceTable} --</option>
+                        {sheets[col.referenceTable]?.rows.map((refRow, rIdx) => {
+                          const primaryKey = Object.keys(refRow)[0] || 'id';
+                          const displayVal = refRow.name || refRow.title || refRow.sku || refRow[primaryKey] || `Record #${rIdx + 1}`;
+                          const optValue = refRow[primaryKey] ?? displayVal;
+                          return (
+                            <option key={rIdx} value={optValue}>
+                              {displayVal} {optValue !== displayVal ? `(${optValue})` : ''}
+                            </option>
+                          );
+                        })}
+                      </select>
                     ) : col.key === 'category_id' && sheets['_Categories'] ? (
                       /* Category dropdown */
                       <select
@@ -312,6 +331,48 @@ export const RecordFormPage: React.FC = () => {
                         {sheets['_Categories'].rows.map((cat) => (
                           <option key={cat.category_id} value={cat.category_id}>
                             {cat.name}
+                          </option>
+                        ))}
+                      </select>
+                    ) : col.key === 'customer_id' && sheets['_Customers'] ? (
+                      /* Customer dropdown */
+                      <select
+                        value={val}
+                        onChange={(e) => handleChange(col.key, e.target.value)}
+                        className="w-full px-3 py-2 bg-muted/30 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary font-medium"
+                      >
+                        <option value="">Select Customer / Client</option>
+                        {sheets['_Customers'].rows.map((c, cIdx) => (
+                          <option key={cIdx} value={c.name || c.customer_id}>
+                            {c.name} {c.phone ? `(${c.phone})` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    ) : col.key === 'product_id' && sheets['_Products'] ? (
+                      /* Product dropdown */
+                      <select
+                        value={val}
+                        onChange={(e) => handleChange(col.key, e.target.value)}
+                        className="w-full px-3 py-2 bg-muted/30 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary font-medium"
+                      >
+                        <option value="">Select Product / Item</option>
+                        {sheets['_Products'].rows.map((p, pIdx) => (
+                          <option key={pIdx} value={p.product_id || p.name}>
+                            {p.name} {p.sku ? `[${p.sku}]` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    ) : col.key === 'supplier_id' && sheets['_Suppliers'] ? (
+                      /* Supplier dropdown */
+                      <select
+                        value={val}
+                        onChange={(e) => handleChange(col.key, e.target.value)}
+                        className="w-full px-3 py-2 bg-muted/30 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary font-medium"
+                      >
+                        <option value="">Select Supplier / Partner</option>
+                        {sheets['_Suppliers'].rows.map((s, sIdx) => (
+                          <option key={sIdx} value={s.name || s.supplier_id}>
+                            {s.name}
                           </option>
                         ))}
                       </select>

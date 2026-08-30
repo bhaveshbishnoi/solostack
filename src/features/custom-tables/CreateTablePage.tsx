@@ -2,20 +2,23 @@ import React, { useState } from 'react';
 import { useWorkbookStore } from '../../stores/workbookStore';
 import { useUIStore } from '../../stores/uiStore';
 import { ColumnDef, DataType } from '../../types';
+import { IconPicker } from '../../components/common/IconPicker';
 import {
   ArrowLeft,
   Table as TableIcon,
   Plus,
   Trash2,
-  CheckCircle2
+  CheckCircle2,
+  Link2
 } from 'lucide-react';
 
 export const CreateTablePage: React.FC = () => {
-  const { createCustomTable, saveWorkbook, setActiveSheet } = useWorkbookStore();
+  const { createCustomTable, saveWorkbook, setActiveSheet, sheets } = useWorkbookStore();
   const { addNotification } = useUIStore();
 
   const [tableName, setTableName] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [selectedIcon, setSelectedIcon] = useState('table');
   const [pinnedToSidebar, setPinnedToSidebar] = useState(true);
   const [columns, setColumns] = useState<ColumnDef[]>([
     { key: 'id', name: 'ID', dataType: 'text', required: true },
@@ -25,6 +28,8 @@ export const CreateTablePage: React.FC = () => {
     { key: 'date', name: 'Date', dataType: 'date' },
     { key: 'notes', name: 'Notes', dataType: 'text' },
   ]);
+
+  const existingSheetKeys = Object.keys(sheets).filter((s) => !s.startsWith('_App') && !s.startsWith('_Dashboard'));
 
   const handleAddColumn = () => {
     const nextIdx = columns.length + 1;
@@ -68,7 +73,7 @@ export const CreateTablePage: React.FC = () => {
         tableId,
         name: finalSheetName,
         displayName: displayName || tableName,
-        icon: 'table',
+        icon: selectedIcon || 'table',
         columns,
         pinnedToSidebar,
       });
@@ -88,7 +93,7 @@ export const CreateTablePage: React.FC = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setActiveSheet('dashboard')}
-            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition"
+            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition cursor-pointer"
             title="Back to Dashboard"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -102,13 +107,13 @@ export const CreateTablePage: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setActiveSheet('dashboard')}
-            className="px-3.5 py-1.5 text-xs text-muted-foreground hover:text-foreground rounded-xl transition"
+            className="px-3.5 py-1.5 text-xs text-muted-foreground hover:text-foreground rounded-xl transition cursor-pointer"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
-            className="flex items-center gap-1.5 px-4 py-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-sm teal-glow-sm transition"
+            className="flex items-center gap-1.5 px-4 py-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-sm teal-glow-sm transition cursor-pointer"
           >
             <CheckCircle2 className="h-4 w-4" />
             <span>Create Table & Sheet</span>
@@ -141,7 +146,7 @@ export const CreateTablePage: React.FC = () => {
                     if (!displayName) setDisplayName(e.target.value);
                   }}
                   placeholder="e.g. Warranty or Employees"
-                  className="w-full px-3 py-2 bg-muted/40 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary"
+                  className="w-full px-3 py-2 bg-muted/40 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary font-medium"
                 />
               </div>
 
@@ -154,10 +159,13 @@ export const CreateTablePage: React.FC = () => {
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="e.g. Warranty Claims"
-                  className="w-full px-3 py-2 bg-muted/40 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary"
+                  className="w-full px-3 py-2 bg-muted/40 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary font-medium"
                 />
               </div>
             </div>
+
+            {/* Table Icon Selector */}
+            <IconPicker selectedIcon={selectedIcon} onSelectIcon={setSelectedIcon} />
 
             <div className="flex items-center gap-2 pt-1">
               <input
@@ -168,7 +176,7 @@ export const CreateTablePage: React.FC = () => {
                 className="rounded border-border h-4 w-4"
               />
               <label htmlFor="pinSidebarPage" className="text-xs text-foreground font-medium cursor-pointer select-none">
-                Pin as dedicated menu item in sidebar navigation
+                Pin as dedicated menu item in sidebar navigation (drag & drop to reorder)
               </label>
             </div>
 
@@ -177,55 +185,76 @@ export const CreateTablePage: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <span className="font-bold text-foreground text-xs">Column Schema ({columns.length})</span>
-                  <p className="text-[11px] text-muted-foreground">Define each data field for this table</p>
+                  <p className="text-[11px] text-muted-foreground">Define data fields and connect with other tables</p>
                 </div>
                 <button
                   type="button"
                   onClick={handleAddColumn}
-                  className="flex items-center gap-1 text-xs text-primary hover:underline font-semibold"
+                  className="flex items-center gap-1 text-xs text-primary hover:underline font-semibold cursor-pointer"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   <span>Add Column</span>
                 </button>
               </div>
 
-              <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+              <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
                 {columns.map((col, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center gap-2 bg-card p-2.5 rounded-xl border border-border/80 shadow-xs"
+                    className="bg-card p-3 rounded-xl border border-border/80 shadow-xs space-y-2"
                   >
-                    <input
-                      type="text"
-                      value={col.name}
-                      onChange={(e) => handleUpdateColumn(idx, { name: e.target.value })}
-                      placeholder="Column Name"
-                      className="flex-1 px-2.5 py-1.5 bg-muted/30 border border-border rounded-lg text-foreground text-xs"
-                    />
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={col.name}
+                        onChange={(e) => handleUpdateColumn(idx, { name: e.target.value })}
+                        placeholder="Column Name"
+                        className="flex-1 px-2.5 py-1.5 bg-muted/30 border border-border rounded-lg text-foreground text-xs font-medium"
+                      />
 
-                    <select
-                      value={col.dataType}
-                      onChange={(e) => handleUpdateColumn(idx, { dataType: e.target.value as DataType })}
-                      className="px-2.5 py-1.5 bg-muted/30 border border-border rounded-lg text-foreground text-xs"
-                    >
-                      <option value="text">Text</option>
-                      <option value="number">Number</option>
-                      <option value="currency">Currency</option>
-                      <option value="date">Date</option>
-                      <option value="boolean">Boolean</option>
-                      <option value="email">Email</option>
-                      <option value="phone">Phone</option>
-                    </select>
+                      <select
+                        value={col.dataType}
+                        onChange={(e) => handleUpdateColumn(idx, { dataType: e.target.value as DataType })}
+                        className="px-2.5 py-1.5 bg-muted/30 border border-border rounded-lg text-foreground text-xs font-medium"
+                      >
+                        <option value="text">Text</option>
+                        <option value="number">Number</option>
+                        <option value="currency">Currency</option>
+                        <option value="date">Date</option>
+                        <option value="boolean">Boolean</option>
+                        <option value="email">Email</option>
+                        <option value="phone">Phone</option>
+                        <option value="reference">🔗 Link to Table</option>
+                      </select>
 
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveColumn(idx)}
-                      disabled={columns.length <= 1}
-                      className="p-1.5 text-muted-foreground hover:text-destructive rounded-lg transition disabled:opacity-30"
-                      title="Remove column"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveColumn(idx)}
+                        disabled={columns.length <= 1}
+                        className="p-1.5 text-muted-foreground hover:text-destructive rounded-lg transition disabled:opacity-30 cursor-pointer"
+                        title="Remove column"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    {col.dataType === 'reference' && (
+                      <div className="flex items-center gap-2 pl-1 text-[11px] text-muted-foreground bg-muted/20 p-1.5 rounded-lg border border-border/50">
+                        <Link2 className="h-3.5 w-3.5 text-primary shrink-0" />
+                        <span className="font-semibold text-foreground">Connects to:</span>
+                        <select
+                          value={col.referenceTable || existingSheetKeys[0] || '_Products'}
+                          onChange={(e) => handleUpdateColumn(idx, { referenceTable: e.target.value })}
+                          className="px-2 py-1 bg-background border border-border rounded text-foreground text-xs font-medium"
+                        >
+                          {existingSheetKeys.map((sh) => (
+                            <option key={sh} value={sh}>
+                              {sheets[sh]?.displayName || sh}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

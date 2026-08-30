@@ -23,6 +23,9 @@ import {
   Stethoscope,
   Briefcase,
   Factory,
+  Utensils,
+  Home,
+  Wrench,
   Search,
   Check
 } from 'lucide-react';
@@ -40,6 +43,10 @@ const ICON_MAP: Record<string, React.ElementType> = {
   Stethoscope,
   Briefcase,
   Factory,
+  Utensils,
+  Home,
+  Wrench,
+  Sparkles,
 };
 
 export const BusinessTemplateHubModal: React.FC = () => {

@@ -6,6 +6,10 @@ import { coachingTemplate } from './coaching';
 import { payrollTemplate } from './payroll';
 import { gymTemplate } from './gym';
 import { hospitalTemplate } from './hospital';
+import { restaurantTemplate } from './restaurant';
+import { realestateTemplate } from './realestate';
+import { garageTemplate } from './garage';
+import { salonTemplate } from './salon';
 import { retailTemplate } from './retail';
 import { wholesaleTemplate } from './wholesale';
 import { pharmacyTemplate } from './pharmacy';
@@ -20,6 +24,10 @@ export {
   payrollTemplate,
   gymTemplate,
   hospitalTemplate,
+  restaurantTemplate,
+  realestateTemplate,
+  garageTemplate,
+  salonTemplate,
   retailTemplate,
   wholesaleTemplate,
   pharmacyTemplate,
@@ -35,6 +43,10 @@ export const ALL_BUSINESS_TEMPLATES: BusinessTemplate[] = [
   payrollTemplate,
   gymTemplate,
   hospitalTemplate,
+  restaurantTemplate,
+  realestateTemplate,
+  garageTemplate,
+  salonTemplate,
   retailTemplate,
   wholesaleTemplate,
   pharmacyTemplate,

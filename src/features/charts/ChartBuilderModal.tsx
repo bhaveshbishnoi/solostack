@@ -1,14 +1,117 @@
 import React, { useState, useMemo } from 'react';
 import { useWorkbookStore } from '../../stores/workbookStore';
 import { useUIStore } from '../../stores/uiStore';
+import { getBusinessFlowType } from '../../types';
 import ReactECharts from 'echarts-for-react';
-import { X, Sparkles, CheckCircle2 } from 'lucide-react';
+import { X, Sparkles, CheckCircle2, TrendingUp } from 'lucide-react';
+
+interface ChartPreset {
+  title: string;
+  sheet: string;
+  xAxis: string;
+  metric: string;
+  aggregation: 'SUM' | 'COUNT' | 'AVG' | 'MIN' | 'MAX';
+  type: 'line' | 'bar' | 'area' | 'pie' | 'donut';
+}
 
 export const ChartBuilderModal: React.FC = () => {
   const { activeModal, closeModal, addNotification } = useUIStore();
-  const { sheets } = useWorkbookStore();
+  const { sheets, appConfig } = useWorkbookStore();
 
   const isOpen = activeModal === 'chart_builder';
+
+  const flowType = getBusinessFlowType(appConfig?.businessType);
+
+  // Smart template presets tailored to the active business edition
+  const templatePresets: ChartPreset[] = useMemo(() => {
+    switch (flowType) {
+      case 'taxi':
+        return [
+          { title: 'Daily Fare Revenue Trend', sheet: '_Sales', xAxis: 'sale_date', metric: 'total', aggregation: 'SUM', type: 'line' },
+          { title: 'Fare Rates by Cab Category', sheet: '_Products', xAxis: 'name', metric: 'selling_price', aggregation: 'AVG', type: 'bar' },
+          { title: 'Trips by Settlement Mode', sheet: '_Sales', xAxis: 'payment_method', metric: 'total', aggregation: 'COUNT', type: 'pie' },
+          { title: 'Trips per Passenger', sheet: '_Sales', xAxis: 'customer_id', metric: 'total', aggregation: 'COUNT', type: 'bar' },
+        ];
+      case 'hotel':
+        return [
+          { title: 'Daily Stay Revenue', sheet: '_Sales', xAxis: 'sale_date', metric: 'total', aggregation: 'SUM', type: 'area' },
+          { title: 'Room Tariffs by Category', sheet: '_Products', xAxis: 'name', metric: 'selling_price', aggregation: 'AVG', type: 'bar' },
+          { title: 'Folio Settlement Modes', sheet: '_Sales', xAxis: 'payment_method', metric: 'total', aggregation: 'COUNT', type: 'donut' },
+          { title: 'Check-ins by Guest', sheet: '_Sales', xAxis: 'customer_id', metric: 'total', aggregation: 'COUNT', type: 'bar' },
+        ];
+      case 'school':
+        return [
+          { title: 'Term Fee Collection Trend', sheet: '_Sales', xAxis: 'sale_date', metric: 'total', aggregation: 'SUM', type: 'line' },
+          { title: 'Fee Slabs by Grade / Head', sheet: '_Products', xAxis: 'name', metric: 'selling_price', aggregation: 'AVG', type: 'bar' },
+          { title: 'Fee Receipts by Mode', sheet: '_Sales', xAxis: 'payment_method', metric: 'total', aggregation: 'COUNT', type: 'donut' },
+          { title: 'Student Enrollments Fee Share', sheet: '_Sales', xAxis: 'customer_id', metric: 'total', aggregation: 'SUM', type: 'bar' },
+        ];
+      case 'coaching':
+        return [
+          { title: 'Tuition Inflow Trend', sheet: '_Sales', xAxis: 'sale_date', metric: 'total', aggregation: 'SUM', type: 'line' },
+          { title: 'Course Fees by Exam', sheet: '_Products', xAxis: 'name', metric: 'selling_price', aggregation: 'AVG', type: 'bar' },
+          { title: 'Installments by Payment Channel', sheet: '_Sales', xAxis: 'payment_method', metric: 'total', aggregation: 'COUNT', type: 'pie' },
+          { title: 'Installments by Candidate', sheet: '_Sales', xAxis: 'customer_id', metric: 'total', aggregation: 'COUNT', type: 'bar' },
+        ];
+      case 'payroll':
+        return [
+          { title: 'Monthly Disbursal Trend', sheet: '_Sales', xAxis: 'sale_date', metric: 'total', aggregation: 'SUM', type: 'bar' },
+          { title: 'Salary by Component', sheet: '_Products', xAxis: 'name', metric: 'selling_price', aggregation: 'SUM', type: 'donut' },
+          { title: 'Disbursals by Method', sheet: '_Sales', xAxis: 'payment_method', metric: 'total', aggregation: 'COUNT', type: 'pie' },
+          { title: 'Net Pay by Employee', sheet: '_Sales', xAxis: 'customer_id', metric: 'total', aggregation: 'SUM', type: 'bar' },
+        ];
+      case 'gym':
+        return [
+          { title: 'Daily Subscription Inflow', sheet: '_Sales', xAxis: 'sale_date', metric: 'total', aggregation: 'SUM', type: 'line' },
+          { title: 'Revenue by Membership Tier', sheet: '_Products', xAxis: 'name', metric: 'selling_price', aggregation: 'AVG', type: 'donut' },
+          { title: 'Subscriptions by Payment Mode', sheet: '_Sales', xAxis: 'payment_method', metric: 'total', aggregation: 'COUNT', type: 'pie' },
+          { title: 'Renewals by Member', sheet: '_Sales', xAxis: 'customer_id', metric: 'total', aggregation: 'COUNT', type: 'bar' },
+        ];
+      case 'hospital':
+        return [
+          { title: 'Daily OPD Billing Trend', sheet: '_Sales', xAxis: 'sale_date', metric: 'total', aggregation: 'SUM', type: 'area' },
+          { title: 'Standard Charges by Procedure', sheet: '_Products', xAxis: 'name', metric: 'selling_price', aggregation: 'AVG', type: 'bar' },
+          { title: 'Billing by Insurance / Mode', sheet: '_Sales', xAxis: 'payment_method', metric: 'total', aggregation: 'COUNT', type: 'donut' },
+          { title: 'Visits by Patient UHID', sheet: '_Sales', xAxis: 'customer_id', metric: 'total', aggregation: 'COUNT', type: 'bar' },
+        ];
+      case 'restaurant':
+        return [
+          { title: 'Daily Food Sales Trend', sheet: '_Sales', xAxis: 'sale_date', metric: 'total', aggregation: 'SUM', type: 'line' },
+          { title: 'Menu Pricing by Course', sheet: '_Products', xAxis: 'category_id', metric: 'selling_price', aggregation: 'AVG', type: 'bar' },
+          { title: 'Settlement Modes Split', sheet: '_Sales', xAxis: 'payment_method', metric: 'total', aggregation: 'COUNT', type: 'donut' },
+          { title: 'Orders by Table / Guest', sheet: '_Sales', xAxis: 'customer_id', metric: 'total', aggregation: 'COUNT', type: 'bar' },
+        ];
+      case 'realestate':
+        return [
+          { title: 'Monthly Rent Collections', sheet: '_Sales', xAxis: 'sale_date', metric: 'total', aggregation: 'SUM', type: 'line' },
+          { title: 'Tariff by Unit Type', sheet: '_Products', xAxis: 'name', metric: 'selling_price', aggregation: 'AVG', type: 'bar' },
+          { title: 'Rent Receipts by Channel', sheet: '_Sales', xAxis: 'payment_method', metric: 'total', aggregation: 'COUNT', type: 'donut' },
+          { title: 'Collections by Leased Unit', sheet: '_Sales', xAxis: 'customer_id', metric: 'total', aggregation: 'SUM', type: 'bar' },
+        ];
+      case 'garage':
+        return [
+          { title: 'Daily Repair Billing', sheet: '_Sales', xAxis: 'sale_date', metric: 'total', aggregation: 'SUM', type: 'area' },
+          { title: 'Service Package Rates', sheet: '_Products', xAxis: 'name', metric: 'selling_price', aggregation: 'AVG', type: 'bar' },
+          { title: 'Repair Bills by Mode', sheet: '_Sales', xAxis: 'payment_method', metric: 'total', aggregation: 'COUNT', type: 'donut' },
+          { title: 'Jobs by Vehicle Owner', sheet: '_Sales', xAxis: 'customer_id', metric: 'total', aggregation: 'COUNT', type: 'bar' },
+        ];
+      case 'salon':
+        return [
+          { title: 'Daily Salon Revenue', sheet: '_Sales', xAxis: 'sale_date', metric: 'total', aggregation: 'SUM', type: 'line' },
+          { title: 'Treatment Charges by Service', sheet: '_Products', xAxis: 'name', metric: 'selling_price', aggregation: 'AVG', type: 'bar' },
+          { title: 'Payment Modes Split', sheet: '_Sales', xAxis: 'payment_method', metric: 'total', aggregation: 'COUNT', type: 'donut' },
+          { title: 'Appointments by Client', sheet: '_Sales', xAxis: 'customer_id', metric: 'total', aggregation: 'COUNT', type: 'bar' },
+        ];
+      case 'retail':
+      default:
+        return [
+          { title: 'Daily Revenue Trend', sheet: '_Sales', xAxis: 'sale_date', metric: 'total', aggregation: 'SUM', type: 'line' },
+          { title: 'Product Catalog Pricing', sheet: '_Products', xAxis: 'name', metric: 'selling_price', aggregation: 'AVG', type: 'bar' },
+          { title: 'Sales by Payment Method', sheet: '_Sales', xAxis: 'payment_method', metric: 'total', aggregation: 'COUNT', type: 'pie' },
+          { title: 'Target Stock Thresholds', sheet: '_Products', xAxis: 'name', metric: 'minimum_stock', aggregation: 'AVG', type: 'bar' },
+        ];
+    }
+  }, [flowType]);
 
   // Table options: all sheets with rows
   const availableSheets = useMemo(() => {
@@ -24,7 +127,18 @@ export const ChartBuilderModal: React.FC = () => {
   const [metricCol, setMetricCol] = useState<string>('total');
   const [aggregation, setAggregation] = useState<'SUM' | 'COUNT' | 'AVG' | 'MIN' | 'MAX'>('SUM');
   const [chartType, setChartType] = useState<'line' | 'bar' | 'area' | 'pie' | 'donut'>('bar');
-  const [chartTitle, setChartTitle] = useState<string>('Custom Business Chart');
+  const [chartTitle, setChartTitle] = useState<string>(templatePresets[0]?.title || 'Custom Business Chart');
+
+  const applyPreset = (preset: ChartPreset) => {
+    if (sheets[preset.sheet]) {
+      setSelectedSheet(preset.sheet);
+    }
+    setXAxisCol(preset.xAxis);
+    setMetricCol(preset.metric);
+    setAggregation(preset.aggregation);
+    setChartType(preset.type);
+    setChartTitle(preset.title);
+  };
 
   // Compute Aggregations
   const computedData = useMemo(() => {
@@ -133,6 +247,46 @@ export const ChartBuilderModal: React.FC = () => {
         <div className="flex-1 grid grid-cols-1 md:grid-cols-12 overflow-hidden">
           {/* Controls Panel (5 cols) */}
           <div className="md:col-span-5 border-r border-border p-5 overflow-y-auto space-y-4 text-xs bg-muted/10">
+            {/* Recommended Template Presets */}
+            <div className="space-y-2 pb-3 border-b border-border/80">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-primary font-bold">
+                  <TrendingUp className="h-3.5 w-3.5" />
+                  <span className="text-[10px] uppercase tracking-wider">
+                    {appConfig?.businessType || 'Industry'} Presets
+                  </span>
+                </div>
+                <span className="text-[10px] text-muted-foreground font-semibold">1-Click Apply</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-1.5">
+                {templatePresets.map((preset, pIdx) => {
+                  const isSelected = chartTitle === preset.title;
+                  return (
+                    <button
+                      key={pIdx}
+                      type="button"
+                      onClick={() => applyPreset(preset)}
+                      className={`p-2 text-left rounded-xl border transition ${
+                        isSelected
+                          ? 'bg-primary/20 border-primary text-primary shadow-xs'
+                          : 'bg-muted/40 hover:bg-muted/80 border-border text-foreground hover:border-primary/40'
+                      }`}
+                    >
+                      <div className="text-[11px] font-bold truncate">
+                        {preset.title}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                        <span className="uppercase font-mono font-semibold">{preset.type}</span>
+                        <span>•</span>
+                        <span>{preset.sheet.replace('_', '')}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <div>
               <label className="block font-medium text-foreground mb-1">Chart Title</label>
               <input

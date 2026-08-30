@@ -328,7 +328,7 @@ export const WelcomeModal: React.FC = () => {
                 className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-primary via-teal-500 to-emerald-600 hover:opacity-95 text-white text-xs font-bold transition shadow-md teal-glow"
               >
                 <Sparkles className="h-4 w-4" />
-                <span>Explore 12 Business Editions (Taxi, Hotel, School, Payroll, Gym...)</span>
+                <span>Explore 16 Business Editions (Taxi, Hotel, School, Restaurant, Gym...)</span>
               </button>
 
               <button
@@ -398,6 +398,10 @@ export const WelcomeModal: React.FC = () => {
                     <option value="Company Payroll">Company Payroll (Salary & Payslips)</option>
                     <option value="Gym & Fitness Center">Gym & Fitness Center (Memberships & Trainers)</option>
                     <option value="Hospital & Clinic OPD">Hospital & Clinic Management (OPD & Medical Bill)</option>
+                    <option value="Restaurant & Cafe">Restaurant, Cafe & Kitchen (Table Orders & KOT)</option>
+                    <option value="Real Estate & Property Rental">Real Estate & Property Rental (Tenants & Leases)</option>
+                    <option value="Automobile Repair & Garage">Automobile Repair & Garage (Job Cards & Spares)</option>
+                    <option value="Beauty Salon & Spa">Beauty Salon, Spa & Wellness (Stylists & Sessions)</option>
                   </select>
                 </div>
 

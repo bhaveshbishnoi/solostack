@@ -487,6 +487,198 @@ export function getBusinessTerminology(flowType: BusinessFlowType, sheetName: st
       }
       break;
 
+    case 'restaurant':
+      if (sheetName === '_Products') {
+        return {
+          sheetDisplayName: 'Dishes & Menu Catalog',
+          addRecordTitle: 'Add New Menu Dish',
+          editRecordTitle: 'Edit Dish Recipe & Price',
+          columnDisplayNames: {
+            sku: 'Dish Code',
+            name: 'Menu Item / Dish Name',
+            selling_price: 'Menu Price',
+            purchase_price: 'Food Cost (Raw)',
+            minimum_stock: 'Target Portions',
+            status: 'Kitchen Status',
+          },
+          recommendedVisibleColumns: ['sku', 'name', 'selling_price', 'minimum_stock', 'status'],
+        };
+      }
+      if (sheetName === '_Customers') {
+        return {
+          sheetDisplayName: 'Dine-in Guests & Tables',
+          addRecordTitle: 'Add Table / Guest Record',
+          editRecordTitle: 'Edit Guest Preferences',
+          columnDisplayNames: {
+            name: 'Guest / Customer Name',
+            phone: 'Contact Phone',
+            address: 'Table # / Area',
+            gstin: 'Dietary Notes',
+          },
+          recommendedVisibleColumns: ['name', 'address', 'phone', 'gstin'],
+        };
+      }
+      if (sheetName === '_Sales') {
+        return {
+          sheetDisplayName: 'KOT & Table Orders Ledger',
+          addRecordTitle: 'Settle Food Bill (KOT)',
+          editRecordTitle: 'Edit Table Order',
+          columnDisplayNames: {
+            customer_id: 'Guest / Table #',
+            sale_date: 'Order Time',
+            total: 'Total Bill Paid',
+            payment_method: 'Settlement Mode',
+            status: 'Kitchen Status',
+          },
+          recommendedVisibleColumns: ['customer_id', 'sale_date', 'total', 'payment_method', 'status'],
+        };
+      }
+      break;
+
+    case 'realestate':
+      if (sheetName === '_Products') {
+        return {
+          sheetDisplayName: 'Rental Units & Properties',
+          addRecordTitle: 'Add Rental Unit Type',
+          editRecordTitle: 'Edit Property Details',
+          columnDisplayNames: {
+            sku: 'Plan Code',
+            name: 'Unit Classification',
+            selling_price: 'Monthly Rent',
+            purchase_price: 'Maintenance Share',
+            status: 'Availability',
+          },
+          recommendedVisibleColumns: ['sku', 'name', 'selling_price', 'status'],
+        };
+      }
+      if (sheetName === '_Customers') {
+        return {
+          sheetDisplayName: 'Tenants & Lease Agreements',
+          addRecordTitle: 'Enroll New Tenant',
+          editRecordTitle: 'Edit Lease Agreement',
+          columnDisplayNames: {
+            name: 'Tenant Full Name',
+            phone: 'Contact Mobile #',
+            email: 'Email',
+            address: 'Leased Unit Address',
+            gstin: 'Agreement / ID #',
+          },
+          recommendedVisibleColumns: ['name', 'address', 'phone', 'gstin'],
+        };
+      }
+      if (sheetName === '_Sales') {
+        return {
+          sheetDisplayName: 'Rent Collections Ledger',
+          addRecordTitle: 'Record Rent Receipt',
+          editRecordTitle: 'Edit Rent Receipt',
+          columnDisplayNames: {
+            customer_id: 'Tenant Name',
+            sale_date: 'Rent Month Date',
+            total: 'Total Rent Collected',
+            payment_method: 'Payment Channel',
+            status: 'Status',
+          },
+          recommendedVisibleColumns: ['customer_id', 'sale_date', 'total', 'payment_method', 'status'],
+        };
+      }
+      break;
+
+    case 'garage':
+      if (sheetName === '_Products') {
+        return {
+          sheetDisplayName: 'Service Packages & Spares',
+          addRecordTitle: 'Add Service Package / Part',
+          editRecordTitle: 'Edit Service / Part',
+          columnDisplayNames: {
+            sku: 'Part # / Code',
+            name: 'Service / Spare Part Name',
+            selling_price: 'Customer Retail Price',
+            purchase_price: 'Trade / Cost Price',
+            minimum_stock: 'Bin Reorder Level',
+            status: 'Stock Status',
+          },
+          recommendedVisibleColumns: ['sku', 'name', 'selling_price', 'minimum_stock', 'status'],
+        };
+      }
+      if (sheetName === '_Customers') {
+        return {
+          sheetDisplayName: 'Vehicle Owners & Job Cards',
+          addRecordTitle: 'Create Vehicle Job Card',
+          editRecordTitle: 'Edit Job Card',
+          columnDisplayNames: {
+            name: 'Vehicle Owner Name',
+            phone: 'Mobile #',
+            address: 'Vehicle Model & Plate #',
+            gstin: 'Odometer (km) / VIN',
+          },
+          recommendedVisibleColumns: ['name', 'address', 'gstin', 'phone'],
+        };
+      }
+      if (sheetName === '_Sales') {
+        return {
+          sheetDisplayName: 'Repair Invoices Ledger',
+          addRecordTitle: 'Issue Repair Bill',
+          editRecordTitle: 'Edit Repair Invoice',
+          columnDisplayNames: {
+            customer_id: 'Vehicle Owner',
+            sale_date: 'Invoice Date',
+            total: 'Total Repair Bill',
+            payment_method: 'Payment Mode',
+            status: 'Delivery Status',
+          },
+          recommendedVisibleColumns: ['customer_id', 'sale_date', 'total', 'payment_method', 'status'],
+        };
+      }
+      break;
+
+    case 'salon':
+      if (sheetName === '_Products') {
+        return {
+          sheetDisplayName: 'Salon Treatments & Cosmetics',
+          addRecordTitle: 'Add Treatment / Product',
+          editRecordTitle: 'Edit Salon Service',
+          columnDisplayNames: {
+            sku: 'Treatment Code',
+            name: 'Treatment / Product Name',
+            selling_price: 'Service Charge / MRP',
+            purchase_price: 'Consumable Cost',
+            status: 'Status',
+          },
+          recommendedVisibleColumns: ['sku', 'name', 'selling_price', 'status'],
+        };
+      }
+      if (sheetName === '_Customers') {
+        return {
+          sheetDisplayName: 'Salon Clients Directory',
+          addRecordTitle: 'Register Salon Client',
+          editRecordTitle: 'Edit Client Profile',
+          columnDisplayNames: {
+            name: 'Client Full Name',
+            phone: 'Mobile / WhatsApp',
+            email: 'Email',
+            address: 'Preferred Stylist',
+            gstin: 'Allergy / Style Notes',
+          },
+          recommendedVisibleColumns: ['name', 'address', 'phone', 'gstin'],
+        };
+      }
+      if (sheetName === '_Sales') {
+        return {
+          sheetDisplayName: 'Appointment Invoices',
+          addRecordTitle: 'Bill Appointment Session',
+          editRecordTitle: 'Edit Appointment Bill',
+          columnDisplayNames: {
+            customer_id: 'Client Name',
+            sale_date: 'Appointment Date',
+            total: 'Total Bill Amount',
+            payment_method: 'Settlement Mode',
+            status: 'Status',
+          },
+          recommendedVisibleColumns: ['customer_id', 'sale_date', 'total', 'payment_method', 'status'],
+        };
+      }
+      break;
+
     default:
       break;
   }
