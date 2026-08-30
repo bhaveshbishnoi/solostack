@@ -14,7 +14,8 @@ import {
   FolderOpen,
   Sliders,
   Check,
-  Printer
+  Printer,
+  Sparkles
 } from 'lucide-react';
 
 type SettingsTab = 'business' | 'finance' | 'pos' | 'appearance' | 'storage';
@@ -292,6 +293,34 @@ export const SettingsView: React.FC = () => {
                 <p className="text-xs text-muted-foreground">
                   Branding and contact details printed on customer tax invoices, receipts, and exported statements.
                 </p>
+              </div>
+
+              {/* Business Flow & Interconnected Schema Card */}
+              <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/25 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/20 text-primary uppercase font-mono">
+                      Active Business Edition
+                    </span>
+                    <span className="text-xs font-bold text-foreground">
+                      {appConfig?.businessType || 'Retail Store'}
+                    </span>
+                  </div>
+                  <h3 className="text-sm font-bold text-foreground">Interconnected Industry Tables & Templates</h3>
+                  <p className="text-xs text-muted-foreground max-w-xl">
+                    Switch your business edition anytime (Taxi, Hotel, School, Coaching, Payroll, Gym, Hospital, etc.).
+                    Importing an edition configures interconnected tables, column headers, and realistic sample records.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => openModal('business_templates')}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-sm teal-glow transition shrink-0 cursor-pointer"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  <span>Browse & Import Business Flow</span>
+                </button>
               </div>
 
               <div className="bg-card border border-border rounded-2xl p-6 shadow-2xs space-y-5">

@@ -3,6 +3,7 @@ import { useWorkbookStore } from '../../stores/workbookStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useUIStore } from '../../stores/uiStore';
 import { AppConfig } from '../../types';
+import { getBusinessTemplate } from '../../lib/templates';
 import {
   FileSpreadsheet,
   PlusCircle,
@@ -13,7 +14,7 @@ import {
 } from 'lucide-react';
 
 export const WelcomeModal: React.FC = () => {
-  const { activeModal, closeModal, addNotification } = useUIStore();
+  const { activeModal, closeModal, addNotification, openModal } = useUIStore();
   const { createWorkbook, openWorkbook, metadata } = useWorkbookStore();
 
   const [mode, setMode] = useState<'welcome' | 'create' | 'open'>('welcome');
@@ -78,6 +79,17 @@ export const WelcomeModal: React.FC = () => {
       };
 
       await createWorkbook(filePath, config);
+
+      // Automatically populate interconnected tables and starter data from template
+      try {
+        const template = getBusinessTemplate(businessType);
+        if (template) {
+          await useWorkbookStore.getState().applyBusinessTemplate(template, businessName);
+        }
+      } catch (templateErr) {
+        console.warn('Template auto-population warning:', templateErr);
+      }
+
       addNotification('success', 'Workbook Created', `Active workbook: ${sanitized}.xlsx`);
       closeModal();
     } catch (err: any) {
@@ -306,19 +318,30 @@ export const WelcomeModal: React.FC = () => {
               )}
             </div>
 
-            {/* Quick Demo Option */}
-            <div className="pt-2 border-t border-border">
+            {/* Business Templates Hub & Quick Demo */}
+            <div className="pt-2 border-t border-border space-y-2">
+              <button
+                onClick={() => {
+                  closeModal();
+                  openModal('business_templates');
+                }}
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-primary via-teal-500 to-emerald-600 hover:opacity-95 text-white text-xs font-bold transition shadow-md teal-glow"
+              >
+                <Sparkles className="h-4 w-4" />
+                <span>Explore 12 Business Editions (Taxi, Hotel, School, Payroll, Gym...)</span>
+              </button>
+
               <button
                 onClick={handleCreateDemo}
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-primary/10 to-teal-500/10 hover:from-primary/20 hover:to-teal-500/20 border border-primary/30 text-primary text-xs font-bold transition teal-glow-sm"
+                className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-muted/40 hover:bg-muted/70 border border-border text-muted-foreground hover:text-foreground text-xs font-medium transition"
               >
                 {loading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 ) : (
-                  <Sparkles className="h-4 w-4 text-primary" />
+                  <Sparkles className="h-3.5 w-3.5 text-primary" />
                 )}
-                <span>Launch Quick Demo (Pre-loaded with sample store data)</span>
+                <span>Or Launch Default Retail Demo</span>
               </button>
             </div>
           </div>

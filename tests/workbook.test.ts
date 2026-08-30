@@ -181,5 +181,64 @@ describe('Workbook Lifecycle & Excel Parity Engine', () => {
     ];
     expect(computeAutoIncrement(numRows, 'id', 'id')).toBe(4);
   });
+
+  it('provides complete, interconnected templates for all 12 business types', async () => {
+    const { getAllBusinessTemplates, getBusinessTemplate } = await import('../src/lib/templates');
+    const templates = getAllBusinessTemplates();
+    expect(templates.length).toBe(12);
+
+    const expectedTypes = [
+      'taxi',
+      'hotel',
+      'school',
+      'coaching',
+      'payroll',
+      'gym',
+      'hospital',
+      'retail',
+      'wholesale',
+      'pharmacy',
+      'services',
+      'manufacturing',
+    ];
+
+    for (const type of expectedTypes) {
+      const tmpl = getBusinessTemplate(type);
+      expect(tmpl).toBeDefined();
+      expect(tmpl.id).toBe(type);
+      expect(tmpl.sheets.length).toBeGreaterThanOrEqual(5);
+      expect(tmpl.relationships.length).toBeGreaterThan(0);
+
+      // Verify core sheets exist
+      const sheetNames = tmpl.sheets.map((s) => s.name);
+      expect(sheetNames).toContain('_Products');
+      expect(sheetNames).toContain('_Inventory');
+      expect(sheetNames).toContain('_Customers');
+      expect(sheetNames).toContain('_Sales');
+      expect(sheetNames).toContain('_SaleItems');
+      expect(sheetNames).toContain('_Expenses');
+
+      // Verify each sheet has valid columns and starter rows
+      for (const sheet of tmpl.sheets) {
+        expect(sheet.columns.length).toBeGreaterThan(0);
+        expect(sheet.rows.length).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('applies a business template into the workbook store, updating schema and records', async () => {
+    const { useWorkbookStore } = await import('../src/stores/workbookStore');
+    const { getBusinessTemplate } = await import('../src/lib/templates');
+
+    const taxiTmpl = getBusinessTemplate('taxi');
+    await useWorkbookStore.getState().applyBusinessTemplate(taxiTmpl, 'Royal City Cabs');
+
+    const state = useWorkbookStore.getState();
+    expect(state.appConfig?.businessName).toBe('Royal City Cabs');
+    expect(state.appConfig?.businessType).toBe('Taxi & Cab Booking');
+    expect(state.sheets['_Products']).toBeDefined();
+    expect(state.sheets['_Products'].rows.length).toBeGreaterThan(0);
+    expect(state.sheets['_Customers'].rows[0].name).toBe('Suresh Verma');
+  });
 });
 

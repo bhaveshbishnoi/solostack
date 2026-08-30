@@ -129,3 +129,25 @@ export interface CustomTableDef {
 }
 
 export type SaveStatus = 'saved' | 'saving' | 'unsaved' | 'error';
+
+export interface TableRelationship {
+  sourceSheet: string;
+  sourceKey: string;
+  targetSheet: string;
+  targetKey: string;
+  relationship: string;
+}
+
+export interface BusinessTemplate {
+  id: BusinessFlowType;
+  businessType: string;
+  title: string;
+  tagline: string;
+  description: string;
+  iconName: string;
+  currencySymbol: string;
+  currency: string;
+  defaultTaxRate: number;
+  relationships: TableRelationship[];
+  sheets: SheetData[];
+}

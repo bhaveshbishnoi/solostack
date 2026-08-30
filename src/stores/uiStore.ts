@@ -30,6 +30,7 @@ interface UIState {
     | 'invoice_preview'
     | 'backup_manager'
     | 'welcome'
+    | 'business_templates'
     | null;
   modalData: any;
   commandPaletteOpen: boolean;

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { workbookService } from '../services/workbookService';
 import { useSettingsStore } from './settingsStore';
-import { AppConfig, BackupInfo, ColumnDef, CustomTableDef, SaveStatus, SheetData, TableRow, WorkbookMetadata } from '../types';
+import { AppConfig, BackupInfo, BusinessTemplate, ColumnDef, CustomTableDef, SaveStatus, SheetData, TableRow, WorkbookMetadata } from '../types';
 
 interface WorkbookState {
   metadata: WorkbookMetadata | null;
@@ -21,6 +21,9 @@ interface WorkbookState {
   createBackup: () => Promise<BackupInfo>;
   restoreBackup: (backupPath: string) => Promise<void>;
   setActiveSheet: (sheetName: string) => void;
+  
+  // Business Template Loader
+  applyBusinessTemplate: (template: BusinessTemplate, customBusinessName?: string) => Promise<void>;
   
   // Row CRUD operations
   addRow: (sheetName: string, row: TableRow) => void;
@@ -233,6 +236,81 @@ export const useWorkbookStore = create<WorkbookState>((set, get) => ({
 
   setActiveSheet: (sheetName: string) => {
     set({ activeSheetName: sheetName });
+  },
+
+  applyBusinessTemplate: async (template: BusinessTemplate, customBusinessName?: string) => {
+    const state = get();
+    set({ isSaving: true, saveStatus: 'saving' });
+
+    try {
+      const updatedSheets = { ...state.sheets };
+
+      // Apply all interconnected sheets from the business template
+      template.sheets.forEach((ts) => {
+        updatedSheets[ts.name] = {
+          name: ts.name,
+          columns: [...ts.columns],
+          rows: [...ts.rows],
+        };
+      });
+
+      const nowIso = new Date().toISOString();
+      const updatedConfig: AppConfig = {
+        ...(state.appConfig || {
+          country: 'India',
+          taxPreference: 'exclusive',
+          dateFormat: 'YYYY-MM-DD',
+          timezone: 'UTC',
+          schemaVersion: '1.0.0',
+          createdAt: nowIso,
+          updatedAt: nowIso,
+        }),
+        businessName: customBusinessName?.trim() || state.appConfig?.businessName || template.title,
+        businessType: template.businessType,
+        currency: template.currency,
+        currencySymbol: template.currencySymbol,
+        defaultTaxRate: template.defaultTaxRate,
+        updatedAt: nowIso,
+      };
+
+      // Also synchronize _AppConfig sheet
+      if (updatedSheets['_AppConfig']) {
+        const configRows: TableRow[] = [
+          { key: 'business_name', value: updatedConfig.businessName },
+          { key: 'business_type', value: updatedConfig.businessType },
+          { key: 'country', value: updatedConfig.country },
+          { key: 'currency', value: updatedConfig.currency },
+          { key: 'currency_symbol', value: updatedConfig.currencySymbol },
+          { key: 'tax_preference', value: updatedConfig.taxPreference },
+          { key: 'default_tax_rate', value: updatedConfig.defaultTaxRate },
+          { key: 'date_format', value: updatedConfig.dateFormat },
+          { key: 'timezone', value: updatedConfig.timezone },
+          { key: 'schema_version', value: updatedConfig.schemaVersion },
+          { key: 'created_at', value: updatedConfig.createdAt },
+          { key: 'updated_at', value: updatedConfig.updatedAt },
+        ];
+        updatedSheets['_AppConfig'] = {
+          ...updatedSheets['_AppConfig'],
+          rows: configRows,
+        };
+      }
+
+      set({
+        sheets: updatedSheets,
+        appConfig: updatedConfig,
+        activeSheetName: 'dashboard',
+        isSaving: false,
+      });
+
+      // Save directly to the workbook file if open
+      if (state.metadata) {
+        await get().saveWorkbook();
+      }
+    } catch (err) {
+      console.error('Failed to apply business template:', err);
+      set({ saveStatus: 'error', isSaving: false });
+      throw err;
+    }
   },
 
   addRow: (sheetName: string, row: TableRow) => {

@@ -31,12 +31,13 @@ import {
   BookOpen,
   BadgeDollarSign,
   Dumbbell,
-  Activity
+  Activity,
+  Sparkles
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
   const { sheets, activeSheetName, setActiveSheet, appConfig } = useWorkbookStore();
-  const { isSidebarCollapsed, toggleSidebar } = useUIStore();
+  const { isSidebarCollapsed, toggleSidebar, openModal } = useUIStore();
 
   const flowType = getBusinessFlowType(appConfig?.businessType);
 
@@ -223,6 +224,15 @@ export const Sidebar: React.FC = () => {
             <LayoutDashboard className="h-4 w-4 shrink-0" />
             {!isSidebarCollapsed && <span>Dashboard</span>}
           </button>
+
+          <button
+            onClick={() => openModal('business_templates')}
+            className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-primary hover:bg-primary/10 transition mt-1 border border-primary/20"
+            title="Setup & Import Business Tables (Taxi, Hotel, School, Payroll, Gym, Hospital...)"
+          >
+            <Sparkles className="h-4 w-4 shrink-0 text-primary" />
+            {!isSidebarCollapsed && <span className="font-bold truncate">Setup Business Flow</span>}
+          </button>
         </div>
 
         {/* Business Group */}
@@ -230,6 +240,14 @@ export const Sidebar: React.FC = () => {
           {!isSidebarCollapsed && (
             <div className="text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider px-2 mb-1 flex items-center justify-between">
               <span>{flowMeta.editionName}</span>
+              <button
+                onClick={() => openModal('business_templates')}
+                className="text-[10px] text-primary hover:underline lowercase font-mono flex items-center gap-1 cursor-pointer"
+                title="Switch business edition / import tables"
+              >
+                <Sparkles className="h-2.5 w-2.5" />
+                <span>switch</span>
+              </button>
             </div>
           )}
           <div className="space-y-0.5">

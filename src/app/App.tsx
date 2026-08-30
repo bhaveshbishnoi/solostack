@@ -24,6 +24,7 @@ import { AddExpenseModal } from '../features/expenses/AddExpenseModal';
 import { StockMovementModal } from '../features/inventory/StockMovementModal';
 import { CreateTableModal } from '../features/custom-tables/CreateTableModal';
 import { ChartBuilderModal } from '../features/charts/ChartBuilderModal';
+import { BusinessTemplateHubModal } from '../features/templates/BusinessTemplateHubModal';
 
 export const App: React.FC = () => {
   const {
@@ -188,6 +189,7 @@ export const App: React.FC = () => {
 
       {/* Modals & Dialogs */}
       <WelcomeModal />
+      <BusinessTemplateHubModal />
       <NewSaleModal />
       <InvoiceModal />
       <AddProductModal />
