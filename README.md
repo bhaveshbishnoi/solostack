@@ -65,3 +65,4 @@ Creates distributable `.dmg` or `.app` on macOS.
 - [ARCHITECTURE.md](file:///Users/bhavesh/Developer/exdrow/ARCHITECTURE.md): System architecture and data flow.
 - [WORKBOOK_FORMAT.md](file:///Users/bhavesh/Developer/exdrow/WORKBOOK_FORMAT.md): Detailed Excel sheet schemas and specifications.
 - [DEVELOPMENT.md](file:///Users/bhavesh/Developer/exdrow/DEVELOPMENT.md): Developer guide, testing, and compilation.
+# solostack
