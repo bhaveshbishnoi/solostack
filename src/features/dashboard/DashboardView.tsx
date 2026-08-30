@@ -89,46 +89,92 @@ export const DashboardView: React.FC = () => {
       });
   }, [salesRows, customerRows]);
 
-  // Chart 1: Sales Trend (Date vs Revenue)
+  // Chart 1: Multi-metric Sales & Volume Trend (Date vs Revenue & Order Count)
   const salesTrendOption = useMemo(() => {
-    const dateMap: Record<string, number> = {};
+    const dateRevenueMap: Record<string, number> = {};
+    const dateOrdersMap: Record<string, number> = {};
+
     salesRows.forEach((s) => {
       const date = String(s.sale_date || '').split('T')[0];
       if (date) {
-        dateMap[date] = (dateMap[date] || 0) + Number(s.total || 0);
+        dateRevenueMap[date] = (dateRevenueMap[date] || 0) + Number(s.total || 0);
+        dateOrdersMap[date] = (dateOrdersMap[date] || 0) + 1;
       }
     });
 
-    const dates = Object.keys(dateMap).sort();
-    const values = dates.map((d) => dateMap[d]);
+    const dates = Object.keys(dateRevenueMap).sort();
+    const revenueValues = dates.map((d) => dateRevenueMap[d]);
+    const orderValues = dates.map((d) => dateOrdersMap[d]);
 
     return {
       tooltip: {
         trigger: 'axis',
-        formatter: (params: any) => {
-          const item = params[0];
-          return `${item.name}<br/><b>${formatCurrency(item.value, currency, currencySymbol)}</b>`;
+        backgroundColor: 'rgba(15, 23, 42, 0.92)',
+        borderColor: 'rgba(51, 65, 85, 0.6)',
+        textStyle: { color: '#f8fafc', fontSize: 12 },
+        formatter: (params: any[]) => {
+          if (!params || !params.length) return '';
+          let res = `<div style="font-weight:700;margin-bottom:4px;color:#94a3b8">${params[0].name}</div>`;
+          params.forEach((item) => {
+            const valStr = item.seriesName === 'Revenue'
+              ? formatCurrency(item.value, currency, currencySymbol)
+              : `${item.value} orders`;
+            res += `<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:2px">
+              <span style="display:inline-flex;align-items:center;gap:6px">
+                <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${item.color}"></span>
+                <span>${item.seriesName}</span>
+              </span>
+              <b style="font-family:monospace">${valStr}</b>
+            </div>`;
+          });
+          return res;
         },
       },
-      grid: { left: '3%', right: '4%', bottom: '3%', top: '10%', containLabel: true },
+      legend: {
+        data: ['Revenue', 'Orders'],
+        top: '0%',
+        right: '4%',
+        textStyle: { color: '#94a3b8', fontSize: 11 },
+      },
+      grid: { left: '3%', right: '4%', bottom: '3%', top: '14%', containLabel: true },
       xAxis: {
         type: 'category',
         data: dates.length ? dates : ['No Sales Yet'],
-        axisLine: { lineStyle: { color: '#94a3b8' } },
+        axisLine: { lineStyle: { color: '#475569' } },
+        axisLabel: { color: '#94a3b8', fontSize: 10 },
       },
-      yAxis: {
-        type: 'value',
-        axisLine: { lineStyle: { color: '#94a3b8' } },
-        splitLine: { lineStyle: { color: '#334155', opacity: 0.2 } },
-      },
+      yAxis: [
+        {
+          type: 'value',
+          name: 'Revenue',
+          nameTextStyle: { color: '#94a3b8', fontSize: 10 },
+          axisLine: { lineStyle: { color: '#0d9488' } },
+          axisLabel: {
+            color: '#94a3b8',
+            fontSize: 10,
+            formatter: (val: number) => `${currencySymbol}${val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val}`,
+          },
+          splitLine: { lineStyle: { color: '#334155', opacity: 0.15 } },
+        },
+        {
+          type: 'value',
+          name: 'Orders',
+          nameTextStyle: { color: '#818cf8', fontSize: 10 },
+          minInterval: 1,
+          axisLine: { lineStyle: { color: '#6366f1' } },
+          axisLabel: { color: '#94a3b8', fontSize: 10 },
+          splitLine: { show: false },
+        },
+      ],
       series: [
         {
-          data: values.length ? values : [0],
+          name: 'Revenue',
           type: 'line',
+          yAxisIndex: 0,
           smooth: true,
           showSymbol: true,
-          symbolSize: 8,
-          lineStyle: { width: 3.5, color: '#0d9488' },
+          symbolSize: 6,
+          lineStyle: { width: 3, color: '#0d9488' },
           itemStyle: { color: '#0d9488' },
           areaStyle: {
             color: {
@@ -138,17 +184,39 @@ export const DashboardView: React.FC = () => {
               x2: 0,
               y2: 1,
               colorStops: [
-                { offset: 0, color: 'rgba(13, 148, 136, 0.45)' },
+                { offset: 0, color: 'rgba(13, 148, 136, 0.4)' },
                 { offset: 1, color: 'rgba(13, 148, 136, 0.0)' },
               ],
             },
           },
+          data: revenueValues.length ? revenueValues : [0],
+        },
+        {
+          name: 'Orders',
+          type: 'bar',
+          yAxisIndex: 1,
+          barMaxWidth: 20,
+          itemStyle: {
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                { offset: 0, color: '#818cf8' },
+                { offset: 1, color: 'rgba(99, 102, 241, 0.3)' },
+              ],
+            },
+            borderRadius: [4, 4, 0, 0],
+          },
+          data: orderValues.length ? orderValues : [0],
         },
       ],
     };
   }, [salesRows, currency, currencySymbol]);
 
-  // Chart 2: Category Distribution
+  // Chart 2: Category Distribution (Rich Multi-Color Donut)
   const categoryOption = useMemo(() => {
     const categoryRows = sheets['_Categories']?.rows || [];
     const catCountMap: Record<string, number> = {};
@@ -161,18 +229,60 @@ export const DashboardView: React.FC = () => {
 
     const data = Object.entries(catCountMap).map(([name, value]) => ({ name, value }));
 
+    // Vibrant, balanced multi-color palette
+    const VIBRANT_PALETTE = [
+      '#0d9488', // Teal
+      '#6366f1', // Indigo
+      '#f59e0b', // Amber
+      '#ec4899', // Pink
+      '#3b82f6', // Blue
+      '#10b981', // Emerald
+      '#8b5cf6', // Violet
+      '#06b6d4', // Cyan
+      '#f97316', // Orange
+      '#14b8a6', // Light Teal
+    ];
+
     return {
-      tooltip: { trigger: 'item' },
-      legend: { bottom: '0%', textStyle: { color: '#94a3b8', fontSize: 11 } },
-      color: ['#0d9488', '#14b8a6', '#2dd4bf', '#0f766e', '#5eead4', '#115e59'],
+      tooltip: {
+        trigger: 'item',
+        backgroundColor: 'rgba(15, 23, 42, 0.92)',
+        borderColor: 'rgba(51, 65, 85, 0.6)',
+        textStyle: { color: '#f8fafc', fontSize: 12 },
+        formatter: (item: any) => {
+          return `<div style="font-weight:700;margin-bottom:2px">${item.name}</div>
+            <div style="font-family:monospace">${item.value} products (${item.percent}%)</div>`;
+        },
+      },
+      legend: {
+        bottom: '0%',
+        type: 'scroll',
+        textStyle: { color: '#94a3b8', fontSize: 11 },
+        pageTextStyle: { color: '#94a3b8' },
+      },
+      color: VIBRANT_PALETTE,
       series: [
         {
-          name: 'Products by Category',
+          name: 'Categories',
           type: 'pie',
-          radius: ['45%', '70%'],
-          avoidLabelOverlap: false,
-          itemStyle: { borderRadius: 6, borderColor: '#1e293b', borderWidth: 2 },
-          label: { show: false },
+          radius: ['45%', '72%'],
+          avoidLabelOverlap: true,
+          itemStyle: {
+            borderRadius: 6,
+            borderColor: 'rgba(15, 23, 42, 0.6)',
+            borderWidth: 2,
+          },
+          label: {
+            show: false,
+          },
+          emphasis: {
+            label: {
+              show: true,
+              fontSize: 12,
+              fontWeight: 'bold',
+              color: '#f8fafc',
+            },
+          },
           data: data.length ? data : [{ name: 'No Categories', value: 1 }],
         },
       ],

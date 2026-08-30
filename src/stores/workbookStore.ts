@@ -35,6 +35,9 @@ interface WorkbookState {
   // Custom Table creation
   createCustomTable: (tableDef: CustomTableDef) => void;
   
+  // App Config operations
+  updateAppConfig: (partial: Partial<AppConfig>) => void;
+
   // External change detection
   dismissExternalChange: () => void;
   reloadWorkbook: () => Promise<void>;
@@ -415,6 +418,67 @@ export const useWorkbookStore = create<WorkbookState>((set, get) => ({
             rows: [...customTablesSheet.rows, record],
           },
         },
+        saveStatus: 'unsaved',
+      };
+    });
+  },
+
+  updateAppConfig: (partial: Partial<AppConfig>) => {
+    set((state) => {
+      const currentConfig = state.appConfig || {
+        businessName: 'My Business',
+        businessType: 'Retail Store',
+        country: 'India',
+        currency: 'INR',
+        currencySymbol: '₹',
+        taxPreference: 'exclusive',
+        defaultTaxRate: 18,
+        dateFormat: 'YYYY-MM-DD',
+        timezone: 'UTC',
+        schemaVersion: '1.0.0',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      const updatedConfig: AppConfig = {
+        ...currentConfig,
+        ...partial,
+        updatedAt: new Date().toISOString(),
+      };
+
+      // Synchronize changes to _AppConfig sheet if present
+      const appConfigSheet = state.sheets['_AppConfig'];
+      let updatedSheet = appConfigSheet;
+      if (appConfigSheet) {
+        const rows = [...appConfigSheet.rows];
+        const updateKey = (key: string, val: any) => {
+          const idx = rows.findIndex((r) => r.key === key);
+          if (idx >= 0) {
+            rows[idx] = { ...rows[idx], value: String(val) };
+          } else {
+            rows.push({ key, value: String(val) });
+          }
+        };
+
+        if (partial.businessName !== undefined) updateKey('business_name', partial.businessName);
+        if (partial.businessType !== undefined) updateKey('business_type', partial.businessType);
+        if (partial.currency !== undefined) updateKey('currency', partial.currency);
+        if (partial.currencySymbol !== undefined) updateKey('currency_symbol', partial.currencySymbol);
+        if (partial.taxPreference !== undefined) updateKey('tax_preference', partial.taxPreference);
+        if (partial.defaultTaxRate !== undefined) updateKey('default_tax_rate', partial.defaultTaxRate);
+        if (partial.country !== undefined) updateKey('country', partial.country);
+        if (partial.dateFormat !== undefined) updateKey('date_format', partial.dateFormat);
+        updateKey('updated_at', updatedConfig.updatedAt);
+
+        updatedSheet = {
+          ...appConfigSheet,
+          rows,
+        };
+      }
+
+      return {
+        appConfig: updatedConfig,
+        sheets: updatedSheet ? { ...state.sheets, ['_AppConfig']: updatedSheet } : state.sheets,
         saveStatus: 'unsaved',
       };
     });

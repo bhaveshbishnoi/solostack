@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useWorkbookStore } from '../../stores/workbookStore';
+import { useSettingsStore } from '../../stores/settingsStore';
 import { useUIStore } from '../../stores/uiStore';
 import { formatCurrency, formatDate } from '../../lib/utils';
 import {
@@ -29,6 +30,7 @@ interface CartItem {
 
 export const NewSalePage: React.FC = () => {
   const { sheets, addRow, updateRow, saveWorkbook, appConfig, setActiveSheet } = useWorkbookStore();
+  const { defaultPaymentMethod } = useSettingsStore();
   const { addNotification } = useUIStore();
 
   const [catalogViewMode, setCatalogViewMode] = useState<'table' | 'grid'>('table');
@@ -42,7 +44,7 @@ export const NewSalePage: React.FC = () => {
   const categoryRows = sheets['_Categories']?.rows || [];
 
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('walk_in');
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('Cash');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>(defaultPaymentMethod || 'Cash');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -533,9 +535,9 @@ export const NewSalePage: React.FC = () => {
                                 e.stopPropagation();
                                 handleAddToCart(prod.product_id);
                               }}
-                              className="px-2 py-1 bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground font-bold text-[10px] rounded-lg transition"
+                              className="px-2.5 py-1 bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground font-bold text-[10px] rounded-lg transition shadow-2xs"
                             >
-                              + Add
+                              Add
                             </button>
                           </td>
                         </tr>

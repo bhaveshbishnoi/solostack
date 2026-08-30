@@ -8,9 +8,17 @@ import { X, Printer, CheckCircle2 } from 'lucide-react';
 export const InvoiceModal: React.FC = () => {
   const { activeModal, modalData, closeModal } = useUIStore();
   const { appConfig } = useWorkbookStore();
-  const { businessAddress, businessPhone, businessEmail, businessGstin } = useSettingsStore();
+  const { businessAddress, businessPhone, businessEmail, businessGstin, invoiceFooterNote, receiptAutoPrint } = useSettingsStore();
 
   const isOpen = activeModal === 'invoice_preview';
+
+  React.useEffect(() => {
+    if (isOpen && receiptAutoPrint) {
+      const timer = setTimeout(() => window.print(), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, receiptAutoPrint]);
+
   if (!isOpen || !modalData) return null;
 
   const { saleId, saleRecord, cart, calculations, customerName } = modalData;
@@ -158,6 +166,13 @@ export const InvoiceModal: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* Invoice Terms & Footer */}
+          {invoiceFooterNote && (
+            <div className="border-t border-border pt-4 text-center text-[11px] text-muted-foreground italic">
+              {invoiceFooterNote}
+            </div>
+          )}
         </div>
       </div>
     </div>

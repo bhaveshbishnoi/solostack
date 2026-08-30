@@ -32,7 +32,21 @@ export const AnalyticsView: React.FC = () => {
     }, 0);
   }, [inventoryRows, productRows]);
 
-  // Sales by payment method chart
+  // Multi-color curated palette
+  const VIBRANT_PALETTE = [
+    '#0d9488', // Teal
+    '#6366f1', // Indigo
+    '#f59e0b', // Amber
+    '#ec4899', // Pink
+    '#3b82f6', // Blue
+    '#10b981', // Emerald
+    '#8b5cf6', // Violet
+    '#06b6d4', // Cyan
+    '#f97316', // Orange
+    '#14b8a6', // Light Teal
+  ];
+
+  // Sales by payment method chart (Multi-color donut)
   const paymentMethodOption = useMemo(() => {
     const counts: Record<string, number> = {};
     salesRows.forEach((s) => {
@@ -41,19 +55,37 @@ export const AnalyticsView: React.FC = () => {
     });
 
     return {
-      tooltip: { trigger: 'item' },
-      legend: { bottom: '0%', textStyle: { color: '#94a3b8' } },
-      color: ['#0d9488', '#14b8a6', '#2dd4bf', '#0f766e', '#5eead4', '#115e59'],
+      tooltip: {
+        trigger: 'item',
+        backgroundColor: 'rgba(15, 23, 42, 0.92)',
+        borderColor: 'rgba(51, 65, 85, 0.6)',
+        textStyle: { color: '#f8fafc', fontSize: 12 },
+        formatter: (item: any) => {
+          return `<div style="font-weight:700;margin-bottom:2px">${item.name}</div>
+            <div style="font-family:monospace">${formatCurrency(item.value, currency, currencySymbol)} (${item.percent}%)</div>`;
+        },
+      },
+      legend: {
+        bottom: '0%',
+        type: 'scroll',
+        textStyle: { color: '#94a3b8', fontSize: 11 },
+      },
+      color: VIBRANT_PALETTE,
       series: [
         {
+          name: 'Payment Methods',
           type: 'pie',
-          radius: ['40%', '70%'],
-          itemStyle: { borderRadius: 8, borderColor: '#1e293b', borderWidth: 2 },
+          radius: ['42%', '70%'],
+          itemStyle: {
+            borderRadius: 6,
+            borderColor: 'rgba(15, 23, 42, 0.6)',
+            borderWidth: 2,
+          },
           data: Object.entries(counts).map(([name, value]) => ({ name, value })),
         },
       ],
     };
-  }, [salesRows]);
+  }, [salesRows, currency, currencySymbol]);
 
   // Top products by revenue
   const topProducts = useMemo(() => {
@@ -80,30 +112,157 @@ export const AnalyticsView: React.FC = () => {
       .slice(0, 10);
   }, [saleItemRows, productRows]);
 
-  // Top products bar chart option
+  // Top products bar chart option (Each bar with its own vibrant color)
   const topProductsChartOption = useMemo(() => {
     return {
-      tooltip: { trigger: 'axis' },
-      grid: { left: '3%', right: '4%', bottom: '5%', top: '5%', containLabel: true },
+      tooltip: {
+        trigger: 'axis',
+        backgroundColor: 'rgba(15, 23, 42, 0.92)',
+        borderColor: 'rgba(51, 65, 85, 0.6)',
+        textStyle: { color: '#f8fafc', fontSize: 12 },
+        formatter: (params: any[]) => {
+          if (!params.length) return '';
+          const p = params[0];
+          return `<div style="font-weight:700;margin-bottom:2px">${p.name}</div>
+            <div style="font-family:monospace">Revenue: <b>${formatCurrency(p.value, currency, currencySymbol)}</b></div>`;
+        },
+      },
+      grid: { left: '3%', right: '4%', bottom: '8%', top: '6%', containLabel: true },
       xAxis: {
         type: 'category',
         data: topProducts.map((p) => p.name.length > 14 ? p.name.substring(0, 12) + '...' : p.name),
-        axisLine: { lineStyle: { color: '#94a3b8' } },
+        axisLine: { lineStyle: { color: '#475569' } },
+        axisLabel: { color: '#94a3b8', fontSize: 10, interval: 0, rotate: 15 },
       },
       yAxis: {
         type: 'value',
-        axisLine: { lineStyle: { color: '#94a3b8' } },
-        splitLine: { lineStyle: { color: '#334155', opacity: 0.2 } },
+        axisLine: { lineStyle: { color: '#475569' } },
+        axisLabel: {
+          color: '#94a3b8',
+          fontSize: 10,
+          formatter: (val: number) => `${currencySymbol}${val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val}`,
+        },
+        splitLine: { lineStyle: { color: '#334155', opacity: 0.15 } },
       },
       series: [
         {
           type: 'bar',
           data: topProducts.map((p) => p.revenue),
-          itemStyle: { color: '#0d9488', borderRadius: [6, 6, 0, 0] },
+          itemStyle: {
+            borderRadius: [6, 6, 0, 0],
+            color: (params: any) => VIBRANT_PALETTE[params.dataIndex % VIBRANT_PALETTE.length],
+          },
         },
       ],
     };
-  }, [topProducts]);
+  }, [topProducts, currency, currencySymbol]);
+
+  // Inventory Stock Health Donut Chart
+  const stockHealthOption = useMemo(() => {
+    let healthyCount = 0;
+    let lowCount = 0;
+    let outCount = 0;
+
+    inventoryRows.forEach((inv) => {
+      const qty = Number(inv.quantity || 0);
+      const min = Number(inv.minimum_stock || 5);
+      if (qty === 0) outCount++;
+      else if (qty <= min) lowCount++;
+      else healthyCount++;
+    });
+
+    return {
+      tooltip: {
+        trigger: 'item',
+        backgroundColor: 'rgba(15, 23, 42, 0.92)',
+        borderColor: 'rgba(51, 65, 85, 0.6)',
+        textStyle: { color: '#f8fafc', fontSize: 12 },
+      },
+      legend: { bottom: '0%', textStyle: { color: '#94a3b8', fontSize: 11 } },
+      color: ['#10b981', '#f59e0b', '#f43f5e'],
+      series: [
+        {
+          name: 'Stock Health',
+          type: 'pie',
+          radius: ['45%', '72%'],
+          itemStyle: {
+            borderRadius: 6,
+            borderColor: 'rgba(15, 23, 42, 0.6)',
+            borderWidth: 2,
+          },
+          data: [
+            { name: 'Optimal Stock', value: healthyCount },
+            { name: 'Low Stock Alert', value: lowCount },
+            { name: 'Out of Stock', value: outCount },
+          ],
+        },
+      ],
+    };
+  }, [inventoryRows]);
+
+  // Product Margin Comparison Chart
+  const productMarginsChartOption = useMemo(() => {
+    const topMarginProducts = productRows.slice(0, 8);
+    const names = topMarginProducts.map((p) => p.name.length > 12 ? p.name.substring(0, 10) + '...' : p.name);
+    const costData = topMarginProducts.map((p) => Number(p.purchase_price || 0));
+    const priceData = topMarginProducts.map((p) => Number(p.selling_price || 0));
+
+    return {
+      tooltip: {
+        trigger: 'axis',
+        backgroundColor: 'rgba(15, 23, 42, 0.92)',
+        borderColor: 'rgba(51, 65, 85, 0.6)',
+        textStyle: { color: '#f8fafc', fontSize: 12 },
+        formatter: (params: any[]) => {
+          if (!params.length) return '';
+          let res = `<div style="font-weight:700;margin-bottom:4px">${params[0].name}</div>`;
+          params.forEach((item) => {
+            res += `<div style="display:flex;justify-content:space-between;gap:12px;margin-top:2px">
+              <span style="color:${item.color}">${item.seriesName}:</span>
+              <b style="font-family:monospace">${formatCurrency(item.value, currency, currencySymbol)}</b>
+            </div>`;
+          });
+          return res;
+        },
+      },
+      legend: {
+        data: ['Cost Price', 'Selling Price'],
+        top: '0%',
+        textStyle: { color: '#94a3b8', fontSize: 11 },
+      },
+      grid: { left: '3%', right: '4%', bottom: '8%', top: '14%', containLabel: true },
+      xAxis: {
+        type: 'category',
+        data: names,
+        axisLine: { lineStyle: { color: '#475569' } },
+        axisLabel: { color: '#94a3b8', fontSize: 10 },
+      },
+      yAxis: {
+        type: 'value',
+        axisLine: { lineStyle: { color: '#475569' } },
+        axisLabel: {
+          color: '#94a3b8',
+          fontSize: 10,
+          formatter: (val: number) => `${currencySymbol}${val}`,
+        },
+        splitLine: { lineStyle: { color: '#334155', opacity: 0.15 } },
+      },
+      series: [
+        {
+          name: 'Cost Price',
+          type: 'bar',
+          data: costData,
+          itemStyle: { color: '#6366f1', borderRadius: [4, 4, 0, 0] },
+        },
+        {
+          name: 'Selling Price',
+          type: 'bar',
+          data: priceData,
+          itemStyle: { color: '#0d9488', borderRadius: [4, 4, 0, 0] },
+        },
+      ],
+    };
+  }, [productRows, currency, currencySymbol]);
 
   return (
     <div className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -213,6 +372,14 @@ export const AnalyticsView: React.FC = () => {
             </div>
           </div>
 
+          {/* Stock Health Chart */}
+          <div className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
+            <h3 className="text-sm font-bold text-foreground">Inventory Health Breakdown</h3>
+            <div className="h-64">
+              <ReactECharts option={stockHealthOption} style={{ height: '100%', width: '100%' }} />
+            </div>
+          </div>
+
           <div className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
             <h3 className="text-sm font-bold text-foreground">Stock Overview by SKU</h3>
             <div className="overflow-x-auto">
@@ -253,6 +420,14 @@ export const AnalyticsView: React.FC = () => {
       {/* Tab: Products */}
       {activeTab === 'products' && (
         <div className="space-y-6">
+          {/* Product Margins Chart */}
+          <div className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
+            <h3 className="text-sm font-bold text-foreground">Top Products: Purchase Cost vs Selling Price</h3>
+            <div className="h-72">
+              <ReactECharts option={productMarginsChartOption} style={{ height: '100%', width: '100%' }} />
+            </div>
+          </div>
+
           <div className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
             <h3 className="text-sm font-bold text-foreground">Product Margins & Profitability</h3>
             <div className="overflow-x-auto">
@@ -281,7 +456,7 @@ export const AnalyticsView: React.FC = () => {
                         <td className="py-2.5 text-muted-foreground">{cat?.name || 'General'}</td>
                         <td className="py-2.5 text-right font-mono">{formatCurrency(buy, currency, currencySymbol)}</td>
                         <td className="py-2.5 text-right font-mono">{formatCurrency(sell, currency, currencySymbol)}</td>
-                        <td className="py-2.5 text-right font-mono font-semibold text-emerald-500">
+                        <td className="py-2.5 text-right font-mono font-semibold text-primary">
                           {formatCurrency(margin, currency, currencySymbol)}
                         </td>
                         <td className="py-2.5 text-right font-mono font-bold text-foreground">

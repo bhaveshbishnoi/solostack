@@ -52,6 +52,10 @@ export const ChartBuilderModal: React.FC = () => {
     return { categories, values };
   }, [targetSheet, xAxisCol, metricCol, aggregation]);
 
+  const VIBRANT_PALETTE = [
+    '#0d9488', '#6366f1', '#f59e0b', '#ec4899', '#3b82f6', '#10b981', '#8b5cf6', '#06b6d4', '#f97316', '#14b8a6'
+  ];
+
   // Generate ECharts option
   const chartOption = useMemo(() => {
     if (chartType === 'pie' || chartType === 'donut') {
@@ -62,6 +66,7 @@ export const ChartBuilderModal: React.FC = () => {
       return {
         title: { text: chartTitle, left: 'center', textStyle: { color: '#f8fafc', fontSize: 13 } },
         tooltip: { trigger: 'item' },
+        color: VIBRANT_PALETTE,
         series: [
           {
             type: 'pie',
@@ -94,7 +99,10 @@ export const ChartBuilderModal: React.FC = () => {
           data: computedData.values,
           smooth: true,
           areaStyle: chartType === 'area' ? { opacity: 0.3 } : undefined,
-          itemStyle: { color: '#6366f1' },
+          itemStyle: chartType === 'bar' ? {
+            borderRadius: [6, 6, 0, 0],
+            color: (params: any) => VIBRANT_PALETTE[params.dataIndex % VIBRANT_PALETTE.length],
+          } : { color: '#0d9488' },
         },
       ],
     };

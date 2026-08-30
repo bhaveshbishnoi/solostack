@@ -11,11 +11,19 @@ interface SettingsState {
   businessGstin: string;
 
   sheetHiddenColumns: Record<string, string[]>;
+  invoiceFooterNote: string;
+  defaultPaymentMethod: string;
+  receiptAutoPrint: boolean;
 
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
   setAutoSave: (enabled: boolean, interval?: number) => void;
   setTableDensity: (density: 'compact' | 'normal' | 'comfortable') => void;
   setSheetHiddenColumns: (sheetName: string, hiddenCols: string[]) => void;
+  setInvoicePreferences: (prefs: {
+    invoiceFooterNote?: string;
+    defaultPaymentMethod?: string;
+    receiptAutoPrint?: boolean;
+  }) => void;
   updateBusinessProfile: (profile: {
     address?: string;
     phone?: string;
@@ -37,6 +45,9 @@ export const useSettingsStore = create<SettingsState>((set) => {
     autoSaveIntervalSeconds: 3,
     tableDensity: 'normal',
     sheetHiddenColumns: savedHidden,
+    invoiceFooterNote: (typeof window !== 'undefined' && localStorage.getItem('exdrow_invoice_footer')) || 'Thank you for your business! Goods once sold are subject to store policy.',
+    defaultPaymentMethod: (typeof window !== 'undefined' && localStorage.getItem('exdrow_default_payment')) || 'Cash',
+    receiptAutoPrint: (typeof window !== 'undefined' && localStorage.getItem('exdrow_autoprint') === 'true') || false,
     businessAddress: '123 Market Road, Suite 400',
     businessPhone: '+91 98765 43210',
     businessEmail: 'contact@mybusiness.local',
@@ -74,6 +85,26 @@ export const useSettingsStore = create<SettingsState>((set) => {
           localStorage.setItem('exdrow_hidden_columns', JSON.stringify(updated));
         }
         return { sheetHiddenColumns: updated };
+      });
+    },
+
+    setInvoicePreferences: (prefs) => {
+      set((state) => {
+        const updatedFooter = prefs.invoiceFooterNote ?? state.invoiceFooterNote;
+        const updatedPayment = prefs.defaultPaymentMethod ?? state.defaultPaymentMethod;
+        const updatedAutoPrint = prefs.receiptAutoPrint ?? state.receiptAutoPrint;
+
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('exdrow_invoice_footer', updatedFooter);
+          localStorage.setItem('exdrow_default_payment', updatedPayment);
+          localStorage.setItem('exdrow_autoprint', String(updatedAutoPrint));
+        }
+
+        return {
+          invoiceFooterNote: updatedFooter,
+          defaultPaymentMethod: updatedPayment,
+          receiptAutoPrint: updatedAutoPrint,
+        };
       });
     },
 

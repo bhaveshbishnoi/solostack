@@ -435,7 +435,7 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
             title="Create new column attribute in this sheet"
           >
             <Plus className="h-3.5 w-3.5" />
-            <span>+ Column</span>
+            <span>Add Column</span>
           </button>
 
           {/* Density Toggle Button */}
@@ -479,7 +479,7 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
             title="Open dedicated full page to create new record"
           >
             <Plus className="h-3.5 w-3.5" />
-            <span>+ Add Record (Page)</span>
+            <span>Add Record</span>
           </button>
         </div>
       </div>
@@ -702,40 +702,40 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
                 })}
 
                 {/* Row Action Buttons */}
-                <td className="w-24 px-2 py-1 text-center space-x-1 border-border/60">
+                <td className="w-32 px-3 py-1.5 text-center space-x-1 border-border/60">
                   <button
                     onClick={() => {
                       setTargetRecord({ sheetName, rowId: row[primaryIdKey], row, mode: 'view' });
                       setActiveSheet('record_detail');
                     }}
-                    className="p-1 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition rounded"
-                    title="View Record (Page)"
+                    className="p-1.5 text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10 rounded-lg transition-colors inline-flex items-center justify-center"
+                    title="View Record (Full Page)"
                   >
-                    <FileText className="h-3.5 w-3.5" />
+                    <FileText className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => {
                       setTargetRecord({ sheetName, rowId: row[primaryIdKey], row, mode: 'edit' });
                       setActiveSheet('record_form');
                     }}
-                    className="p-1 text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition rounded"
-                    title="Edit Record (Page)"
+                    className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-colors inline-flex items-center justify-center"
+                    title="Edit Record (Full Page)"
                   >
-                    <Edit3 className="h-3.5 w-3.5" />
+                    <Edit3 className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => handleDuplicateRow(row)}
-                    className="p-1 text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition rounded"
-                    title="Duplicate Row (with Auto-Increment ID)"
+                    className="p-1.5 text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10 rounded-lg transition-colors inline-flex items-center justify-center"
+                    title="Duplicate Record"
                   >
-                    <Copy className="h-3.5 w-3.5" />
+                    <Copy className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => handleDeleteRow(row)}
-                    className="p-1 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition rounded"
-                    title="Delete Row"
+                    className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors inline-flex items-center justify-center"
+                    title="Delete Record"
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 </td>
               </tr>
@@ -753,7 +753,7 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
                 colSpan={visibleColumns.length + 1}
                 className="px-3.5 py-2.5 text-xs font-bold text-primary transition"
               >
-                + Click to insert row (Auto-increments ID: <span className="font-mono">{getNextAutoIncrement(sheetName, primaryIdKey)}</span>)
+                Insert new row (Auto-increments ID: <span className="font-mono">{getNextAutoIncrement(sheetName, primaryIdKey)}</span>)
               </td>
             </tr>
           </tbody>
