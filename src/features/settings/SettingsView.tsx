@@ -323,6 +323,13 @@ export const SettingsView: React.FC = () => {
                         'Pharmacy & Healthcare',
                         'Services & Consulting',
                         'Manufacturing & Assembly',
+                        'Taxi & Cab Booking',
+                        'Hotel & Resort Booking',
+                        'School Management',
+                        'Coaching & Tuition',
+                        'Company Payroll',
+                        'Gym & Fitness Center',
+                        'Hospital & Clinic OPD',
                       ].map((preset) => (
                         <button
                           key={preset}

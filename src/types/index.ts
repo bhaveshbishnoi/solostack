@@ -28,12 +28,31 @@ export interface SheetData {
   rows: TableRow[];
 }
 
-export type BusinessFlowType = 'retail' | 'wholesale' | 'pharmacy' | 'services' | 'manufacturing';
+export type BusinessFlowType =
+  | 'retail'
+  | 'wholesale'
+  | 'pharmacy'
+  | 'services'
+  | 'manufacturing'
+  | 'taxi'
+  | 'hotel'
+  | 'school'
+  | 'coaching'
+  | 'payroll'
+  | 'gym'
+  | 'hospital';
 
 export function getBusinessFlowType(businessType?: string): BusinessFlowType {
   const bt = (businessType || '').toLowerCase();
+  if (bt.includes('taxi') || bt.includes('cab') || bt.includes('ride') || bt.includes('driver')) return 'taxi';
+  if (bt.includes('hotel') || bt.includes('resort') || bt.includes('lodge') || bt.includes('motel') || bt.includes('hospitality')) return 'hotel';
+  if (bt.includes('school') || bt.includes('academy') || bt.includes('k12') || bt.includes('education')) return 'school';
+  if (bt.includes('coach') || bt.includes('tuition') || bt.includes('institute') || bt.includes('classes')) return 'coaching';
+  if (bt.includes('payroll') || bt.includes('salary') || bt.includes('hr') || bt.includes('staff pay')) return 'payroll';
+  if (bt.includes('gym') || bt.includes('fitness') || bt.includes('workout') || bt.includes('crossfit')) return 'gym';
+  if (bt.includes('hospital') || bt.includes('clinic') || bt.includes('doctor') || bt.includes('nursing') || bt.includes('opd')) return 'hospital';
   if (bt.includes('wholesale') || bt.includes('distribution') || bt.includes('b2b')) return 'wholesale';
-  if (bt.includes('pharmacy') || bt.includes('medical') || bt.includes('health') || bt.includes('chemist')) return 'pharmacy';
+  if (bt.includes('pharmacy') || bt.includes('medical') || bt.includes('chemist')) return 'pharmacy';
   if (bt.includes('service') || bt.includes('consult') || bt.includes('agency') || bt.includes('freelance')) return 'services';
   if (bt.includes('manufactur') || bt.includes('assembly') || bt.includes('factory') || bt.includes('production')) return 'manufacturing';
   return 'retail';

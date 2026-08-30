@@ -24,7 +24,14 @@ import {
   Truck,
   Stethoscope,
   Briefcase,
-  Factory
+  Factory,
+  Car,
+  Hotel,
+  GraduationCap,
+  BookOpen,
+  BadgeDollarSign,
+  Dumbbell,
+  Activity
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -70,6 +77,69 @@ export const Sidebar: React.FC = () => {
           productsTitle: 'Assemblies & Goods',
           inventoryTitle: 'Raw Materials & Stock',
           customersTitle: 'Distributors & Buyers',
+        };
+      case 'taxi':
+        return {
+          editionName: 'Taxi & Cab Fleet',
+          opTitle: 'Dispatch Trip',
+          opIcon: Car,
+          productsTitle: 'Cab Rates & Slabs',
+          inventoryTitle: 'Vehicle Fleet Status',
+          customersTitle: 'Passengers & Accounts',
+        };
+      case 'hotel':
+        return {
+          editionName: 'Hotel & Hospitality',
+          opTitle: 'Book Room / Check-in',
+          opIcon: Hotel,
+          productsTitle: 'Rooms & Tariffs',
+          inventoryTitle: 'Room Occupancy Status',
+          customersTitle: 'Guests & Folios',
+        };
+      case 'school':
+        return {
+          editionName: 'School Management',
+          opTitle: 'Collect Student Fee',
+          opIcon: GraduationCap,
+          productsTitle: 'Fee Heads & Slabs',
+          inventoryTitle: 'Academic Assets',
+          customersTitle: 'Students Roster',
+        };
+      case 'coaching':
+        return {
+          editionName: 'Coaching & Tuition',
+          opTitle: 'Enroll & Collect Fee',
+          opIcon: BookOpen,
+          productsTitle: 'Courses & Batches',
+          inventoryTitle: 'Study Material Kits',
+          customersTitle: 'Enrolled Students',
+        };
+      case 'payroll':
+        return {
+          editionName: 'Company Payroll',
+          opTitle: 'Monthly Pay Run',
+          opIcon: BadgeDollarSign,
+          productsTitle: 'Salary Structures',
+          inventoryTitle: 'Staff Allowances Pool',
+          customersTitle: 'Employees Roster',
+        };
+      case 'gym':
+        return {
+          editionName: 'Gym & Fitness Center',
+          opTitle: 'Enroll / Renew Plan',
+          opIcon: Dumbbell,
+          productsTitle: 'Membership Plans',
+          inventoryTitle: 'Gym Equipment & Lockers',
+          customersTitle: 'Active Members',
+        };
+      case 'hospital':
+        return {
+          editionName: 'Hospital & Healthcare',
+          opTitle: 'OPD Encounter & Bill',
+          opIcon: Activity,
+          productsTitle: 'Medical Procedures & OPD',
+          inventoryTitle: 'Pharmacy & Bed Status',
+          customersTitle: 'Patients Registry',
         };
       case 'retail':
       default:

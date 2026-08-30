@@ -366,8 +366,15 @@ export const WelcomeModal: React.FC = () => {
                     <option value="Retail Store">Retail Store & Supermarket (POS)</option>
                     <option value="Wholesale & Distribution">Wholesale & B2B Distribution (Credit & Dispatch)</option>
                     <option value="Pharmacy">Pharmacy & Healthcare (Batch & Expiry)</option>
-                    <option value="Service & Consultancy">Services & Consultancy (Hourly & Milestones)</option>
+                    <option value="Service & Consultancy">Services & Consultancy (Hourly & Retainers)</option>
                     <option value="Manufacturing">Manufacturing & Assembly (BOM Engine)</option>
+                    <option value="Taxi & Cab Booking">Taxi & Cab Fleet Booking (Fare & Dispatch)</option>
+                    <option value="Hotel & Resort Booking">Hotel & Resort Booking (Rooms & Folio)</option>
+                    <option value="School Management">School Management (Admissions & Fees)</option>
+                    <option value="Coaching & Tuition">Coaching & Tuition (Batches & Installments)</option>
+                    <option value="Company Payroll">Company Payroll (Salary & Payslips)</option>
+                    <option value="Gym & Fitness Center">Gym & Fitness Center (Memberships & Trainers)</option>
+                    <option value="Hospital & Clinic OPD">Hospital & Clinic Management (OPD & Medical Bill)</option>
                   </select>
                 </div>
 

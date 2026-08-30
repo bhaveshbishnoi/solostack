@@ -23,7 +23,14 @@ import {
   Stethoscope,
   Briefcase,
   Factory,
-  Store
+  Store,
+  Car,
+  Hotel,
+  GraduationCap,
+  BookOpen,
+  BadgeDollarSign,
+  Dumbbell,
+  Activity
 } from 'lucide-react';
 
 export const DashboardView: React.FC = () => {
@@ -354,6 +361,13 @@ export const DashboardView: React.FC = () => {
               {flowType === 'pharmacy' && <Stethoscope className="h-3 w-3 text-emerald-400" />}
               {flowType === 'services' && <Briefcase className="h-3 w-3 text-amber-400" />}
               {flowType === 'manufacturing' && <Factory className="h-3 w-3 text-cyan-400" />}
+              {flowType === 'taxi' && <Car className="h-3 w-3 text-amber-400" />}
+              {flowType === 'hotel' && <Hotel className="h-3 w-3 text-blue-400" />}
+              {flowType === 'school' && <GraduationCap className="h-3 w-3 text-emerald-400" />}
+              {flowType === 'coaching' && <BookOpen className="h-3 w-3 text-purple-400" />}
+              {flowType === 'payroll' && <BadgeDollarSign className="h-3 w-3 text-teal-400" />}
+              {flowType === 'gym' && <Dumbbell className="h-3 w-3 text-orange-400" />}
+              {flowType === 'hospital' && <Activity className="h-3 w-3 text-rose-400" />}
               {flowType === 'retail' && <Store className="h-3 w-3 text-primary" />}
               <span>{appConfig?.businessType || 'Retail'} Edition</span>
             </span>
@@ -380,6 +394,13 @@ export const DashboardView: React.FC = () => {
             {flowType === 'wholesale' && <Truck className="h-4 w-4" />}
             {flowType === 'services' && <Briefcase className="h-4 w-4" />}
             {flowType === 'manufacturing' && <Factory className="h-4 w-4" />}
+            {flowType === 'taxi' && <Car className="h-4 w-4" />}
+            {flowType === 'hotel' && <Hotel className="h-4 w-4" />}
+            {flowType === 'school' && <GraduationCap className="h-4 w-4" />}
+            {flowType === 'coaching' && <BookOpen className="h-4 w-4" />}
+            {flowType === 'payroll' && <BadgeDollarSign className="h-4 w-4" />}
+            {flowType === 'gym' && <Dumbbell className="h-4 w-4" />}
+            {flowType === 'hospital' && <Activity className="h-4 w-4" />}
             {flowType === 'retail' && <ShoppingCart className="h-4 w-4" />}
             <span>
               {flowType === 'pharmacy'
@@ -390,6 +411,20 @@ export const DashboardView: React.FC = () => {
                 ? 'Bill Client Deliverable'
                 : flowType === 'manufacturing'
                 ? 'Production Console'
+                : flowType === 'taxi'
+                ? 'Dispatch Trip'
+                : flowType === 'hotel'
+                ? 'Book Room / Check-in'
+                : flowType === 'school'
+                ? 'Collect Student Fee'
+                : flowType === 'coaching'
+                ? 'Enroll & Collect Fee'
+                : flowType === 'payroll'
+                ? 'Run Monthly Payroll'
+                : flowType === 'gym'
+                ? 'Enroll / Renew Member'
+                : flowType === 'hospital'
+                ? 'OPD Encounter & Bill'
                 : 'Counter POS'}
             </span>
           </button>
@@ -456,6 +491,111 @@ export const DashboardView: React.FC = () => {
               {productionMovementsCount}
             </div>
             <div className="text-[11px] text-muted-foreground mt-1">Assembly batches recorded</div>
+          </div>
+        )}
+
+        {flowType === 'taxi' && (
+          <div className="bg-gradient-to-br from-amber-500/15 via-card to-card border border-amber-500/30 rounded-2xl p-4 shadow-sm hover:border-amber-500/50 transition">
+            <div className="flex items-center justify-between text-muted-foreground mb-2">
+              <span className="text-xs font-semibold">Dispatched Trips</span>
+              <div className="p-2 rounded-xl bg-amber-500/15 text-amber-500">
+                <Car className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-extrabold text-amber-500 font-mono">
+              {salesRows.length}
+            </div>
+            <div className="text-[11px] text-muted-foreground mt-1">Passenger cab rides logged</div>
+          </div>
+        )}
+
+        {flowType === 'hotel' && (
+          <div className="bg-gradient-to-br from-blue-500/15 via-card to-card border border-blue-500/30 rounded-2xl p-4 shadow-sm hover:border-blue-500/50 transition">
+            <div className="flex items-center justify-between text-muted-foreground mb-2">
+              <span className="text-xs font-semibold">Stay Reservations</span>
+              <div className="p-2 rounded-xl bg-blue-500/15 text-blue-400">
+                <Hotel className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-extrabold text-blue-400 font-mono">
+              {salesRows.length}
+            </div>
+            <div className="text-[11px] text-muted-foreground mt-1">Guest check-in folios settled</div>
+          </div>
+        )}
+
+        {flowType === 'school' && (
+          <div className="bg-gradient-to-br from-emerald-500/15 via-card to-card border border-emerald-500/30 rounded-2xl p-4 shadow-sm hover:border-emerald-500/50 transition">
+            <div className="flex items-center justify-between text-muted-foreground mb-2">
+              <span className="text-xs font-semibold">Term Fee Receipts</span>
+              <div className="p-2 rounded-xl bg-emerald-500/15 text-emerald-400">
+                <GraduationCap className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-extrabold text-emerald-400 font-mono">
+              {salesRows.length}
+            </div>
+            <div className="text-[11px] text-muted-foreground mt-1">Student tuition collections</div>
+          </div>
+        )}
+
+        {flowType === 'coaching' && (
+          <div className="bg-gradient-to-br from-purple-500/15 via-card to-card border border-purple-500/30 rounded-2xl p-4 shadow-sm hover:border-purple-500/50 transition">
+            <div className="flex items-center justify-between text-muted-foreground mb-2">
+              <span className="text-xs font-semibold">Course Installments</span>
+              <div className="p-2 rounded-xl bg-purple-500/15 text-purple-400">
+                <BookOpen className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-extrabold text-purple-400 font-mono">
+              {salesRows.length}
+            </div>
+            <div className="text-[11px] text-muted-foreground mt-1">Tuition installments paid</div>
+          </div>
+        )}
+
+        {flowType === 'payroll' && (
+          <div className="bg-gradient-to-br from-teal-500/15 via-card to-card border border-teal-500/30 rounded-2xl p-4 shadow-sm hover:border-teal-500/50 transition">
+            <div className="flex items-center justify-between text-muted-foreground mb-2">
+              <span className="text-xs font-semibold">Payslips Issued</span>
+              <div className="p-2 rounded-xl bg-teal-500/15 text-teal-400">
+                <BadgeDollarSign className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-extrabold text-teal-400 font-mono">
+              {salesRows.length}
+            </div>
+            <div className="text-[11px] text-muted-foreground mt-1">Employee pay runs completed</div>
+          </div>
+        )}
+
+        {flowType === 'gym' && (
+          <div className="bg-gradient-to-br from-orange-500/15 via-card to-card border border-orange-500/30 rounded-2xl p-4 shadow-sm hover:border-orange-500/50 transition">
+            <div className="flex items-center justify-between text-muted-foreground mb-2">
+              <span className="text-xs font-semibold">Active Memberships</span>
+              <div className="p-2 rounded-xl bg-orange-500/15 text-orange-400">
+                <Dumbbell className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-extrabold text-orange-400 font-mono">
+              {salesRows.length}
+            </div>
+            <div className="text-[11px] text-muted-foreground mt-1">Gym passes & renewals issued</div>
+          </div>
+        )}
+
+        {flowType === 'hospital' && (
+          <div className="bg-gradient-to-br from-rose-500/15 via-card to-card border border-rose-500/30 rounded-2xl p-4 shadow-sm hover:border-rose-500/50 transition">
+            <div className="flex items-center justify-between text-muted-foreground mb-2">
+              <span className="text-xs font-semibold">Clinical Encounters</span>
+              <div className="p-2 rounded-xl bg-rose-500/15 text-rose-400">
+                <Activity className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-extrabold text-rose-400 font-mono">
+              {salesRows.length}
+            </div>
+            <div className="text-[11px] text-muted-foreground mt-1">OPD patients examined & billed</div>
           </div>
         )}
 

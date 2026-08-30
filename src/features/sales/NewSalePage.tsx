@@ -24,8 +24,22 @@ import {
   AlertTriangle,
   Boxes,
   Cpu,
-  Wrench
+  Wrench,
+  Car,
+  Hotel,
+  GraduationCap,
+  BookOpen,
+  BadgeDollarSign,
+  Dumbbell,
+  Activity
 } from 'lucide-react';
+import { TaxiConsole } from './consoles/TaxiConsole';
+import { HotelConsole } from './consoles/HotelConsole';
+import { SchoolConsole } from './consoles/SchoolConsole';
+import { CoachingConsole } from './consoles/CoachingConsole';
+import { PayrollConsole } from './consoles/PayrollConsole';
+import { GymConsole } from './consoles/GymConsole';
+import { HospitalConsole } from './consoles/HospitalConsole';
 
 interface CartItem {
   productId: string;
@@ -82,6 +96,55 @@ export const NewSalePage: React.FC = () => {
           badge: 'Manufacturing Edition',
           icon: Factory,
           iconColor: 'text-cyan-400',
+        };
+      case 'taxi':
+        return {
+          title: 'Taxi & Cab Fleet Dispatch Console',
+          badge: 'Taxi Edition',
+          icon: Car,
+          iconColor: 'text-amber-500',
+        };
+      case 'hotel':
+        return {
+          title: 'Hotel Room Booking & Check-in Console',
+          badge: 'Hotel Edition',
+          icon: Hotel,
+          iconColor: 'text-blue-500',
+        };
+      case 'school':
+        return {
+          title: 'School Admission & Term Fee Collection',
+          badge: 'School Edition',
+          icon: GraduationCap,
+          iconColor: 'text-emerald-500',
+        };
+      case 'coaching':
+        return {
+          title: 'Coaching Enrollment & Fee Installments',
+          badge: 'Coaching Edition',
+          icon: BookOpen,
+          iconColor: 'text-purple-500',
+        };
+      case 'payroll':
+        return {
+          title: 'Company Payroll & Payslip Disbursal',
+          badge: 'Payroll Edition',
+          icon: BadgeDollarSign,
+          iconColor: 'text-teal-500',
+        };
+      case 'gym':
+        return {
+          title: 'Gym Membership & Renewal Console',
+          badge: 'Gym Edition',
+          icon: Dumbbell,
+          iconColor: 'text-orange-500',
+        };
+      case 'hospital':
+        return {
+          title: 'Hospital OPD & Patient Medical Billing',
+          badge: 'Hospital Edition',
+          icon: Activity,
+          iconColor: 'text-rose-500',
         };
       case 'retail':
       default:
@@ -552,6 +615,90 @@ export const NewSalePage: React.FC = () => {
     setPatientName('');
   };
 
+  // Generic specialized transaction handler for Taxi, Hotel, School, Coaching, Payroll, Gym, Hospital
+  const handleCompleteSpecializedOrder = async (flowType: string, data: any) => {
+    setSubmitting(true);
+    try {
+      const nowIso = new Date().toISOString();
+      const saleId = `TXN-${Date.now().toString().slice(-6)}`;
+
+      // 1. Record in _Sales
+      const saleRecord = {
+        sale_id: saleId,
+        customer_id: data.customerName || 'Direct Account',
+        sale_date: nowIso,
+        subtotal: data.subtotal || data.total,
+        discount: 0,
+        tax: data.tax || 0,
+        total: data.total,
+        payment_method: data.paymentMethod || 'Direct Payment',
+        status: 'completed',
+        created_at: nowIso,
+      };
+      addRow('_Sales', saleRecord);
+
+      // 2. Record in _SaleItems
+      addRow('_SaleItems', {
+        sale_item_id: `item_${Date.now()}`,
+        sale_id: saleId,
+        product_id: flowType.toUpperCase(),
+        quantity: 1,
+        unit_price: data.subtotal || data.total,
+        discount: 0,
+        tax: data.tax || 0,
+        line_total: data.total,
+      });
+
+      // 3. Ensure entity is archived in _Customers
+      const existingCustomer = customerRows.find(
+        (c) => (c.name || '').toLowerCase() === (data.customerName || '').toLowerCase()
+      );
+      if (!existingCustomer && data.customerName) {
+        addRow('_Customers', {
+          customer_id: `cust_${Date.now()}`,
+          name: data.customerName,
+          phone: data.passengerPhone || data.guestPhone || data.guardianPhone || data.studentPhone || data.memberPhone || data.patientPhone || '',
+          email: '',
+          address: data.pickupLocation || data.roomNo || data.studentGrade || data.department || '',
+          gstin: data.guestIdProof || data.studentRollNo || data.employeeId || data.patientUhid || '',
+          created_at: nowIso,
+          updated_at: nowIso,
+        });
+      }
+
+      await saveWorkbook();
+
+      setCompletedOrder({
+        saleId,
+        saleRecord,
+        flow: flowType,
+        customerName: data.customerName,
+        calculations: {
+          subtotal: data.subtotal || data.total,
+          totalDiscount: 0,
+          totalTax: data.tax || 0,
+          grandTotal: data.total,
+        },
+        cart: [
+          {
+            name: `${editionInfo.title}: ${data.customerName}`,
+            sku: flowType.toUpperCase(),
+            quantity: 1,
+            unitPrice: data.subtotal || data.total,
+            gstRate: data.tax && data.subtotal ? Math.round((data.tax / data.subtotal) * 100) : 0,
+          }
+        ],
+        specializedData: data,
+      });
+
+      addNotification('success', 'Transaction Recorded', `${editionInfo.badge} transaction #${saleId} saved to Excel`);
+    } catch (err: any) {
+      addNotification('error', 'Operation Failed', err.message || 'Could not record transaction');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   // If manufacturing run completed, show production certificate
   if (completedProduction) {
     return (
@@ -738,6 +885,69 @@ export const NewSalePage: React.FC = () => {
                   <div className="font-bold text-foreground text-sm mt-0.5">{completedOrder.doctorName ? `Dr. ${completedOrder.doctorName}` : 'Prescription Verified'}</div>
                   {completedOrder.patientName && <div className="text-muted-foreground text-[11px] mt-0.5">Patient: {completedOrder.patientName}</div>}
                   <div className="text-emerald-500 font-semibold text-[11px] mt-0.5">Schedule Compliance: Verified</div>
+                </div>
+              )}
+
+              {completedOrder.flow === 'taxi' && completedOrder.specializedData && (
+                <div className="text-right">
+                  <div className="text-muted-foreground font-semibold uppercase tracking-wider text-[10px]">Trip Dispatch Voucher</div>
+                  <div className="font-bold text-amber-500 text-sm mt-0.5">{completedOrder.specializedData.cabType} • {completedOrder.specializedData.vehicleNo}</div>
+                  <div className="text-muted-foreground text-[11px] mt-0.5">Driver: {completedOrder.specializedData.driverName}</div>
+                  <div className="text-emerald-500 font-semibold text-[11px] mt-0.5">{completedOrder.specializedData.distanceKm} km • Payout: {formatCurrency(completedOrder.specializedData.driverPayout, currency, currencySymbol)}</div>
+                </div>
+              )}
+
+              {completedOrder.flow === 'hotel' && completedOrder.specializedData && (
+                <div className="text-right">
+                  <div className="text-muted-foreground font-semibold uppercase tracking-wider text-[10px]">Stay Folio & Room Allocation</div>
+                  <div className="font-bold text-blue-500 text-sm mt-0.5">{completedOrder.specializedData.roomNo} ({completedOrder.specializedData.roomCategory})</div>
+                  <div className="text-muted-foreground text-[11px] mt-0.5">{completedOrder.specializedData.nights} Nights ({completedOrder.specializedData.checkInDate} → {completedOrder.specializedData.checkOutDate})</div>
+                  <div className="text-emerald-500 font-semibold text-[11px] mt-0.5">Guest ID: {completedOrder.specializedData.guestIdProof}</div>
+                </div>
+              )}
+
+              {completedOrder.flow === 'school' && completedOrder.specializedData && (
+                <div className="text-right">
+                  <div className="text-muted-foreground font-semibold uppercase tracking-wider text-[10px]">Academic Fee Receipt</div>
+                  <div className="font-bold text-emerald-500 text-sm mt-0.5">{completedOrder.specializedData.studentGrade}</div>
+                  <div className="text-muted-foreground text-[11px] mt-0.5">Roll #: {completedOrder.specializedData.studentRollNo} • {completedOrder.specializedData.academicTerm}</div>
+                  <div className="text-primary font-semibold text-[11px] mt-0.5">Guardian: {completedOrder.specializedData.guardianName}</div>
+                </div>
+              )}
+
+              {completedOrder.flow === 'coaching' && completedOrder.specializedData && (
+                <div className="text-right">
+                  <div className="text-muted-foreground font-semibold uppercase tracking-wider text-[10px]">Course Enrollment & Fee</div>
+                  <div className="font-bold text-purple-500 text-sm mt-0.5">{completedOrder.specializedData.courseName}</div>
+                  <div className="text-muted-foreground text-[11px] mt-0.5">{completedOrder.specializedData.installmentNumber} • Next Due: {completedOrder.specializedData.nextDueDate}</div>
+                  <div className="text-emerald-500 font-semibold text-[11px] mt-0.5">{completedOrder.specializedData.batchSchedule}</div>
+                </div>
+              )}
+
+              {completedOrder.flow === 'payroll' && completedOrder.specializedData && (
+                <div className="text-right">
+                  <div className="text-muted-foreground font-semibold uppercase tracking-wider text-[10px]">Employee Monthly Payslip</div>
+                  <div className="font-bold text-teal-500 text-sm mt-0.5">{completedOrder.specializedData.designation}</div>
+                  <div className="text-muted-foreground text-[11px] mt-0.5">Dept: {completedOrder.specializedData.department} • Code: {completedOrder.specializedData.employeeId}</div>
+                  <div className="text-emerald-500 font-semibold text-[11px] mt-0.5">Net Take-Home Disbursed: {formatCurrency(completedOrder.specializedData.netTakeHome, currency, currencySymbol)}</div>
+                </div>
+              )}
+
+              {completedOrder.flow === 'gym' && completedOrder.specializedData && (
+                <div className="text-right">
+                  <div className="text-muted-foreground font-semibold uppercase tracking-wider text-[10px]">Membership Pass & Agreement</div>
+                  <div className="font-bold text-orange-500 text-sm mt-0.5">{completedOrder.specializedData.membershipPlan}</div>
+                  <div className="text-muted-foreground text-[11px] mt-0.5">Valid: {completedOrder.specializedData.planStartDate} → {completedOrder.specializedData.planExpiryDate}</div>
+                  <div className="text-emerald-500 font-semibold text-[11px] mt-0.5">Trainer: {completedOrder.specializedData.trainerName}</div>
+                </div>
+              )}
+
+              {completedOrder.flow === 'hospital' && completedOrder.specializedData && (
+                <div className="text-right">
+                  <div className="text-muted-foreground font-semibold uppercase tracking-wider text-[10px]">Hospital Medical Encounter</div>
+                  <div className="font-bold text-rose-500 text-sm mt-0.5">{completedOrder.specializedData.patientUhid} ({completedOrder.specializedData.ageGender})</div>
+                  <div className="text-muted-foreground text-[11px] mt-0.5">{completedOrder.specializedData.doctorName} • {completedOrder.specializedData.department}</div>
+                  <div className="text-emerald-500 font-semibold text-[11px] mt-0.5">{completedOrder.specializedData.encounterType} • Blood: {completedOrder.specializedData.bloodGroup}</div>
                 </div>
               )}
             </div>
@@ -961,6 +1171,62 @@ export const NewSalePage: React.FC = () => {
             </div>
           </div>
         </div>
+      ) : currentFlow === 'taxi' ? (
+        <TaxiConsole
+          appConfig={appConfig}
+          currency={currency}
+          currencySymbol={currencySymbol}
+          submitting={submitting}
+          onComplete={(data) => handleCompleteSpecializedOrder('taxi', data)}
+        />
+      ) : currentFlow === 'hotel' ? (
+        <HotelConsole
+          appConfig={appConfig}
+          currency={currency}
+          currencySymbol={currencySymbol}
+          submitting={submitting}
+          onComplete={(data) => handleCompleteSpecializedOrder('hotel', data)}
+        />
+      ) : currentFlow === 'school' ? (
+        <SchoolConsole
+          appConfig={appConfig}
+          currency={currency}
+          currencySymbol={currencySymbol}
+          submitting={submitting}
+          onComplete={(data) => handleCompleteSpecializedOrder('school', data)}
+        />
+      ) : currentFlow === 'coaching' ? (
+        <CoachingConsole
+          appConfig={appConfig}
+          currency={currency}
+          currencySymbol={currencySymbol}
+          submitting={submitting}
+          onComplete={(data) => handleCompleteSpecializedOrder('coaching', data)}
+        />
+      ) : currentFlow === 'payroll' ? (
+        <PayrollConsole
+          appConfig={appConfig}
+          currency={currency}
+          currencySymbol={currencySymbol}
+          submitting={submitting}
+          onComplete={(data) => handleCompleteSpecializedOrder('payroll', data)}
+        />
+      ) : currentFlow === 'gym' ? (
+        <GymConsole
+          appConfig={appConfig}
+          currency={currency}
+          currencySymbol={currencySymbol}
+          submitting={submitting}
+          onComplete={(data) => handleCompleteSpecializedOrder('gym', data)}
+        />
+      ) : currentFlow === 'hospital' ? (
+        <HospitalConsole
+          appConfig={appConfig}
+          currency={currency}
+          currencySymbol={currencySymbol}
+          submitting={submitting}
+          onComplete={(data) => handleCompleteSpecializedOrder('hospital', data)}
+        />
       ) : (
         /* MAIN TRANSACTION WORKSPACE (RETAIL / WHOLESALE / PHARMACY / SERVICES) */
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
