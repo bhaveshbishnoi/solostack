@@ -11,7 +11,9 @@ import {
   Search,
   Plus,
   Receipt,
-  RotateCcw
+  RotateCcw,
+  LayoutGrid,
+  List
 } from 'lucide-react';
 
 interface CartItem {
@@ -28,6 +30,8 @@ interface CartItem {
 export const NewSalePage: React.FC = () => {
   const { sheets, addRow, updateRow, saveWorkbook, appConfig, setActiveSheet } = useWorkbookStore();
   const { addNotification } = useUIStore();
+
+  const [catalogViewMode, setCatalogViewMode] = useState<'table' | 'grid'>('table');
 
   const currencySymbol = appConfig?.currencySymbol || '₹';
   const currency = appConfig?.currency || 'INR';
@@ -242,7 +246,7 @@ export const NewSalePage: React.FC = () => {
         customerName: customerObj?.name || 'Walk-in Customer',
       });
 
-      addNotification('success', 'Sale Completed! 🎉', `Recorded order ${saleId} and reduced stock`);
+      addNotification('success', 'Sale Completed', `Recorded order ${saleId} and reduced stock`);
     } catch (err: any) {
       addNotification('error', 'Sale Failed', err.message || 'Transaction could not be completed');
     } finally {
@@ -409,17 +413,41 @@ export const NewSalePage: React.FC = () => {
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
         {/* Left: Product Catalog (6 cols) */}
         <div className="lg:col-span-6 border-r border-border flex flex-col overflow-hidden bg-muted/10 p-5 space-y-4">
-          {/* Search and Category Filters */}
+          {/* Search, Category Filters and View Mode Switcher */}
           <div className="space-y-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search products by name or SKU..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-primary placeholder:text-muted-foreground shadow-sm"
-              />
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search products by name or SKU..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 text-xs bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-primary placeholder:text-muted-foreground shadow-2xs"
+                />
+              </div>
+
+              {/* View Switcher */}
+              <div className="flex items-center bg-muted/60 p-0.5 rounded-xl border border-border shrink-0">
+                <button
+                  onClick={() => setCatalogViewMode('table')}
+                  className={`p-1.5 rounded-lg transition ${
+                    catalogViewMode === 'table' ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  title="Tabular Spreadsheet View"
+                >
+                  <List className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  onClick={() => setCatalogViewMode('grid')}
+                  className={`p-1.5 rounded-lg transition ${
+                    catalogViewMode === 'grid' ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  title="Grid Cards View"
+                >
+                  <LayoutGrid className="h-3.5 w-3.5" />
+                </button>
+              </div>
             </div>
 
             {/* Category pills */}
@@ -428,7 +456,7 @@ export const NewSalePage: React.FC = () => {
                 onClick={() => setSelectedCategory('all')}
                 className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg transition shrink-0 ${
                   selectedCategory === 'all'
-                    ? 'bg-primary text-primary-foreground'
+                    ? 'bg-primary text-primary-foreground shadow-xs'
                     : 'bg-muted/70 text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -440,7 +468,7 @@ export const NewSalePage: React.FC = () => {
                   onClick={() => setSelectedCategory(cat.category_id)}
                   className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg transition shrink-0 ${
                     selectedCategory === cat.category_id
-                      ? 'bg-primary text-primary-foreground'
+                      ? 'bg-primary text-primary-foreground shadow-xs'
                       : 'bg-muted/70 text-muted-foreground hover:text-foreground'
                   }`}
                 >
@@ -450,13 +478,74 @@ export const NewSalePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Products Grid */}
+          {/* Products List (Tabular or Grid) */}
           <div className="flex-1 overflow-y-auto pr-1">
             {filteredProducts.length === 0 ? (
               <div className="text-center py-16 text-xs text-muted-foreground">
                 No products found matching your search.
               </div>
+            ) : catalogViewMode === 'table' ? (
+              /* Tabular Products Spreadsheet */
+              <div className="border border-border/80 rounded-xl overflow-hidden bg-card shadow-2xs">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-muted/50 border-b border-border/80 font-bold text-foreground">
+                    <tr>
+                      <th className="py-2.5 px-3 border-r border-border/60">Product</th>
+                      <th className="py-2.5 px-3 border-r border-border/60">SKU</th>
+                      <th className="py-2.5 px-3 border-r border-border/60 text-right">Price</th>
+                      <th className="py-2.5 px-3 border-r border-border/60 text-right">Stock</th>
+                      <th className="py-2.5 px-2 text-center w-16">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/60">
+                    {filteredProducts.map((prod) => {
+                      const stock = stockMap[prod.product_id] ?? 0;
+                      const isLow = stock <= Number(prod.minimum_stock || 0);
+
+                      return (
+                        <tr
+                          key={prod.product_id}
+                          onClick={() => handleAddToCart(prod.product_id)}
+                          className="even:bg-muted/10 odd:bg-card hover:bg-primary/5 cursor-pointer transition select-none group"
+                        >
+                          <td className="py-2 px-3 font-semibold text-foreground border-r border-border/60 truncate max-w-[140px]">
+                            {prod.name}
+                          </td>
+                          <td className="py-2 px-3 text-muted-foreground font-mono border-r border-border/60">
+                            {prod.sku || '-'}
+                          </td>
+                          <td className="py-2 px-3 text-right font-mono font-bold text-foreground border-r border-border/60">
+                            {formatCurrency(prod.selling_price, currency, currencySymbol)}
+                          </td>
+                          <td className="py-2 px-3 text-right font-mono border-r border-border/60">
+                            <span
+                              className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                                isLow ? 'bg-amber-500/15 text-amber-500' : 'bg-primary/15 text-primary'
+                              }`}
+                            >
+                              {stock}
+                            </span>
+                          </td>
+                          <td className="py-2 px-2 text-center">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAddToCart(prod.product_id);
+                              }}
+                              className="px-2 py-1 bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground font-bold text-[10px] rounded-lg transition"
+                            >
+                              + Add
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             ) : (
+              /* Grid Cards */
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {filteredProducts.map((prod) => {
                   const stock = stockMap[prod.product_id] ?? 0;
@@ -476,7 +565,7 @@ export const NewSalePage: React.FC = () => {
                           <span>{prod.sku || 'No SKU'}</span>
                           <span
                             className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
-                              isLow ? 'bg-amber-500/20 text-amber-500' : 'bg-emerald-500/20 text-emerald-500'
+                              isLow ? 'bg-amber-500/20 text-amber-500' : 'bg-primary/20 text-primary'
                             }`}
                           >
                             {stock} left
@@ -514,7 +603,7 @@ export const NewSalePage: React.FC = () => {
                 onChange={(e) => setSelectedCustomerId(e.target.value)}
                 className="w-full px-3 py-2 text-xs bg-muted/40 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary"
               >
-                <option value="walk_in">👤 Walk-in Retail Customer</option>
+                <option value="walk_in">Walk-in Retail Customer</option>
                 {customerRows.map((c) => (
                   <option key={c.customer_id} value={c.customer_id}>
                     {c.name} {c.phone ? `(${c.phone})` : ''}
@@ -532,100 +621,105 @@ export const NewSalePage: React.FC = () => {
                 onChange={(e) => setSelectedPaymentMethod(e.target.value)}
                 className="w-full px-3 py-2 text-xs bg-muted/40 border border-border rounded-xl text-foreground focus:outline-none focus:border-primary"
               >
-                <option value="Cash">💵 Cash</option>
-                <option value="UPI">📱 UPI / QR</option>
-                <option value="Credit Card">💳 Credit Card</option>
-                <option value="Debit Card">💳 Debit Card</option>
-                <option value="Net Banking">🏦 Net Banking</option>
-                <option value="Credit / Pay Later">⏳ Credit / Pay Later</option>
+                <option value="Cash">Cash</option>
+                <option value="UPI">UPI / QR Code</option>
+                <option value="Credit Card">Credit Card</option>
+                <option value="Debit Card">Debit Card</option>
+                <option value="Net Banking">Net Banking</option>
+                <option value="Credit / Pay Later">Credit / Pay Later</option>
               </select>
             </div>
           </div>
 
-          {/* Cart items list */}
-          <div className="flex-1 overflow-y-auto border border-border rounded-2xl p-3 space-y-2.5 bg-card">
+          {/* Cart items list (Tabular Spreadsheet Layout) */}
+          <div className="flex-1 overflow-y-auto border border-border/80 rounded-xl bg-card shadow-2xs">
             {cart.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-8 text-muted-foreground text-xs space-y-2">
-                <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
-                  <ShoppingCart className="h-6 w-6 text-muted-foreground/50" />
+                <div className="h-12 w-12 rounded-2xl bg-muted/60 flex items-center justify-center">
+                  <ShoppingCart className="h-6 w-6 text-muted-foreground/60" />
                 </div>
                 <div className="font-semibold text-foreground">Cart is currently empty</div>
-                <div className="text-[11px]">Click products on the left catalog to add them to this order.</div>
+                <div className="text-[11px]">Click or tap products on the catalog to build this order.</div>
               </div>
             ) : (
-              cart.map((item) => (
-                <div
-                  key={item.productId}
-                  className="p-3 bg-muted/30 border border-border/70 rounded-xl text-xs space-y-2"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-bold text-foreground">{item.name}</div>
-                      <div className="text-[10px] text-muted-foreground font-mono">
-                        SKU: {item.sku || '-'} | GST: {item.gstRate}%
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleRemoveItem(item.productId)}
-                      className="text-muted-foreground hover:text-destructive p-1 rounded transition"
-                      title="Remove item"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-
-                  {/* Quantity, Unit Price, Discount */}
-                  <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/40">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] text-muted-foreground">Qty:</span>
-                      <button
-                        onClick={() => handleUpdateQuantity(item.productId, item.quantity - 1)}
-                        className="h-6 w-6 rounded bg-muted hover:bg-muted/80 flex items-center justify-center font-bold"
-                      >
-                        -
-                      </button>
-                      <span className="w-7 text-center font-bold text-foreground">{item.quantity}</span>
-                      <button
-                        onClick={() => handleUpdateQuantity(item.productId, item.quantity + 1)}
-                        className="h-6 w-6 rounded bg-muted hover:bg-muted/80 flex items-center justify-center font-bold"
-                      >
-                        +
-                      </button>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <div>
-                        <label className="text-[9px] text-muted-foreground block">Price</label>
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="sticky top-0 bg-muted/50 border-b border-border/80 font-bold text-foreground z-10 select-none">
+                  <tr>
+                    <th className="py-2 px-3 border-r border-border/60">Item</th>
+                    <th className="py-2 px-2 border-r border-border/60 text-center w-28">Qty</th>
+                    <th className="py-2 px-2 border-r border-border/60 text-right w-20">Price</th>
+                    <th className="py-2 px-2 border-r border-border/60 text-right w-16">Disc</th>
+                    <th className="py-2 px-3 border-r border-border/60 text-right w-24">Total</th>
+                    <th className="py-2 px-2 text-center w-10"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60">
+                  {cart.map((item) => (
+                    <tr key={item.productId} className="even:bg-muted/10 odd:bg-card hover:bg-primary/5 transition">
+                      <td className="py-2 px-3 border-r border-border/60">
+                        <div className="font-bold text-foreground truncate max-w-[130px]">{item.name}</div>
+                        <div className="text-[10px] text-muted-foreground font-mono">
+                          {item.sku || '-'} • GST {item.gstRate}%
+                        </div>
+                      </td>
+                      <td className="py-2 px-2 border-r border-border/60 text-center">
+                        <div className="inline-flex items-center gap-1 bg-muted/40 border border-border/60 rounded-lg p-0.5">
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateQuantity(item.productId, item.quantity - 1)}
+                            className="h-5 w-5 rounded bg-muted hover:bg-muted/80 flex items-center justify-center font-bold text-[11px]"
+                          >
+                            -
+                          </button>
+                          <span className="w-6 text-center font-bold text-foreground font-mono text-[11px]">
+                            {item.quantity}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateQuantity(item.productId, item.quantity + 1)}
+                            className="h-5 w-5 rounded bg-muted hover:bg-muted/80 flex items-center justify-center font-bold text-[11px]"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </td>
+                      <td className="py-2 px-2 border-r border-border/60 text-right">
                         <input
                           type="number"
                           value={item.unitPrice}
                           onChange={(e) => handleUpdatePrice(item.productId, Number(e.target.value))}
-                          className="w-16 px-1.5 py-0.5 text-right font-mono text-xs bg-background border border-border rounded"
+                          className="w-16 px-1 py-0.5 text-right font-mono text-xs bg-background border border-border rounded focus:border-primary outline-none"
                         />
-                      </div>
-                      <div>
-                        <label className="text-[9px] text-muted-foreground block">Disc</label>
+                      </td>
+                      <td className="py-2 px-2 border-r border-border/60 text-right">
                         <input
                           type="number"
                           value={item.discount}
                           onChange={(e) => handleUpdateDiscount(item.productId, Number(e.target.value))}
-                          className="w-14 px-1.5 py-0.5 text-right font-mono text-xs bg-background border border-border rounded text-emerald-500"
+                          className="w-14 px-1 py-0.5 text-right font-mono text-xs bg-background border border-border rounded text-primary font-bold focus:border-primary outline-none"
                         />
-                      </div>
-                      <div className="text-right w-20">
-                        <label className="text-[9px] text-muted-foreground block">Total</label>
-                        <div className="font-bold text-foreground font-mono">
-                          {formatCurrency(
-                            (item.unitPrice * item.quantity - item.discount) * (1 + item.gstRate / 100),
-                            currency,
-                            currencySymbol
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))
+                      </td>
+                      <td className="py-2 px-3 border-r border-border/60 text-right font-bold text-foreground font-mono">
+                        {formatCurrency(
+                          (item.unitPrice * item.quantity - item.discount) * (1 + item.gstRate / 100),
+                          currency,
+                          currencySymbol
+                        )}
+                      </td>
+                      <td className="py-2 px-2 text-center">
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveItem(item.productId)}
+                          className="p-1 text-muted-foreground hover:text-destructive rounded transition"
+                          title="Remove Item"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             )}
           </div>
 

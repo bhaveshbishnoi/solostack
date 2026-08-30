@@ -7,6 +7,7 @@ import {
   Download,
   CheckSquare,
   Square,
+  Sigma
 } from 'lucide-react';
 
 export const ReportsView: React.FC = () => {
@@ -276,7 +277,9 @@ export const ReportsView: React.FC = () => {
             {filteredRows.length > 0 && Object.keys(numericTotals).length > 0 && (
               <tfoot>
                 <tr className="border-t-2 border-border font-bold bg-muted/40 text-xs">
-                  <td className="py-2.5 px-3 text-center text-muted-foreground font-mono border-r border-border">Σ</td>
+                  <td className="py-2.5 px-3 text-center text-primary font-mono border-r border-border">
+                    <Sigma className="h-3.5 w-3.5 mx-auto text-primary" />
+                  </td>
                   {displayedColumns.map((col, idx) => {
                     const totalVal = numericTotals[col.key];
                     const isFirst = idx === 0;

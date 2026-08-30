@@ -6,7 +6,9 @@ import {
   ArrowLeft,
   Save,
   Plus,
-  CheckCircle2
+  CheckCircle2,
+  Check,
+  X
 } from 'lucide-react';
 
 export const RecordFormPage: React.FC = () => {
@@ -249,13 +251,23 @@ export const RecordFormPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleChange(col.key, !val)}
-                        className={`px-3 py-1.5 rounded-xl border font-bold text-xs transition ${
+                        className={`px-3 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1.5 transition ${
                           val
                             ? 'bg-primary/15 border-primary text-primary teal-glow-sm'
                             : 'border-border text-muted-foreground bg-muted/20'
                         }`}
                       >
-                        {val ? 'YES (Active / Enabled)' : 'NO (Inactive / Disabled)'}
+                        {val ? (
+                          <>
+                            <Check className="h-3.5 w-3.5" />
+                            <span>Active / Enabled</span>
+                          </>
+                        ) : (
+                          <>
+                            <X className="h-3.5 w-3.5" />
+                            <span>Inactive / Disabled</span>
+                          </>
+                        )}
                       </button>
                     </div>
                   ) : col.dataType === 'currency' || col.key.includes('price') || col.key.includes('amount') || col.key.includes('total') ? (

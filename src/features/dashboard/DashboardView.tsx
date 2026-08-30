@@ -14,7 +14,9 @@ import {
   PlusCircle,
   Clock,
   ArrowUpRight,
-  Sparkles
+  Sparkles,
+  ArrowRight,
+  CheckCircle2
 } from 'lucide-react';
 
 export const DashboardView: React.FC = () => {
@@ -347,9 +349,10 @@ export const DashboardView: React.FC = () => {
             </div>
             <button
               onClick={() => setActiveSheet('_Sales')}
-              className="text-xs text-primary hover:underline font-medium"
+              className="text-xs text-primary hover:underline font-semibold flex items-center gap-1"
             >
-              View Sales History →
+              <span>View History</span>
+              <ArrowRight className="h-3 w-3" />
             </button>
           </div>
           <div className="h-64 w-full">
@@ -366,9 +369,10 @@ export const DashboardView: React.FC = () => {
             </div>
             <button
               onClick={() => setActiveSheet('_Categories')}
-              className="text-xs text-primary hover:underline font-medium"
+              className="text-xs text-primary hover:underline font-semibold flex items-center gap-1"
             >
-              Manage →
+              <span>Manage</span>
+              <ArrowRight className="h-3 w-3" />
             </button>
           </div>
           <div className="h-64 w-full">
@@ -441,37 +445,49 @@ export const DashboardView: React.FC = () => {
             </div>
             <button
               onClick={() => setActiveSheet('_Inventory')}
-              className="text-xs text-primary hover:underline font-medium"
+              className="text-xs text-primary hover:underline font-semibold flex items-center gap-1"
             >
-              Inventory Manager →
+              <span>Inventory Manager</span>
+              <ArrowRight className="h-3 w-3" />
             </button>
           </div>
 
-          <div className="space-y-2">
+          <div>
             {lowStockItems.length === 0 ? (
-              <div className="text-center py-8 text-xs text-muted-foreground">
-                🎉 Awesome! All products have healthy stock levels above minimum thresholds.
+              <div className="flex items-center gap-3 p-4 rounded-xl border border-primary/20 bg-primary/5 text-xs text-foreground">
+                <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
+                <div>
+                  <div className="font-semibold text-foreground">Healthy Inventory Levels</div>
+                  <div className="text-[11px] text-muted-foreground">All catalog products are operating above minimum safety stock thresholds.</div>
+                </div>
               </div>
             ) : (
-              lowStockItems.slice(0, 5).map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between p-3 rounded-xl border border-amber-500/20 bg-amber-500/5"
-                >
-                  <div>
-                    <div className="text-xs font-semibold text-foreground">{item.name}</div>
-                    <div className="text-[11px] text-muted-foreground">SKU: {item.sku}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-xs font-bold text-amber-500">
-                      {item.quantity} left
-                    </div>
-                    <div className="text-[10px] text-muted-foreground">
-                      Min: {item.minStock}
-                    </div>
-                  </div>
-                </div>
-              ))
+              <div className="border border-border/80 rounded-xl overflow-hidden">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-muted/40 border-b border-border/80 font-bold text-foreground">
+                    <tr>
+                      <th className="py-2.5 px-3 border-r border-border/60">Product</th>
+                      <th className="py-2.5 px-3 border-r border-border/60">SKU</th>
+                      <th className="py-2.5 px-3 border-r border-border/60 text-right">In Stock</th>
+                      <th className="py-2.5 px-3 text-right">Min Stock</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/60">
+                    {lowStockItems.slice(0, 5).map((item) => (
+                      <tr key={item.id} className="even:bg-muted/10 odd:bg-card hover:bg-primary/5 transition">
+                        <td className="py-2 px-3 font-semibold text-foreground border-r border-border/60">{item.name}</td>
+                        <td className="py-2 px-3 text-muted-foreground font-mono border-r border-border/60">{item.sku}</td>
+                        <td className="py-2 px-3 text-right font-mono font-bold text-amber-500 border-r border-border/60">
+                          {item.quantity}
+                        </td>
+                        <td className="py-2 px-3 text-right font-mono text-muted-foreground">
+                          {item.minStock}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </div>

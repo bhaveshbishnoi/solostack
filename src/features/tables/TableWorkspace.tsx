@@ -24,7 +24,8 @@ import {
   RotateCcw,
   SlidersHorizontal,
   CheckSquare,
-  Square
+  Square,
+  Sigma
 } from 'lucide-react';
 
 interface TableWorkspaceProps {
@@ -634,12 +635,14 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
                     displayVal = formatDate(val);
                   } else if (typeof val === 'boolean') {
                     displayVal = val ? (
-                      <span className="px-2 py-0.5 rounded text-[10px] bg-primary/10 text-primary font-bold">
-                        YES
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] bg-primary/10 text-primary font-bold border border-primary/20">
+                        <Check className="h-2.5 w-2.5" />
+                        <span>Active</span>
                       </span>
                     ) : (
-                      <span className="px-2 py-0.5 rounded text-[10px] bg-muted text-muted-foreground font-medium">
-                        NO
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] bg-muted/60 text-muted-foreground font-medium border border-border">
+                        <X className="h-2.5 w-2.5" />
+                        <span>Inactive</span>
                       </span>
                     );
                   } else if (col.key === 'status') {
@@ -759,8 +762,8 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
           {processedRows.length > 0 && (
             <tfoot className="sticky bottom-0 bg-card border-t-2 border-border z-10 font-bold text-xs shadow-md">
               <tr className="bg-muted/40">
-                <td className="w-12 px-3 py-2 text-center text-muted-foreground font-mono text-[10px] border-r border-border/70">
-                  Σ
+                <td className="w-12 px-3 py-2 text-center text-primary font-mono text-[10px] border-r border-border/70">
+                  <Sigma className="h-3.5 w-3.5 mx-auto text-primary" />
                 </td>
                 {visibleColumns.map((col, idx) => {
                   const hasTotal = columnTotals[col.key] !== undefined;

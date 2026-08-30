@@ -5,7 +5,9 @@ import { formatCurrency, formatDate } from '../../lib/utils';
 import {
   ArrowLeft,
   Edit2,
-  Trash2
+  Trash2,
+  Check,
+  X
 } from 'lucide-react';
 
 export const RecordDetailPage: React.FC = () => {
@@ -123,12 +125,14 @@ export const RecordDetailPage: React.FC = () => {
                 displayVal = formatDate(val);
               } else if (typeof val === 'boolean') {
                 displayVal = val ? (
-                  <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-500 font-bold">
-                    YES
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] bg-primary/10 text-primary font-bold border border-primary/20">
+                    <Check className="h-2.5 w-2.5" />
+                    <span>Active</span>
                   </span>
                 ) : (
-                  <span className="px-2 py-0.5 rounded text-[10px] bg-muted text-muted-foreground">
-                    NO
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] bg-muted/60 text-muted-foreground font-medium border border-border">
+                    <X className="h-2.5 w-2.5" />
+                    <span>Inactive</span>
                   </span>
                 );
               }

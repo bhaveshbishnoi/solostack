@@ -27,13 +27,13 @@ export const InvoiceModal: React.FC = () => {
         {/* Header with actions */}
         <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-muted/30 shrink-0">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+            <CheckCircle2 className="h-5 w-5 text-primary" />
             <h2 className="text-sm font-bold text-foreground">Tax Invoice & Receipt</h2>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-primary text-primary-foreground font-semibold rounded-lg shadow-sm hover:bg-primary/90 transition"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs bg-primary text-primary-foreground font-bold rounded-xl shadow-sm teal-glow-sm hover:bg-primary/90 transition"
             >
               <Printer className="h-3.5 w-3.5" />
               <span>Print Invoice</span>
@@ -48,127 +48,114 @@ export const InvoiceModal: React.FC = () => {
         </div>
 
         {/* Invoice Printable Document */}
-        <div className="flex-1 overflow-y-auto p-8 bg-card" id="printable-area">
-          <div className="space-y-6">
-            {/* Business & Invoice Header */}
-            <div className="flex items-start justify-between border-b border-border pb-6">
-              <div>
-                <h1 className="text-xl font-extrabold text-foreground tracking-tight">
-                  {appConfig?.businessName || 'Business Name'}
-                </h1>
-                <p className="text-xs text-muted-foreground mt-1 max-w-xs leading-relaxed">
-                  {businessAddress}
-                </p>
-                <div className="text-xs text-muted-foreground mt-1 space-y-0.5 font-mono">
-                  {businessPhone && <div>Phone: {businessPhone}</div>}
-                  {businessEmail && <div>Email: {businessEmail}</div>}
-                  {businessGstin && <div>GSTIN: {businessGstin}</div>}
-                </div>
-              </div>
-
-              <div className="text-right">
-                <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  TAX INVOICE
-                </div>
-                <div className="text-base font-bold text-foreground font-mono mt-1">
-                  #{saleId}
-                </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  Date: {formatDate(saleRecord?.sale_date || new Date().toISOString())}
-                </div>
-                <div className="text-xs font-medium text-emerald-500 mt-1">
-                  Status: PAID ({saleRecord?.payment_method || 'Cash'})
-                </div>
+        <div className="p-8 overflow-y-auto space-y-6" id="invoice-printable">
+          {/* Header with Business details & Invoice info */}
+          <div className="flex justify-between items-start border-b border-border pb-6">
+            <div>
+              <h1 className="text-xl font-bold text-foreground">
+                {appConfig?.businessName || 'Business Name'}
+              </h1>
+              <p className="text-xs text-muted-foreground mt-1 max-w-xs">
+                {businessAddress}
+              </p>
+              <div className="text-xs text-muted-foreground mt-1 space-y-0.5 font-mono">
+                {businessPhone && <div>Phone: {businessPhone}</div>}
+                {businessEmail && <div>Email: {businessEmail}</div>}
+                {businessGstin && <div>GSTIN: {businessGstin}</div>}
               </div>
             </div>
 
-            {/* Bill To */}
-            <div className="text-xs">
-              <div className="text-muted-foreground font-semibold uppercase tracking-wider text-[10px] mb-1">
-                Billed To
+            <div className="text-right">
+              <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                TAX INVOICE
               </div>
-              <div className="font-bold text-foreground text-sm">{customerName}</div>
-            </div>
-
-            {/* Itemized Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-border text-muted-foreground text-[11px]">
-                    <th className="py-2.5 font-semibold">Item & SKU</th>
-                    <th className="py-2.5 font-semibold text-center">Qty</th>
-                    <th className="py-2.5 font-semibold text-right">Unit Price</th>
-                    <th className="py-2.5 font-semibold text-right">GST</th>
-                    <th className="py-2.5 font-semibold text-right">Line Total</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {cart.map((item: any, idx: number) => {
-                    const lineBase = item.unitPrice * item.quantity;
-                    const lineTax = (lineBase * item.gstRate) / 100;
-                    const lineTotal = lineBase + lineTax;
-                    return (
-                      <tr key={idx} className="hover:bg-muted/20">
-                        <td className="py-2.5 font-medium text-foreground">
-                          <div>{item.name}</div>
-                          {item.sku && (
-                            <div className="text-[10px] text-muted-foreground font-mono">
-                              SKU: {item.sku}
-                            </div>
-                          )}
-                        </td>
-                        <td className="py-2.5 text-center font-mono">{item.quantity}</td>
-                        <td className="py-2.5 text-right font-mono">
-                          {formatCurrency(item.unitPrice, currency, currencySymbol)}
-                        </td>
-                        <td className="py-2.5 text-right text-muted-foreground font-mono">
-                          {item.gstRate}%
-                        </td>
-                        <td className="py-2.5 text-right font-semibold text-foreground font-mono">
-                          {formatCurrency(lineTotal, currency, currencySymbol)}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Totals Breakdown */}
-            <div className="border-t border-border pt-4 flex justify-end">
-              <div className="w-64 space-y-2 text-xs">
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Subtotal</span>
-                  <span className="font-mono">
-                    {formatCurrency(calculations.subtotal, currency, currencySymbol)}
-                  </span>
-                </div>
-                {calculations.totalDiscount > 0 && (
-                  <div className="flex justify-between text-emerald-500 font-medium">
-                    <span>Discount</span>
-                    <span className="font-mono">
-                      -{formatCurrency(calculations.totalDiscount, currency, currencySymbol)}
-                    </span>
-                  </div>
-                )}
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Total GST</span>
-                  <span className="font-mono">
-                    +{formatCurrency(calculations.totalTax, currency, currencySymbol)}
-                  </span>
-                </div>
-                <div className="border-t border-border pt-2 flex justify-between text-base font-bold text-foreground">
-                  <span>Grand Total</span>
-                  <span className="text-primary font-mono">
-                    {formatCurrency(calculations.grandTotal, currency, currencySymbol)}
-                  </span>
-                </div>
+              <div className="text-base font-bold text-foreground font-mono mt-1">
+                #{saleId}
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                Date: {formatDate(saleRecord?.sale_date || new Date().toISOString())}
+              </div>
+              <div className="text-xs font-bold text-primary mt-1">
+                Status: PAID ({saleRecord?.payment_method || 'Cash'})
               </div>
             </div>
+          </div>
 
-            {/* Footer Note */}
-            <div className="text-center text-[10px] text-muted-foreground border-t border-border pt-6">
-              Thank you for your business! Generated locally with Exdrow.
+          {/* Bill To */}
+          <div className="text-xs">
+            <div className="text-muted-foreground font-semibold uppercase tracking-wider text-[10px] mb-1">
+              Billed To
+            </div>
+            <div className="font-bold text-foreground text-sm">{customerName}</div>
+          </div>
+
+          {/* Itemized Tabular Table */}
+          <div className="overflow-x-auto border border-border/80 rounded-xl">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead className="bg-muted/40 border-b border-border/80 text-foreground font-bold">
+                <tr className="text-[11px]">
+                  <th className="py-2.5 px-3 border-r border-border/60">Item & SKU</th>
+                  <th className="py-2.5 px-3 border-r border-border/60 text-center">Qty</th>
+                  <th className="py-2.5 px-3 border-r border-border/60 text-right">Unit Price</th>
+                  <th className="py-2.5 px-3 border-r border-border/60 text-right">GST</th>
+                  <th className="py-2.5 px-3 text-right">Line Total</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/60">
+                {cart.map((item: any, idx: number) => {
+                  const lineBase = item.unitPrice * item.quantity;
+                  const lineTax = (lineBase * item.gstRate) / 100;
+                  const lineTotal = lineBase + lineTax;
+                  return (
+                    <tr key={idx} className="even:bg-muted/10 odd:bg-card">
+                      <td className="py-2.5 px-3 font-semibold text-foreground border-r border-border/60">
+                        <div>{item.name}</div>
+                        {item.sku && (
+                          <div className="text-[10px] text-muted-foreground font-mono">
+                            SKU: {item.sku}
+                          </div>
+                        )}
+                      </td>
+                      <td className="py-2.5 px-3 text-center font-mono border-r border-border/60">{item.quantity}</td>
+                      <td className="py-2.5 px-3 text-right font-mono border-r border-border/60">
+                        {formatCurrency(item.unitPrice, currency, currencySymbol)}
+                      </td>
+                      <td className="py-2.5 px-3 text-right text-muted-foreground font-mono border-r border-border/60">
+                        {item.gstRate}%
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-bold text-foreground font-mono">
+                        {formatCurrency(lineTotal, currency, currencySymbol)}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Totals Breakdown */}
+          <div className="border-t border-border pt-4 flex justify-end">
+            <div className="w-64 space-y-2 text-xs">
+              <div className="flex justify-between text-muted-foreground">
+                <span>Subtotal</span>
+                <span className="font-mono">{formatCurrency(calculations.subtotal, currency, currencySymbol)}</span>
+              </div>
+              {calculations.totalDiscount > 0 && (
+                <div className="flex justify-between text-primary font-medium">
+                  <span>Discount</span>
+                  <span className="font-mono">-{formatCurrency(calculations.totalDiscount, currency, currencySymbol)}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-muted-foreground">
+                <span>Tax (GST)</span>
+                <span className="font-mono">+{formatCurrency(calculations.totalTax, currency, currencySymbol)}</span>
+              </div>
+              <div className="border-t border-border pt-2 flex justify-between font-bold text-sm text-foreground">
+                <span>Grand Total</span>
+                <span className="text-primary font-mono font-extrabold text-base">
+                  {formatCurrency(calculations.grandTotal, currency, currencySymbol)}
+                </span>
+              </div>
             </div>
           </div>
         </div>

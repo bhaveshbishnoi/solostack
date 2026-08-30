@@ -217,7 +217,7 @@ export const NewSaleModal: React.FC = () => {
       // Auto-save workbook
       await saveWorkbook();
 
-      addNotification('success', 'Sale Completed! 🎉', `Order ${saleId} recorded and inventory updated`);
+      addNotification('success', 'Sale Completed', `Order ${saleId} recorded and inventory updated`);
       closeModal();
 
       // Open Invoice preview
@@ -320,7 +320,7 @@ export const NewSaleModal: React.FC = () => {
                   onChange={(e) => setSelectedCustomerId(e.target.value)}
                   className="w-full px-3 py-1.5 text-xs bg-muted/50 border border-border rounded-lg text-foreground focus:outline-none focus:border-primary"
                 >
-                  <option value="walk_in">👤 Walk-in Customer</option>
+                  <option value="walk_in">Walk-in Customer</option>
                   {customerRows.map((c) => (
                     <option key={c.customer_id} value={c.customer_id}>
                       {c.name} ({c.phone || 'No phone'})
@@ -338,12 +338,12 @@ export const NewSaleModal: React.FC = () => {
                   onChange={(e) => setSelectedPaymentMethod(e.target.value)}
                   className="w-full px-3 py-1.5 text-xs bg-muted/50 border border-border rounded-lg text-foreground focus:outline-none focus:border-primary"
                 >
-                  <option value="Cash">💵 Cash</option>
-                  <option value="UPI">📱 UPI / QR</option>
-                  <option value="Credit Card">💳 Credit Card</option>
-                  <option value="Debit Card">💳 Debit Card</option>
-                  <option value="Net Banking">🏦 Net Banking</option>
-                  <option value="Credit / Pay Later">⏳ Credit / Pay Later</option>
+                  <option value="Cash">Cash</option>
+                  <option value="UPI">UPI / QR Code</option>
+                  <option value="Credit Card">Credit Card</option>
+                  <option value="Debit Card">Debit Card</option>
+                  <option value="Net Banking">Net Banking</option>
+                  <option value="Credit / Pay Later">Credit / Pay Later</option>
                 </select>
               </div>
             </div>
