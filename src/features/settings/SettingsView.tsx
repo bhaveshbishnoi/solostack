@@ -308,14 +308,36 @@ export const SettingsView: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-foreground mb-1.5">Business Industry / Type</label>
+                    <label className="block font-semibold text-foreground mb-1.5">Business Type & Operating Flow</label>
                     <input
                       type="text"
                       value={businessTypeInput}
                       onChange={(e) => setBusinessTypeInput(e.target.value)}
-                      placeholder="e.g. Electronics, Retail, Grocery, Services"
+                      placeholder="e.g. Retail Store, Wholesale, Pharmacy, Services, Manufacturing"
                       className="w-full px-3.5 py-2.5 bg-muted/40 border border-border rounded-xl text-foreground font-medium focus:outline-none focus:border-primary shadow-2xs"
                     />
+                    <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                      {[
+                        'Retail Store',
+                        'Wholesale & Distribution',
+                        'Pharmacy & Healthcare',
+                        'Services & Consulting',
+                        'Manufacturing & Assembly',
+                      ].map((preset) => (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={() => setBusinessTypeInput(preset)}
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition ${
+                            businessTypeInput.toLowerCase() === preset.toLowerCase()
+                              ? 'bg-primary text-primary-foreground shadow-xs'
+                              : 'bg-muted/60 text-muted-foreground hover:text-foreground hover:bg-muted'
+                          }`}
+                        >
+                          {preset}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   <div>

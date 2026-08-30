@@ -28,6 +28,17 @@ export interface SheetData {
   rows: TableRow[];
 }
 
+export type BusinessFlowType = 'retail' | 'wholesale' | 'pharmacy' | 'services' | 'manufacturing';
+
+export function getBusinessFlowType(businessType?: string): BusinessFlowType {
+  const bt = (businessType || '').toLowerCase();
+  if (bt.includes('wholesale') || bt.includes('distribution') || bt.includes('b2b')) return 'wholesale';
+  if (bt.includes('pharmacy') || bt.includes('medical') || bt.includes('health') || bt.includes('chemist')) return 'pharmacy';
+  if (bt.includes('service') || bt.includes('consult') || bt.includes('agency') || bt.includes('freelance')) return 'services';
+  if (bt.includes('manufactur') || bt.includes('assembly') || bt.includes('factory') || bt.includes('production')) return 'manufacturing';
+  return 'retail';
+}
+
 export interface AppConfig {
   businessName: string;
   businessType: string;

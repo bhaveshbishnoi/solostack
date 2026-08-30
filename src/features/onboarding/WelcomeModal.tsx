@@ -302,14 +302,13 @@ export const WelcomeModal: React.FC = () => {
                   <select
                     value={businessType}
                     onChange={(e) => setBusinessType(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-muted/50 border border-border rounded-lg text-foreground focus:outline-none focus:border-primary"
+                    className="w-full px-3 py-2 text-xs bg-muted/50 border border-border rounded-lg text-foreground focus:outline-none focus:border-primary font-medium"
                   >
-                    <option>Retail Store</option>
-                    <option>Wholesale & Distribution</option>
-                    <option>Pharmacy</option>
-                    <option>Hardware Shop</option>
-                    <option>Service & Consultancy</option>
-                    <option>Manufacturing</option>
+                    <option value="Retail Store">Retail Store & Supermarket (POS)</option>
+                    <option value="Wholesale & Distribution">Wholesale & B2B Distribution (Credit & Dispatch)</option>
+                    <option value="Pharmacy">Pharmacy & Healthcare (Batch & Expiry)</option>
+                    <option value="Service & Consultancy">Services & Consultancy (Hourly & Milestones)</option>
+                    <option value="Manufacturing">Manufacturing & Assembly (BOM Engine)</option>
                   </select>
                 </div>
 

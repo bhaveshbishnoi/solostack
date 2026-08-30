@@ -3,6 +3,7 @@ import { useWorkbookStore } from '../../stores/workbookStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useUIStore } from '../../stores/uiStore';
 import { formatCurrency, formatDate } from '../../lib/utils';
+import { getBusinessFlowType } from '../../types';
 import ReactECharts from 'echarts-for-react';
 import {
   TrendingUp,
@@ -17,7 +18,12 @@ import {
   ArrowUpRight,
   Sparkles,
   ArrowRight,
-  CheckCircle2
+  CheckCircle2,
+  Truck,
+  Stethoscope,
+  Briefcase,
+  Factory,
+  Store
 } from 'lucide-react';
 
 export const DashboardView: React.FC = () => {
@@ -83,13 +89,38 @@ export const DashboardView: React.FC = () => {
         return {
           id: s.sale_id,
           customerName: customer?.name || 'Walk-in Customer',
-          date: s.sale_date,
+          total: Number(s.total || 0),
           amount: Number(s.total || 0),
-          status: s.status || 'completed',
+          date: s.sale_date,
           paymentMethod: s.payment_method || 'Cash',
         };
       });
   }, [salesRows, customerRows]);
+
+  const flowType = getBusinessFlowType(appConfig?.businessType);
+
+  // Flow specific metrics
+  const wholesaleCreditPending = useMemo(() => {
+    return salesRows
+      .filter((s) => String(s.payment_method || '').includes('Credit') || s.status === 'credit_pending')
+      .reduce((a, b) => a + Number(b.total || 0), 0);
+  }, [salesRows]);
+
+  const pharmacyNearExpiryCount = useMemo(() => {
+    const saleItemRows = sheets['_SaleItems']?.rows || [];
+    const now = new Date().getTime();
+    const sixtyDaysMs = 60 * 24 * 60 * 60 * 1000;
+    return saleItemRows.filter((item) => {
+      if (!item.expiry_date) return false;
+      const exp = new Date(item.expiry_date).getTime();
+      return exp - now > 0 && exp - now < sixtyDaysMs;
+    }).length;
+  }, [sheets]);
+
+  const productionMovementsCount = useMemo(() => {
+    const movements = sheets['_StockMovements']?.rows || [];
+    return movements.filter((m) => String(m.type || '').includes('PRODUCTION') || String(m.type || '').includes('BOM')).length;
+  }, [sheets]);
 
   // Chart 1: Multi-metric Sales & Volume Trend (Date vs Revenue & Order Count)
   const salesTrendOption = useMemo(() => {
@@ -318,6 +349,14 @@ export const DashboardView: React.FC = () => {
             <span className="text-xs px-2.5 py-0.5 rounded-full bg-primary/20 text-primary font-bold">
               Live Workbook
             </span>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-muted/80 border border-border text-foreground font-semibold flex items-center gap-1.5">
+              {flowType === 'wholesale' && <Truck className="h-3 w-3 text-indigo-400" />}
+              {flowType === 'pharmacy' && <Stethoscope className="h-3 w-3 text-emerald-400" />}
+              {flowType === 'services' && <Briefcase className="h-3 w-3 text-amber-400" />}
+              {flowType === 'manufacturing' && <Factory className="h-3 w-3 text-cyan-400" />}
+              {flowType === 'retail' && <Store className="h-3 w-3 text-primary" />}
+              <span>{appConfig?.businessType || 'Retail Store'} Flow</span>
+            </span>
           </div>
           <p className="text-xs text-muted-foreground">
             All metrics reflect your single Excel workbook in real time.
@@ -338,13 +377,74 @@ export const DashboardView: React.FC = () => {
             className="flex items-center gap-2 px-4 py-2 text-xs bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-md teal-glow transition font-bold"
           >
             <ShoppingCart className="h-4 w-4" />
-            <span>Start New Sale (POS)</span>
+            <span>Open Business Flow (POS)</span>
           </button>
         </div>
       </div>
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {/* Flow-Specific Highlight Card */}
+        {flowType === 'wholesale' && (
+          <div className="bg-gradient-to-br from-indigo-500/15 via-card to-card border border-indigo-500/30 rounded-2xl p-4 shadow-sm hover:border-indigo-500/50 transition">
+            <div className="flex items-center justify-between text-muted-foreground mb-2">
+              <span className="text-xs font-semibold">B2B Credit Receivables</span>
+              <div className="p-2 rounded-xl bg-indigo-500/15 text-indigo-400">
+                <Truck className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-extrabold text-indigo-400 font-mono">
+              {formatCurrency(wholesaleCreditPending, currency, currencySymbol)}
+            </div>
+            <div className="text-[11px] text-muted-foreground mt-1">Pending Net terms collection</div>
+          </div>
+        )}
+
+        {flowType === 'pharmacy' && (
+          <div className="bg-gradient-to-br from-amber-500/15 via-card to-card border border-amber-500/30 rounded-2xl p-4 shadow-sm hover:border-amber-500/50 transition">
+            <div className="flex items-center justify-between text-muted-foreground mb-2">
+              <span className="text-xs font-semibold">Near-Expiry Batches</span>
+              <div className="p-2 rounded-xl bg-amber-500/15 text-amber-500">
+                <Stethoscope className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-extrabold text-amber-500 font-mono">
+              {pharmacyNearExpiryCount}
+            </div>
+            <div className="text-[11px] text-muted-foreground mt-1">Batches expiring in &lt;60 days</div>
+          </div>
+        )}
+
+        {flowType === 'services' && (
+          <div className="bg-gradient-to-br from-amber-500/15 via-card to-card border border-amber-500/30 rounded-2xl p-4 shadow-sm hover:border-amber-500/50 transition">
+            <div className="flex items-center justify-between text-muted-foreground mb-2">
+              <span className="text-xs font-semibold">Service Deliverables</span>
+              <div className="p-2 rounded-xl bg-amber-500/15 text-amber-400">
+                <Briefcase className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-extrabold text-amber-400 font-mono">
+              {salesRows.length}
+            </div>
+            <div className="text-[11px] text-muted-foreground mt-1">Active client contracts billed</div>
+          </div>
+        )}
+
+        {flowType === 'manufacturing' && (
+          <div className="bg-gradient-to-br from-cyan-500/15 via-card to-card border border-cyan-500/30 rounded-2xl p-4 shadow-sm hover:border-cyan-500/50 transition">
+            <div className="flex items-center justify-between text-muted-foreground mb-2">
+              <span className="text-xs font-semibold">BOM Production Runs</span>
+              <div className="p-2 rounded-xl bg-cyan-500/15 text-cyan-400">
+                <Factory className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-extrabold text-cyan-400 font-mono">
+              {productionMovementsCount}
+            </div>
+            <div className="text-[11px] text-muted-foreground mt-1">Assembly batches recorded</div>
+          </div>
+        )}
+
         {/* Total Sales */}
         <div className="bg-gradient-to-br from-primary/10 via-card to-card border border-primary/30 rounded-2xl p-4 shadow-sm hover:teal-glow-sm hover:border-primary/50 transition">
           <div className="flex items-center justify-between text-muted-foreground mb-2">
