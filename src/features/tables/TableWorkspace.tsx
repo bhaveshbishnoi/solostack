@@ -4,6 +4,7 @@ import { useSettingsStore } from '../../stores/settingsStore';
 import { useUIStore } from '../../stores/uiStore';
 import { ColumnDef, DataType, TableRow, getBusinessFlowType } from '../../types';
 import { getBusinessTerminology } from '../../lib/businessTerminology';
+import { getIconComponent } from '../../components/common/IconPicker';
 import { formatCurrency, formatDate } from '../../lib/utils';
 import {
   Search,
@@ -79,6 +80,14 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
   const businessMeta = useMemo(() => {
     return getBusinessTerminology(currentFlow, sheetName);
   }, [currentFlow, sheetName]);
+
+  const customTableInfo = useMemo(() => {
+    return sheets['_CustomTables']?.rows?.find((r) => r.name === sheetName);
+  }, [sheets, sheetName]);
+
+  const sheetTitle = customTableInfo?.display_name || businessMeta.sheetDisplayName;
+  const addRecordText = customTableInfo ? `Add ${customTableInfo.display_name} Record` : businessMeta.addRecordTitle;
+  const CustomIcon = customTableInfo?.icon ? getIconComponent(customTableInfo.icon) : null;
 
   // Initialize hidden columns from settings or recommended defaults
   const hiddenColumns = useMemo(() => {
@@ -413,8 +422,13 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
         <div className="flex items-center gap-3">
           <div>
             <div className="flex items-center gap-2">
+              {CustomIcon && (
+                <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                  <CustomIcon className="h-3.5 w-3.5" />
+                </div>
+              )}
               <h2 className="text-base font-extrabold text-foreground tracking-tight">
-                {businessMeta.sheetDisplayName}
+                {sheetTitle}
               </h2>
               <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground font-mono">
                 {sheetName}
@@ -502,10 +516,10 @@ export const TableWorkspace: React.FC<TableWorkspaceProps> = ({ sheetName }) => 
               setActiveSheet('record_form');
             }}
             className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-sm teal-glow-sm transition"
-            title={`Create new record in ${businessMeta.sheetDisplayName}`}
+            title={`Create new record in ${sheetTitle}`}
           >
             <Plus className="h-3.5 w-3.5" />
-            <span>{businessMeta.addRecordTitle}</span>
+            <span>{addRecordText}</span>
           </button>
         </div>
       </div>

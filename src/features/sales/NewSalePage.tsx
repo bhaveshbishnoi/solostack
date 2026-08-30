@@ -31,7 +31,10 @@ import {
   BookOpen,
   BadgeDollarSign,
   Dumbbell,
-  Activity
+  Activity,
+  Utensils,
+  Home,
+  Sparkles as SparklesIcon
 } from 'lucide-react';
 import { TaxiConsole } from './consoles/TaxiConsole';
 import { HotelConsole } from './consoles/HotelConsole';
@@ -40,6 +43,10 @@ import { CoachingConsole } from './consoles/CoachingConsole';
 import { PayrollConsole } from './consoles/PayrollConsole';
 import { GymConsole } from './consoles/GymConsole';
 import { HospitalConsole } from './consoles/HospitalConsole';
+import { RestaurantConsole } from './consoles/RestaurantConsole';
+import { RealEstateConsole } from './consoles/RealEstateConsole';
+import { GarageConsole } from './consoles/GarageConsole';
+import { SalonConsole } from './consoles/SalonConsole';
 
 interface CartItem {
   productId: string;
@@ -145,6 +152,34 @@ export const NewSalePage: React.FC = () => {
           badge: 'Hospital Edition',
           icon: Activity,
           iconColor: 'text-rose-500',
+        };
+      case 'restaurant':
+        return {
+          title: 'Restaurant Table Order & KOT Billing',
+          badge: 'Restaurant Edition',
+          icon: Utensils,
+          iconColor: 'text-amber-500',
+        };
+      case 'realestate':
+        return {
+          title: 'Property Leases & Rent Collection',
+          badge: 'Real Estate Edition',
+          icon: Home,
+          iconColor: 'text-blue-500',
+        };
+      case 'garage':
+        return {
+          title: 'Workshop Job Card & Auto Repair Billing',
+          badge: 'Garage Edition',
+          icon: Wrench,
+          iconColor: 'text-orange-500',
+        };
+      case 'salon':
+        return {
+          title: 'Salon Styling & Beauty Session Billing',
+          badge: 'Salon Edition',
+          icon: SparklesIcon,
+          iconColor: 'text-pink-500',
         };
       case 'retail':
       default:
@@ -1226,6 +1261,38 @@ export const NewSalePage: React.FC = () => {
           currencySymbol={currencySymbol}
           submitting={submitting}
           onComplete={(data) => handleCompleteSpecializedOrder('hospital', data)}
+        />
+      ) : currentFlow === 'restaurant' ? (
+        <RestaurantConsole
+          appConfig={appConfig}
+          currency={currency}
+          currencySymbol={currencySymbol}
+          submitting={submitting}
+          onComplete={(data) => handleCompleteSpecializedOrder('restaurant', data)}
+        />
+      ) : currentFlow === 'realestate' ? (
+        <RealEstateConsole
+          appConfig={appConfig}
+          currency={currency}
+          currencySymbol={currencySymbol}
+          submitting={submitting}
+          onComplete={(data) => handleCompleteSpecializedOrder('realestate', data)}
+        />
+      ) : currentFlow === 'garage' ? (
+        <GarageConsole
+          appConfig={appConfig}
+          currency={currency}
+          currencySymbol={currencySymbol}
+          submitting={submitting}
+          onComplete={(data) => handleCompleteSpecializedOrder('garage', data)}
+        />
+      ) : currentFlow === 'salon' ? (
+        <SalonConsole
+          appConfig={appConfig}
+          currency={currency}
+          currencySymbol={currencySymbol}
+          submitting={submitting}
+          onComplete={(data) => handleCompleteSpecializedOrder('salon', data)}
         />
       ) : (
         /* MAIN TRANSACTION WORKSPACE (RETAIL / WHOLESALE / PHARMACY / SERVICES) */

@@ -2,12 +2,20 @@ import React, { useState, useMemo } from 'react';
 import { useWorkbookStore } from '../../stores/workbookStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { formatCurrency } from '../../lib/utils';
+import { getBusinessFlowType } from '../../types';
+import { getBusinessTerminology } from '../../lib/businessTerminology';
 import ReactECharts from 'echarts-for-react';
 
 export const AnalyticsView: React.FC = () => {
   const { sheets, appConfig } = useWorkbookStore();
   const { theme } = useSettingsStore();
   const [activeTab, setActiveTab] = useState<'sales' | 'inventory' | 'customers' | 'products'>('sales');
+
+  const flowType = getBusinessFlowType(appConfig?.businessType);
+  const salesMeta = useMemo(() => getBusinessTerminology(flowType, '_Sales'), [flowType]);
+  const invMeta = useMemo(() => getBusinessTerminology(flowType, '_Inventory'), [flowType]);
+  const prodMeta = useMemo(() => getBusinessTerminology(flowType, '_Products'), [flowType]);
+  const custMeta = useMemo(() => getBusinessTerminology(flowType, '_Customers'), [flowType]);
 
   const currencySymbol = appConfig?.currencySymbol || '₹';
   const currency = appConfig?.currency || 'INR';
@@ -312,7 +320,7 @@ export const AnalyticsView: React.FC = () => {
               activeTab === 'sales' ? 'bg-primary text-primary-foreground shadow-sm teal-glow-sm' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            Sales
+            {salesMeta.sheetDisplayName}
           </button>
           <button
             onClick={() => setActiveTab('inventory')}
@@ -320,7 +328,7 @@ export const AnalyticsView: React.FC = () => {
               activeTab === 'inventory' ? 'bg-primary text-primary-foreground shadow-sm teal-glow-sm' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            Inventory
+            {invMeta.sheetDisplayName}
           </button>
           <button
             onClick={() => setActiveTab('products')}
@@ -328,7 +336,7 @@ export const AnalyticsView: React.FC = () => {
               activeTab === 'products' ? 'bg-primary text-primary-foreground shadow-sm teal-glow-sm' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            Products
+            {prodMeta.sheetDisplayName}
           </button>
           <button
             onClick={() => setActiveTab('customers')}
@@ -336,7 +344,7 @@ export const AnalyticsView: React.FC = () => {
               activeTab === 'customers' ? 'bg-primary text-primary-foreground shadow-sm teal-glow-sm' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            Customers
+            {custMeta.sheetDisplayName}
           </button>
         </div>
       </div>
@@ -372,7 +380,7 @@ export const AnalyticsView: React.FC = () => {
             </div>
 
             <div className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
-              <h3 className="text-sm font-bold text-foreground">Top 10 Products by Revenue</h3>
+              <h3 className="text-sm font-bold text-foreground">Top 10 {prodMeta.sheetDisplayName} by Revenue</h3>
               <div className="h-64">
                 <ReactECharts option={topProductsChartOption} style={{ height: '100%', width: '100%' }} />
               </div>
@@ -386,17 +394,17 @@ export const AnalyticsView: React.FC = () => {
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-card border border-border rounded-xl p-4">
-              <div className="text-xs text-muted-foreground font-medium">Total Inventory Asset Valuation</div>
+              <div className="text-xs text-muted-foreground font-medium">Total {invMeta.sheetDisplayName} Asset Valuation</div>
               <div className="text-2xl font-bold text-foreground mt-1">
                 {formatCurrency(totalInventoryValuation, currency, currencySymbol)}
               </div>
             </div>
             <div className="bg-card border border-border rounded-xl p-4">
-              <div className="text-xs text-muted-foreground font-medium">SKUs in Inventory</div>
+              <div className="text-xs text-muted-foreground font-medium">Units in {invMeta.sheetDisplayName}</div>
               <div className="text-2xl font-bold text-foreground mt-1">{inventoryRows.length}</div>
             </div>
             <div className="bg-card border border-border rounded-xl p-4">
-              <div className="text-xs text-muted-foreground font-medium">Total Stock Quantity</div>
+              <div className="text-xs text-muted-foreground font-medium">Total Operational Count</div>
               <div className="text-2xl font-bold text-foreground mt-1">
                 {inventoryRows.reduce((a, b) => a + Number(b.quantity || 0), 0)} units
               </div>
@@ -405,22 +413,22 @@ export const AnalyticsView: React.FC = () => {
 
           {/* Stock Health Chart */}
           <div className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
-            <h3 className="text-sm font-bold text-foreground">Inventory Health Breakdown</h3>
+            <h3 className="text-sm font-bold text-foreground">{invMeta.sheetDisplayName} Health Breakdown</h3>
             <div className="h-64">
               <ReactECharts option={stockHealthOption} style={{ height: '100%', width: '100%' }} />
             </div>
           </div>
 
           <div className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
-            <h3 className="text-sm font-bold text-foreground">Stock Overview by SKU</h3>
+            <h3 className="text-sm font-bold text-foreground">{invMeta.sheetDisplayName} Overview by Item</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="border-b border-border text-muted-foreground">
-                    <th className="pb-2">Product Name</th>
-                    <th className="pb-2">SKU</th>
+                    <th className="pb-2">{prodMeta.sheetDisplayName} Name</th>
+                    <th className="pb-2">SKU / Code</th>
                     <th className="pb-2 text-right">Unit Cost</th>
-                    <th className="pb-2 text-right">In Stock</th>
+                    <th className="pb-2 text-right">Active Stock</th>
                     <th className="pb-2 text-right">Total Valuation</th>
                   </tr>
                 </thead>
@@ -460,15 +468,15 @@ export const AnalyticsView: React.FC = () => {
           </div>
 
           <div className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
-            <h3 className="text-sm font-bold text-foreground">Product Margins & Profitability</h3>
+            <h3 className="text-sm font-bold text-foreground">{prodMeta.sheetDisplayName} Margins & Profitability</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="border-b border-border text-muted-foreground">
-                    <th className="pb-2">Product</th>
+                    <th className="pb-2">{prodMeta.sheetDisplayName}</th>
                     <th className="pb-2">Category</th>
-                    <th className="pb-2 text-right">Purchase Price</th>
-                    <th className="pb-2 text-right">Selling Price</th>
+                    <th className="pb-2 text-right">Cost Price</th>
+                    <th className="pb-2 text-right">Tariff / Selling Price</th>
                     <th className="pb-2 text-right">Gross Margin</th>
                     <th className="pb-2 text-right">Margin %</th>
                   </tr>
@@ -507,12 +515,12 @@ export const AnalyticsView: React.FC = () => {
       {activeTab === 'customers' && (
         <div className="space-y-6">
           <div className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
-            <h3 className="text-sm font-bold text-foreground">Customer Lifetime Value (LTV)</h3>
+            <h3 className="text-sm font-bold text-foreground">{custMeta.sheetDisplayName} Lifetime Value (LTV)</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="border-b border-border text-muted-foreground">
-                    <th className="pb-2">Customer Name</th>
+                    <th className="pb-2">{custMeta.sheetDisplayName} Name</th>
                     <th className="pb-2">Contact</th>
                     <th className="pb-2">GSTIN</th>
                     <th className="pb-2 text-right">Orders</th>

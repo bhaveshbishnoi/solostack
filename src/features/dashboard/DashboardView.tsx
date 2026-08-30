@@ -30,7 +30,10 @@ import {
   BookOpen,
   BadgeDollarSign,
   Dumbbell,
-  Activity
+  Activity,
+  Utensils,
+  Home,
+  Wrench
 } from 'lucide-react';
 
 export const DashboardView: React.FC = () => {
@@ -105,6 +108,380 @@ export const DashboardView: React.FC = () => {
   }, [salesRows, customerRows]);
 
   const flowType = getBusinessFlowType(appConfig?.businessType);
+
+  const dashboardMeta = useMemo(() => {
+    switch (flowType) {
+      case 'taxi':
+        return {
+          editionName: 'Taxi & Cab Dispatch',
+          revenueTitle: 'Total Trip Fare Revenue',
+          todayTitle: "Today's Fare Collections",
+          volumeLabel: 'trips dispatched',
+          catalogTitle: 'Fleet Vehicle Categories',
+          inventorySubtext: 'vehicles on road',
+          alertTitle: 'Maintenance / Idle Cabs',
+          alertOk: 'All cabs roadworthy',
+          alertWarning: 'Cabs need attention',
+          counterpartyTitle: 'Registered Passengers',
+          counterpartySub: 'frequent travelers',
+          quickAddTitle: 'Add Cab / Fare Slab',
+          quickAddSub: 'Expand fleet tariff',
+          quickActionBtn: 'Dispatch Trip',
+          recentTitle: 'Recent Dispatched Trips',
+          recentColCustomer: 'Passenger Name',
+          recentColDate: 'Trip Date',
+          recentColAmount: 'Fare Total',
+          chartRevenueTitle: 'Daily Trip Fare Trend',
+          chartCategoryTitle: 'Fare by Vehicle Category',
+        };
+      case 'hotel':
+        return {
+          editionName: 'Hotel & Resort Booking',
+          revenueTitle: 'Total Room & Folio Revenue',
+          todayTitle: "Today's Guest Billing",
+          volumeLabel: 'stay folios settled',
+          catalogTitle: 'Room Tariff Categories',
+          inventorySubtext: 'rooms in inventory',
+          alertTitle: 'Rooms in Housekeeping',
+          alertOk: 'All rooms guest-ready',
+          alertWarning: 'Turnaround required',
+          counterpartyTitle: 'In-House Guests',
+          counterpartySub: 'registered guest folios',
+          quickAddTitle: 'Add Room Tariff',
+          quickAddSub: 'Configure suites & beds',
+          quickActionBtn: 'Book Room / Check-in',
+          recentTitle: 'Recent Stay Folios',
+          recentColCustomer: 'Guest Name',
+          recentColDate: 'Check-in Date',
+          recentColAmount: 'Folio Total',
+          chartRevenueTitle: 'Daily Stay Revenue Trend',
+          chartCategoryTitle: 'Tariff by Room Category',
+        };
+      case 'school':
+        return {
+          editionName: 'School Management',
+          revenueTitle: 'Total Term Fees Collected',
+          todayTitle: "Today's Fee Collections",
+          volumeLabel: 'official receipts issued',
+          catalogTitle: 'Fee Heads & Slabs',
+          inventorySubtext: 'classrooms & sections',
+          alertTitle: 'Fee Overdue / Alerts',
+          alertOk: 'All student dues clear',
+          alertWarning: 'Outstanding installments',
+          counterpartyTitle: 'Enrolled Students',
+          counterpartySub: 'admitted student directory',
+          quickAddTitle: 'Add Fee Head / Slab',
+          quickAddSub: 'Set term tuition fee',
+          quickActionBtn: 'Collect Student Fee',
+          recentTitle: 'Recent Fee Receipts',
+          recentColCustomer: 'Student Name',
+          recentColDate: 'Receipt Date',
+          recentColAmount: 'Fee Paid',
+          chartRevenueTitle: 'Term Fee Collection Trend',
+          chartCategoryTitle: 'Fee Distribution by Slabs',
+        };
+      case 'coaching':
+        return {
+          editionName: 'Coaching & Tuition',
+          revenueTitle: 'Total Tuition Fees Inflow',
+          todayTitle: "Today's Installments",
+          volumeLabel: 'installments settled',
+          catalogTitle: 'Exam Prep Courses',
+          inventorySubtext: 'batches & kits pool',
+          alertTitle: 'Installments Due',
+          alertOk: 'Installments current',
+          alertWarning: 'Overdue installments',
+          counterpartyTitle: 'Enrolled Candidates',
+          counterpartySub: 'coaching student roll',
+          quickAddTitle: 'Add Course / Batch',
+          quickAddSub: 'Target exam syllabus',
+          quickActionBtn: 'Enroll & Collect Fee',
+          recentTitle: 'Recent Tuition Receipts',
+          recentColCustomer: 'Candidate Name',
+          recentColDate: 'Installment Date',
+          recentColAmount: 'Installment Paid',
+          chartRevenueTitle: 'Tuition Inflow Trend',
+          chartCategoryTitle: 'Fees by Course Batch',
+        };
+      case 'payroll':
+        return {
+          editionName: 'Company Payroll',
+          revenueTitle: 'Total Disbursed Salaries',
+          todayTitle: "Today's Pay Run Amount",
+          volumeLabel: 'payslips processed',
+          catalogTitle: 'Salary Components',
+          inventorySubtext: 'active company headcount',
+          alertTitle: 'Statutory Dues / Tax',
+          alertOk: 'Statutory dues reconciled',
+          alertWarning: 'Pending PF/ESI/TDS',
+          counterpartyTitle: 'Staff Directory',
+          counterpartySub: 'payroll active employees',
+          quickAddTitle: 'Add Pay Component',
+          quickAddSub: 'Allowance or deduction',
+          quickActionBtn: 'Run Monthly Payroll',
+          recentTitle: 'Recent Monthly Payslips',
+          recentColCustomer: 'Employee Name',
+          recentColDate: 'Disbursal Date',
+          recentColAmount: 'Net Take-Home Pay',
+          chartRevenueTitle: 'Monthly Disbursal Trend',
+          chartCategoryTitle: 'Salary by Pay Component',
+        };
+      case 'gym':
+        return {
+          editionName: 'Gym & Fitness Center',
+          revenueTitle: 'Total Subscription Revenue',
+          todayTitle: "Today's Pass Renewals",
+          volumeLabel: 'passes & memberships',
+          catalogTitle: 'Membership Tiers',
+          inventorySubtext: 'gym lockers & equipment',
+          alertTitle: 'Memberships Expiring Soon',
+          alertOk: 'All memberships active',
+          alertWarning: 'Renewal reminders needed',
+          counterpartyTitle: 'Active Members',
+          counterpartySub: 'gym subscriber roll',
+          quickAddTitle: 'Add Membership Plan',
+          quickAddSub: 'Configure duration & pass',
+          quickActionBtn: 'Enroll / Renew Member',
+          recentTitle: 'Recent Subscriptions',
+          recentColCustomer: 'Member Name',
+          recentColDate: 'Activation Date',
+          recentColAmount: 'Subscription Fee',
+          chartRevenueTitle: 'Daily Subscription Inflow',
+          chartCategoryTitle: 'Revenue by Plan Tier',
+        };
+      case 'hospital':
+        return {
+          editionName: 'Hospital & Clinic OPD',
+          revenueTitle: 'Total OPD & Medical Revenue',
+          todayTitle: "Today's Clinical Billings",
+          volumeLabel: 'encounters billed',
+          catalogTitle: 'Medical Procedures & Tests',
+          inventorySubtext: 'bed slots & reagents',
+          alertTitle: 'Critical Supply / Bed Shortage',
+          alertOk: 'Clinical supplies optimal',
+          alertWarning: 'Immediate restock needed',
+          counterpartyTitle: 'Patients Registry',
+          counterpartySub: 'universal health IDs (UHID)',
+          quickAddTitle: 'Add Medical Procedure',
+          quickAddSub: 'Set consultation / test fee',
+          quickActionBtn: 'OPD Encounter & Bill',
+          recentTitle: 'Recent Patient Encounters',
+          recentColCustomer: 'Patient Name',
+          recentColDate: 'Encounter Time',
+          recentColAmount: 'Medical Bill Total',
+          chartRevenueTitle: 'Daily OPD Billing Trend',
+          chartCategoryTitle: 'Revenue by Procedure Type',
+        };
+      case 'restaurant':
+        return {
+          editionName: 'Restaurant & Cafe',
+          revenueTitle: 'Total Food & Dining Sales',
+          todayTitle: "Today's KOT Revenue",
+          volumeLabel: 'orders served',
+          catalogTitle: 'Dishes & Menu Catalog',
+          inventorySubtext: 'daily kitchen prep portions',
+          alertTitle: 'Low Kitchen Prep Portions',
+          alertOk: 'Kitchen ingredients optimal',
+          alertWarning: 'Prep items running low',
+          counterpartyTitle: 'Dine-in Guests & Tables',
+          counterpartySub: 'regular customer directory',
+          quickAddTitle: 'Add Menu Dish',
+          quickAddSub: 'New recipe & price',
+          quickActionBtn: 'Settle Food Bill (KOT)',
+          recentTitle: 'Recent Table Orders (KOT)',
+          recentColCustomer: 'Guest / Table #',
+          recentColDate: 'Order Time',
+          recentColAmount: 'Bill Amount',
+          chartRevenueTitle: 'Daily Food Sales Trend',
+          chartCategoryTitle: 'Dish Prices by Course',
+        };
+      case 'realestate':
+        return {
+          editionName: 'Real Estate & Property',
+          revenueTitle: 'Total Rental Collections',
+          todayTitle: "Today's Rent Inflow",
+          volumeLabel: 'rent receipts issued',
+          catalogTitle: 'Rental Units & Properties',
+          inventorySubtext: 'apartments in portfolio',
+          alertTitle: 'Vacant Units Pending Lease',
+          alertOk: 'All units leased',
+          alertWarning: 'Vacant units available',
+          counterpartyTitle: 'Registered Tenants',
+          counterpartySub: 'lease contract holders',
+          quickAddTitle: 'Add Rental Unit Type',
+          quickAddSub: 'Configure monthly rent',
+          quickActionBtn: 'Collect Rent Receipt',
+          recentTitle: 'Recent Rent Receipts',
+          recentColCustomer: 'Tenant Name',
+          recentColDate: 'Receipt Date',
+          recentColAmount: 'Rent Collected',
+          chartRevenueTitle: 'Monthly Rent Collections',
+          chartCategoryTitle: 'Tariff by Unit Type',
+        };
+      case 'garage':
+        return {
+          editionName: 'Auto Workshop & Garage',
+          revenueTitle: 'Total Auto Repair Revenue',
+          todayTitle: "Today's Workshop Billing",
+          volumeLabel: 'job cards completed',
+          catalogTitle: 'Service Packages & Spares',
+          inventorySubtext: 'parts in bin stock',
+          alertTitle: 'Spares Below Reorder Level',
+          alertOk: 'All spares well stocked',
+          alertWarning: 'Order spare parts immediately',
+          counterpartyTitle: 'Vehicle Owners',
+          counterpartySub: 'customer vehicle fleet',
+          quickAddTitle: 'Add Service Package',
+          quickAddSub: 'Labor rate or spare part',
+          quickActionBtn: 'New Workshop Job Card',
+          recentTitle: 'Recent Repair Invoices',
+          recentColCustomer: 'Vehicle Owner',
+          recentColDate: 'Delivery Date',
+          recentColAmount: 'Repair Invoice',
+          chartRevenueTitle: 'Daily Repair Billing Trend',
+          chartCategoryTitle: 'Pricing by Service Package',
+        };
+      case 'salon':
+        return {
+          editionName: 'Salon, Spa & Wellness',
+          revenueTitle: 'Total Salon & Spa Revenue',
+          todayTitle: "Today's Session Billing",
+          volumeLabel: 'appointments billed',
+          catalogTitle: 'Treatments & Aesthetics',
+          inventorySubtext: 'cosmetics & treatment kits',
+          alertTitle: 'Cosmetics Running Low',
+          alertOk: 'Beauty products optimal',
+          alertWarning: 'Restock cosmetic kits',
+          counterpartyTitle: 'Salon Clients',
+          counterpartySub: 'client style directory',
+          quickAddTitle: 'Add Salon Treatment',
+          quickAddSub: 'New haircut or spa service',
+          quickActionBtn: 'Bill Salon Appointment',
+          recentTitle: 'Recent Client Appointments',
+          recentColCustomer: 'Client Name',
+          recentColDate: 'Appointment Date',
+          recentColAmount: 'Salon Bill',
+          chartRevenueTitle: 'Daily Salon Revenue Trend',
+          chartCategoryTitle: 'Charges by Treatment',
+        };
+      case 'wholesale':
+        return {
+          editionName: 'Wholesale & B2B',
+          revenueTitle: 'Total B2B Wholesale Revenue',
+          todayTitle: "Today's Wholesale Billing",
+          volumeLabel: 'B2B tax invoices',
+          catalogTitle: 'Case Lots & Cartons',
+          inventorySubtext: 'pallet units in warehouse',
+          alertTitle: 'Warehouse Shortages',
+          alertOk: 'Case packs well stocked',
+          alertWarning: 'Carton reorder threshold',
+          counterpartyTitle: 'B2B Dealer Accounts',
+          counterpartySub: 'wholesale credit accounts',
+          quickAddTitle: 'Add Wholesale SKU',
+          quickAddSub: 'Set case lot & MOQ',
+          quickActionBtn: 'New B2B Order',
+          recentTitle: 'Recent B2B Tax Invoices',
+          recentColCustomer: 'Dealer Account',
+          recentColDate: 'Invoice Date',
+          recentColAmount: 'Invoice Total',
+          chartRevenueTitle: 'Daily B2B Invoice Inflow',
+          chartCategoryTitle: 'Pricing by Case Lot',
+        };
+      case 'pharmacy':
+        return {
+          editionName: 'Pharmacy & Healthcare',
+          revenueTitle: 'Total Pharmacy Sales',
+          todayTitle: "Today's Medicine Counter",
+          volumeLabel: 'prescriptions dispensed',
+          catalogTitle: 'Medicines & Drug Salts',
+          inventorySubtext: 'tablets & bottles in store',
+          alertTitle: 'Near-Expiry Batches',
+          alertOk: 'All batches within validity',
+          alertWarning: 'Expiring in <60 days',
+          counterpartyTitle: 'Patients & Customers',
+          counterpartySub: 'patient prescription records',
+          quickAddTitle: 'Add Medicine / Drug',
+          quickAddSub: 'Generic salt & Schedule H',
+          quickActionBtn: 'Prescribe & Dispense',
+          recentTitle: 'Recent Dispensed Bills',
+          recentColCustomer: 'Patient Name',
+          recentColDate: 'Dispensed Date',
+          recentColAmount: 'Medicine Bill',
+          chartRevenueTitle: 'Daily Pharmacy Sales Trend',
+          chartCategoryTitle: 'Drug MRP by Category',
+        };
+      case 'services':
+        return {
+          editionName: 'Services & Consulting',
+          revenueTitle: 'Total Professional Revenue',
+          todayTitle: "Today's Billed Retainers",
+          volumeLabel: 'service milestones billed',
+          catalogTitle: 'Billable Scopes & Rates',
+          inventorySubtext: 'sprint hours & retainers',
+          alertTitle: 'Pending Milestones',
+          alertOk: 'All deliverables on schedule',
+          alertWarning: 'Scope reviews pending',
+          counterpartyTitle: 'Corporate Clients',
+          counterpartySub: 'retained client accounts',
+          quickAddTitle: 'Add Billable Scope',
+          quickAddSub: 'Hourly rate or retainer',
+          quickActionBtn: 'Bill Client Deliverable',
+          recentTitle: 'Recent Professional Invoices',
+          recentColCustomer: 'Client / Account',
+          recentColDate: 'Invoice Date',
+          recentColAmount: 'Retainer Billed',
+          chartRevenueTitle: 'Client Retainer Inflow',
+          chartCategoryTitle: 'Rates by Service Scope',
+        };
+      case 'manufacturing':
+        return {
+          editionName: 'Manufacturing & Assembly',
+          revenueTitle: 'Total Industrial Revenue',
+          todayTitle: "Today's Dispatched Value",
+          volumeLabel: 'dispatch orders',
+          catalogTitle: 'Finished Assemblies & BOM',
+          inventorySubtext: 'assembled units in store',
+          alertTitle: 'Raw Material Shortages',
+          alertOk: 'Raw materials sufficient',
+          alertWarning: 'Component stock low',
+          counterpartyTitle: 'Industrial Buyers',
+          counterpartySub: 'contract manufacturing buyers',
+          quickAddTitle: 'Add Assembly BOM',
+          quickAddSub: 'Configure finished assembly',
+          quickActionBtn: 'Production Console',
+          recentTitle: 'Recent Dispatch Orders',
+          recentColCustomer: 'Industrial Buyer',
+          recentColDate: 'Order Date',
+          recentColAmount: 'Production Value',
+          chartRevenueTitle: 'Production Orders Value',
+          chartCategoryTitle: 'Assemblies by Unit Cost',
+        };
+      case 'retail':
+      default:
+        return {
+          editionName: 'Retail Point of Sale',
+          revenueTitle: 'Total Revenue',
+          todayTitle: "Today's Sales",
+          volumeLabel: 'completed sales',
+          catalogTitle: 'Products in Catalog',
+          inventorySubtext: 'total units in stock',
+          alertTitle: 'Low Stock Alerts',
+          alertOk: 'All stocks optimal',
+          alertWarning: 'Requires reordering',
+          counterpartyTitle: 'Customers',
+          counterpartySub: 'registered clients',
+          quickAddTitle: 'Add New Product',
+          quickAddSub: 'Expand your catalog',
+          quickActionBtn: 'Counter POS',
+          recentTitle: 'Recent Sales Orders',
+          recentColCustomer: 'Customer Name',
+          recentColDate: 'Sale Date',
+          recentColAmount: 'Order Total',
+          chartRevenueTitle: 'Sales Revenue Trend',
+          chartCategoryTitle: 'Products by Category',
+        };
+    }
+  }, [flowType]);
 
   // Flow specific metrics
   const wholesaleCreditPending = useMemo(() => {
@@ -368,8 +745,12 @@ export const DashboardView: React.FC = () => {
               {flowType === 'payroll' && <BadgeDollarSign className="h-3 w-3 text-teal-400" />}
               {flowType === 'gym' && <Dumbbell className="h-3 w-3 text-orange-400" />}
               {flowType === 'hospital' && <Activity className="h-3 w-3 text-rose-400" />}
+              {flowType === 'restaurant' && <Utensils className="h-3 w-3 text-amber-500" />}
+              {flowType === 'realestate' && <Home className="h-3 w-3 text-blue-400" />}
+              {flowType === 'garage' && <Wrench className="h-3 w-3 text-orange-400" />}
+              {flowType === 'salon' && <Sparkles className="h-3 w-3 text-pink-400" />}
               {flowType === 'retail' && <Store className="h-3 w-3 text-primary" />}
-              <span>{appConfig?.businessType || 'Retail'} Edition</span>
+              <span>{appConfig?.businessType || dashboardMeta.editionName} Edition</span>
             </span>
           </div>
           <p className="text-xs text-muted-foreground">
@@ -401,32 +782,12 @@ export const DashboardView: React.FC = () => {
             {flowType === 'payroll' && <BadgeDollarSign className="h-4 w-4" />}
             {flowType === 'gym' && <Dumbbell className="h-4 w-4" />}
             {flowType === 'hospital' && <Activity className="h-4 w-4" />}
+            {flowType === 'restaurant' && <Utensils className="h-4 w-4" />}
+            {flowType === 'realestate' && <Home className="h-4 w-4" />}
+            {flowType === 'garage' && <Wrench className="h-4 w-4" />}
+            {flowType === 'salon' && <Sparkles className="h-4 w-4" />}
             {flowType === 'retail' && <ShoppingCart className="h-4 w-4" />}
-            <span>
-              {flowType === 'pharmacy'
-                ? 'Prescribe & Dispense'
-                : flowType === 'wholesale'
-                ? 'New B2B Order'
-                : flowType === 'services'
-                ? 'Bill Client Deliverable'
-                : flowType === 'manufacturing'
-                ? 'Production Console'
-                : flowType === 'taxi'
-                ? 'Dispatch Trip'
-                : flowType === 'hotel'
-                ? 'Book Room / Check-in'
-                : flowType === 'school'
-                ? 'Collect Student Fee'
-                : flowType === 'coaching'
-                ? 'Enroll & Collect Fee'
-                : flowType === 'payroll'
-                ? 'Run Monthly Payroll'
-                : flowType === 'gym'
-                ? 'Enroll / Renew Member'
-                : flowType === 'hospital'
-                ? 'OPD Encounter & Bill'
-                : 'Counter POS'}
-            </span>
+            <span>{dashboardMeta.quickActionBtn}</span>
           </button>
         </div>
       </div>
@@ -599,10 +960,70 @@ export const DashboardView: React.FC = () => {
           </div>
         )}
 
+        {flowType === 'restaurant' && (
+          <div className="bg-gradient-to-br from-amber-500/15 via-card to-card border border-amber-500/30 rounded-2xl p-4 shadow-sm hover:border-amber-500/50 transition">
+            <div className="flex items-center justify-between text-muted-foreground mb-2">
+              <span className="text-xs font-semibold">Table Orders (KOT)</span>
+              <div className="p-2 rounded-xl bg-amber-500/15 text-amber-500">
+                <Utensils className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-extrabold text-amber-500 font-mono">
+              {salesRows.length}
+            </div>
+            <div className="text-[11px] text-muted-foreground mt-1">Dine-in table orders billed</div>
+          </div>
+        )}
+
+        {flowType === 'realestate' && (
+          <div className="bg-gradient-to-br from-blue-500/15 via-card to-card border border-blue-500/30 rounded-2xl p-4 shadow-sm hover:border-blue-500/50 transition">
+            <div className="flex items-center justify-between text-muted-foreground mb-2">
+              <span className="text-xs font-semibold">Active Tenancy Leases</span>
+              <div className="p-2 rounded-xl bg-blue-500/15 text-blue-400">
+                <Home className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-extrabold text-blue-400 font-mono">
+              {customerRows.length}
+            </div>
+            <div className="text-[11px] text-muted-foreground mt-1">Contracted rental tenants</div>
+          </div>
+        )}
+
+        {flowType === 'garage' && (
+          <div className="bg-gradient-to-br from-orange-500/15 via-card to-card border border-orange-500/30 rounded-2xl p-4 shadow-sm hover:border-orange-500/50 transition">
+            <div className="flex items-center justify-between text-muted-foreground mb-2">
+              <span className="text-xs font-semibold">Workshop Job Cards</span>
+              <div className="p-2 rounded-xl bg-orange-500/15 text-orange-500">
+                <Wrench className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-extrabold text-orange-500 font-mono">
+              {salesRows.length}
+            </div>
+            <div className="text-[11px] text-muted-foreground mt-1">Repairs completed & delivered</div>
+          </div>
+        )}
+
+        {flowType === 'salon' && (
+          <div className="bg-gradient-to-br from-pink-500/15 via-card to-card border border-pink-500/30 rounded-2xl p-4 shadow-sm hover:border-pink-500/50 transition">
+            <div className="flex items-center justify-between text-muted-foreground mb-2">
+              <span className="text-xs font-semibold">Styling Appointments</span>
+              <div className="p-2 rounded-xl bg-pink-500/15 text-pink-400">
+                <Sparkles className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-extrabold text-pink-400 font-mono">
+              {salesRows.length}
+            </div>
+            <div className="text-[11px] text-muted-foreground mt-1">Sessions billed & completed</div>
+          </div>
+        )}
+
         {/* Total Sales */}
         <div className="bg-gradient-to-br from-primary/10 via-card to-card border border-primary/30 rounded-2xl p-4 shadow-sm hover:teal-glow-sm hover:border-primary/50 transition">
           <div className="flex items-center justify-between text-muted-foreground mb-2">
-            <span className="text-xs font-semibold">Total Revenue</span>
+            <span className="text-xs font-semibold">{dashboardMeta.revenueTitle}</span>
             <div className="p-2 rounded-xl bg-primary/15 text-primary">
               <TrendingUp className="h-4 w-4" />
             </div>
@@ -612,14 +1033,14 @@ export const DashboardView: React.FC = () => {
           </div>
           <div className="text-[11px] text-muted-foreground mt-1 flex items-center gap-1">
             <span className="font-semibold text-primary">{salesRows.length}</span>
-            <span>completed orders</span>
+            <span>{dashboardMeta.volumeLabel}</span>
           </div>
         </div>
 
         {/* Today's Sales */}
         <div className="bg-gradient-to-br from-emerald-500/10 via-card to-card border border-emerald-500/20 rounded-2xl p-4 shadow-sm hover:border-emerald-500/40 transition">
           <div className="flex items-center justify-between text-muted-foreground mb-2">
-            <span className="text-xs font-semibold">Today's Sales</span>
+            <span className="text-xs font-semibold">{dashboardMeta.todayTitle}</span>
             <div className="p-2 rounded-xl bg-emerald-500/15 text-emerald-500">
               <DollarSign className="h-4 w-4" />
             </div>
@@ -636,41 +1057,41 @@ export const DashboardView: React.FC = () => {
         {/* Products & Inventory */}
         <div className="bg-card border border-border rounded-2xl p-4 shadow-sm hover:border-primary/40 transition">
           <div className="flex items-center justify-between text-muted-foreground mb-2">
-            <span className="text-xs font-semibold">Products in Catalog</span>
+            <span className="text-xs font-semibold">{dashboardMeta.catalogTitle}</span>
             <div className="p-2 rounded-xl bg-teal-500/15 text-teal-600 dark:text-teal-400">
               <Package className="h-4 w-4" />
             </div>
           </div>
           <div className="text-2xl font-extrabold text-foreground font-mono">{productRows.length}</div>
           <div className="text-[11px] text-muted-foreground mt-1">
-            <span className="font-semibold text-foreground">{inventoryRows.reduce((a, b) => a + Number(b.quantity || 0), 0)}</span> total units in stock
+            <span className="font-semibold text-foreground">{inventoryRows.reduce((a, b) => a + Number(b.quantity || 0), 0)}</span> {dashboardMeta.inventorySubtext}
           </div>
         </div>
 
         {/* Low Stock Alert */}
         <div className="bg-gradient-to-br from-amber-500/10 via-card to-card border border-amber-500/30 rounded-2xl p-4 shadow-sm hover:border-amber-500/50 transition">
           <div className="flex items-center justify-between text-muted-foreground mb-2">
-            <span className="text-xs font-semibold">Low Stock Alerts</span>
+            <span className="text-xs font-semibold">{dashboardMeta.alertTitle}</span>
             <div className="p-2 rounded-xl bg-amber-500/15 text-amber-500">
               <AlertTriangle className="h-4 w-4" />
             </div>
           </div>
           <div className="text-2xl font-extrabold text-amber-500 font-mono">{lowStockItems.length}</div>
           <div className="text-[11px] text-amber-500/80 mt-1 font-medium">
-            {lowStockItems.length === 0 ? 'All stocks optimal' : 'Requires reordering'}
+            {lowStockItems.length === 0 ? dashboardMeta.alertOk : dashboardMeta.alertWarning}
           </div>
         </div>
 
         {/* Total Customers */}
         <div className="bg-card border border-border rounded-2xl p-4 shadow-sm hover:border-primary/40 transition">
           <div className="flex items-center justify-between text-muted-foreground mb-2">
-            <span className="text-xs font-semibold">Customers</span>
+            <span className="text-xs font-semibold">{dashboardMeta.counterpartyTitle}</span>
             <div className="p-2 rounded-xl bg-purple-500/15 text-purple-500">
               <Users className="h-4 w-4" />
             </div>
           </div>
           <div className="text-2xl font-extrabold text-foreground font-mono">{customerRows.length}</div>
-          <div className="text-[11px] text-muted-foreground mt-1">Registered clients</div>
+          <div className="text-[11px] text-muted-foreground mt-1">{dashboardMeta.counterpartySub}</div>
         </div>
 
         {/* Total Expenses */}
@@ -692,7 +1113,7 @@ export const DashboardView: React.FC = () => {
         {/* Net Profit Estimate */}
         <div className="bg-gradient-to-br from-teal-500/15 via-card to-card border border-teal-500/30 rounded-2xl p-4 shadow-sm hover:teal-glow-sm transition">
           <div className="flex items-center justify-between text-muted-foreground mb-2">
-            <span className="text-xs font-semibold">Net Profit (Est.)</span>
+            <span className="text-xs font-semibold">Net Operating Surplus (Est.)</span>
             <div className="p-2 rounded-xl bg-teal-500/15 text-teal-600 dark:text-teal-400">
               <TrendingUp className="h-4 w-4" />
             </div>
@@ -714,8 +1135,8 @@ export const DashboardView: React.FC = () => {
           <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center mb-1 group-hover:scale-110 transition text-primary">
             <PlusCircle className="h-5 w-5" />
           </div>
-          <span className="text-xs font-bold text-foreground group-hover:text-primary transition">Add New Product</span>
-          <span className="text-[10px] text-muted-foreground">Expand your catalog</span>
+          <span className="text-xs font-bold text-foreground group-hover:text-primary transition">{dashboardMeta.quickAddTitle}</span>
+          <span className="text-[10px] text-muted-foreground">{dashboardMeta.quickAddSub}</span>
         </div>
       </div>
 
@@ -725,7 +1146,7 @@ export const DashboardView: React.FC = () => {
         <div className="lg:col-span-2 bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-bold text-foreground">Sales Revenue Trend</h3>
+              <h3 className="text-sm font-bold text-foreground">{dashboardMeta.chartRevenueTitle}</h3>
               <p className="text-xs text-muted-foreground">Track daily performance</p>
             </div>
             <button
@@ -745,8 +1166,8 @@ export const DashboardView: React.FC = () => {
         <div className="bg-card border border-border rounded-2xl p-5 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-bold text-foreground">Categories</h3>
-              <p className="text-xs text-muted-foreground">Product catalog breakdown</p>
+              <h3 className="text-sm font-bold text-foreground">{dashboardMeta.chartCategoryTitle}</h3>
+              <p className="text-xs text-muted-foreground">Catalog & tariff breakdown</p>
             </div>
             <button
               onClick={() => setActiveSheet('_Categories')}
@@ -769,7 +1190,7 @@ export const DashboardView: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-muted-foreground" />
-              <h3 className="text-sm font-bold text-foreground">Recent Transactions</h3>
+              <h3 className="text-sm font-bold text-foreground">{dashboardMeta.recentTitle}</h3>
             </div>
             <button
               onClick={() => setActiveSheet('_Sales')}
@@ -782,17 +1203,17 @@ export const DashboardView: React.FC = () => {
           <div className="overflow-x-auto">
             {recentSales.length === 0 ? (
               <div className="text-center py-8 text-xs text-muted-foreground">
-                No transactions recorded yet. Click "Start New Sale" above!
+                No transactions recorded yet. Click "{dashboardMeta.quickActionBtn}" above!
               </div>
             ) : (
               <div className="border border-border/80 rounded-xl overflow-hidden">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead className="bg-muted/40 border-b border-border/80 font-bold text-foreground">
                     <tr>
-                      <th className="py-2.5 px-3 border-r border-border/60">Customer</th>
-                      <th className="py-2.5 px-3 border-r border-border/60">Date</th>
-                      <th className="py-2.5 px-3 border-r border-border/60">Payment</th>
-                      <th className="py-2.5 px-3 text-right">Amount</th>
+                      <th className="py-2.5 px-3 border-r border-border/60">{dashboardMeta.recentColCustomer}</th>
+                      <th className="py-2.5 px-3 border-r border-border/60">{dashboardMeta.recentColDate}</th>
+                      <th className="py-2.5 px-3 border-r border-border/60">Payment Method</th>
+                      <th className="py-2.5 px-3 text-right">{dashboardMeta.recentColAmount}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/60">

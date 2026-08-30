@@ -3,6 +3,7 @@ import { useUIStore } from '../../stores/uiStore';
 import { useWorkbookStore } from '../../stores/workbookStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { formatCurrency, formatDate } from '../../lib/utils';
+import { getBusinessFlowType } from '../../types';
 import { X, Printer, CheckCircle2 } from 'lucide-react';
 
 export const InvoiceModal: React.FC = () => {
@@ -24,6 +25,7 @@ export const InvoiceModal: React.FC = () => {
   const { saleId, saleRecord, cart, calculations, customerName } = modalData;
   const currencySymbol = appConfig?.currencySymbol || '₹';
   const currency = appConfig?.currency || 'INR';
+  const flowType = getBusinessFlowType(appConfig?.businessType);
 
   const handlePrint = () => {
     window.print();
@@ -75,7 +77,29 @@ export const InvoiceModal: React.FC = () => {
 
             <div className="text-right">
               <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                TAX INVOICE
+                {flowType === 'taxi'
+                  ? 'TRIP FARE RECEIPT'
+                  : flowType === 'hotel'
+                  ? 'HOTEL STAY FOLIO INVOICE'
+                  : flowType === 'school'
+                  ? 'OFFICIAL TERM FEE RECEIPT'
+                  : flowType === 'coaching'
+                  ? 'TUITION INSTALLMENT RECEIPT'
+                  : flowType === 'payroll'
+                  ? 'EMPLOYEE SALARY PAYSLIP'
+                  : flowType === 'gym'
+                  ? 'GYM MEMBERSHIP PASS'
+                  : flowType === 'hospital'
+                  ? 'OPD MEDICAL INVOICE'
+                  : flowType === 'restaurant'
+                  ? 'RESTAURANT FOOD & KOT BILL'
+                  : flowType === 'realestate'
+                  ? 'RENT COLLECTION RECEIPT'
+                  : flowType === 'garage'
+                  ? 'VEHICLE REPAIR TAX INVOICE'
+                  : flowType === 'salon'
+                  ? 'SALON APPOINTMENT BILL'
+                  : 'TAX INVOICE'}
               </div>
               <div className="text-base font-bold text-foreground font-mono mt-1">
                 #{saleId}
@@ -102,7 +126,29 @@ export const InvoiceModal: React.FC = () => {
             <table className="w-full text-left text-xs border-collapse">
               <thead className="bg-muted/40 border-b border-border/80 text-foreground font-bold">
                 <tr className="text-[11px]">
-                  <th className="py-2.5 px-3 border-r border-border/60">Item & SKU</th>
+                  <th className="py-2.5 px-3 border-r border-border/60">
+                    {flowType === 'taxi'
+                      ? 'Trip Route / Fare Slab'
+                      : flowType === 'hotel'
+                      ? 'Room Category / Stay Details'
+                      : flowType === 'school'
+                      ? 'Fee Head / Grade'
+                      : flowType === 'payroll'
+                      ? 'Salary Pay Component'
+                      : flowType === 'gym'
+                      ? 'Membership Plan Tier'
+                      : flowType === 'hospital'
+                      ? 'Medical Procedure / Service'
+                      : flowType === 'restaurant'
+                      ? 'Dish & Course'
+                      : flowType === 'realestate'
+                      ? 'Rental Unit & Period'
+                      : flowType === 'garage'
+                      ? 'Job / Spare Part'
+                      : flowType === 'salon'
+                      ? 'Treatment & Styling'
+                      : 'Item & SKU'}
+                  </th>
                   <th className="py-2.5 px-3 border-r border-border/60 text-center">Qty</th>
                   <th className="py-2.5 px-3 border-r border-border/60 text-right">Unit Price</th>
                   <th className="py-2.5 px-3 border-r border-border/60 text-right">GST</th>
